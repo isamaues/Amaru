@@ -1,0 +1,194 @@
+using UnityEngine;
+using System.Collections;
+using System;
+
+//REVISION 126
+public abstract class BaseMiniGame
+{
+	#region Atributes
+	public float spaceBetweenItens = 1.5f;	
+	
+	//protected float startTaskDoneTime = 0f; ESSA VARIÁVEL NÃO É NECESSÁRIA
+	protected float startTime = 0f;
+	protected float finalTime = 0f;
+	protected bool canEraseAll = false;
+	protected bool correctAnswer = false;
+	protected bool minigameComplete = false;
+	protected ArrayList comparisonList = new ArrayList ();
+	protected ArrayList selectionList = new ArrayList ();
+	
+	protected Vector3 itensMidPoint = Vector3.zero;
+	
+	#endregion
+	
+	#region Proprieties
+	public float MinigameTime {
+		get {
+			if (finalTime == 0)
+				throw new Exception ("Tempo final é nulo.");
+			
+			return finalTime - startTime;
+		}
+	}
+	
+	public static int CurrentTaskId {
+		get{ return UserManager.CurrentUser.id_Da_Ultima_Tarefa - 1;}
+	}
+	
+	public static Task CurrentTask {
+		get{ return UserManager.CurrentTasksList.arrayList [CurrentTaskId];}
+	}
+	
+	public static TaskType CurrentTaskType {
+		get{ return UserManager.CurrentTaskTypesList.arrayList [CurrentTask.TaskType - 1];}
+	}
+	
+	public static string CurrentTaskTypeName {
+		get{ return CurrentTaskType.Name;}
+	}
+	
+	public static short CurrentTaskModel {
+		get{ return CurrentTask.Model;}
+	}
+	
+	/// <summary>
+	/// Pega a palavra correta
+	/// </summary>
+	public static Word CurrentTaskModelWord {
+		get{ return UserManager.CurrentWordList.arrayList [CurrentTaskModel];}	
+	}
+	
+	/// <summary>
+	/// Pega o nome da palavra correta
+	/// </summary>
+	public static string CurrentTaskModelName {
+		get{ return CurrentTaskModelWord.Name;}	
+	}
+	
+	#endregion
+	
+	
+	public BaseMiniGame ()
+	{
+		Camera2DTracker.LockHorizontalCamera = true;
+		LoadMiniGame ();
+		BuildMiniGame ();
+		UramaBehaviour.Notify ();
+		startTime = Time.time;
+	}
+	
+	public abstract void LoadMiniGame ();
+	
+	public virtual void BuildMiniGame ()
+	{	
+		CreateTask ();
+		CreateCancelAcceptChoice ();
+		AdjustCamera ();
+	}	
+	
+	public virtual void 	CreateTask ()
+	{
+		Debug.Log("Tipo da tentativa = " +CurrentTaskTypeName);
+		if (CurrentTaskTypeName.Length > 1) {
+			
+			// CurrentTaskType [1] = Pega segunda letra do tipo de tarefa, referente às escolhas.
+			switch (CurrentTaskTypeName [1].ToString ()) {
+
+			case "B":
+				CreateBChoice ();
+				break;
+			case "C":
+				CreateCChoice ();
+				break;
+			//----------------------------------
+			//!!!!!COM BROBLEMAS!!!!!!
+			//CONSERTAR ESCOLHA D e E
+			case "D":
+				CreateDChoice ();
+				break;				
+			case "E":
+				CreateEChoice ();				
+				break;
+				
+			//!!!!!!!!!!!!!!!!!!!
+			//----------------------------------
+				
+			default:
+				CreateBChoice ();
+				break;
+			}
+		}	
+
+		itensMidPoint = new Vector3 (Camera.mainCamera.transform.position.x, itensMidPoint.y, itensMidPoint.z);
+
+		OrganizeChoices ();
+                
+	}
+	
+	public virtual void Update ()
+	{
+		if (canEraseAll && Time.time > MinigameSetup.minimumTaskTime) {
+			DestroyMiniGame ();
+			//EraserAll() é chamado no método acima.
+		}
+		
+		//update do minigame especifico continua ocorrendo
+	}
+
+	public virtual void DestroyMiniGame ()
+	{
+		MinigameSetup.RunningTask = false;	
+		Camera2DTracker.LockHorizontalCamera = false;
+		Camera2DTracker.ResetCameraZoom();
+		EraseAll ();
+		UramaBehaviour.notificationType = UramaBehaviour.Notifycation.None;
+	}
+	
+	public virtual void AcceptChoice ()
+	{
+		if (selectionList.Count > 0 && !minigameComplete) {
+			minigameComplete = true;
+			finalTime = Time.time;
+			canEraseAll = true;
+			
+			Debug.Log ("Acertou: " + correctAnswer);			
+			foreach (GameObject item in comparisonList) {
+				CubeScript cs = item.gameObject.GetComponent<CubeScript> ();
+				cs.enabled = false;
+			}
+			
+			//Descomentar quando estiver valendo
+			//UpdateTaskList();
+			MinigameSetup.DoNextTask ();
+		}
+	}
+	
+	protected void UpdateTaskList ()
+	{
+		UserManager.CurrentTasksList.arrayList [CurrentTaskId].Correct = Convert.ToByte (MiniGameResult () ? 1 : 0);
+		//A TENTATIVA NÃO TEM UM ATRIBUTO PRO TEMPO DO JOGADOR. DEVE SER CONSERTADO? 
+		UserManager.CurrentTasksList.arrayList [CurrentTaskId].DateTime = System.DateTime.Now.Date;
+		UserManager.GetInstance ().UpdateTaskListXML ();
+	}
+				
+	public abstract void AdjustCamera ();
+	
+	public abstract void CancelChoice ();
+	
+	public abstract void CreateCancelAcceptChoice ();
+	
+	public abstract  void CreateBChoice ();
+
+	public abstract  void CreateCChoice ();
+
+	public abstract  void CreateDChoice ();
+
+	public abstract  void CreateEChoice ();
+	
+	public abstract  void OrganizeChoices ();
+	
+	public abstract void EraseAll ();
+	
+	public abstract bool MiniGameResult ();
+}
+

@@ -1,0 +1,364 @@
+using UnityEngine;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+public class MachineLearning
+{	    
+	
+	
+        #region Dados de Entrada
+
+	//public double[,] X = new double[5, 2]
+	//    {
+	//        {1,1},
+	//        {1,3},
+	//        {1,6},
+	//        {1,8},
+	//        {1,8},     
+	//    };
+
+	double[,] X;
+
+	// public int[] y = new int[5] { 1, 1, 1, 0, 1 };
+
+	int[] y;
+
+	     
+        #endregion
+
+        #region Dados da Regressão Logística
+	public double alpha = 8; //Taxa de Aprendizado
+	public int num_itera = 500; //Numero de Interações
+	public double[] initial_theta = new double[2] { 0, 0 };//theta inicial iqual a 0
+	public double[] thetaGerado = new double[2]{0,0}; //theta gerado pelo Gradient Descent
+        #endregion
+	
+		#region Dados da Regressão Logística
+	public double percentTaxaDeAcerto = 0.4;
+	public double percentMediaGeral = 0.4;
+	public double percentProbabilidadeDeAcerto = 0.4;
+	 	#endregion
+	    
+	//Construtor da ML
+	public MachineLearning (AIGameConfiguration config)
+	{			    
+		//Atribui os dados do txt de configuração referentes a machine learning 
+		alpha = config.alfa_Maquina_de_Aprendizado;		
+		num_itera = config.numero_De_Interacoes_da_Maquina_de_Aprendizado;
+		    
+		percentTaxaDeAcerto = config.Percentagem_Da_Taxa_De_Acerto;
+		percentMediaGeral = config.Percentagem_Da_Media_Geral;
+		percentProbabilidadeDeAcerto = config.Percentagem_Da_Probabilidade_De_Acerto;
+		
+	}
+
+        #region  Metodos da Regressão Logística
+
+	//Executa Gradient Descent para aprender theta
+	/// <summary>
+	/// Esse metodo é a hipotese da máquina de aprendizado.
+	/// A hipotese é uma função sigmoid.
+	/// </summary>
+	public double Sigmoid (double z)
+	{
+		double g = 1 / (1 + Math.Exp (-z));
+		return Math.Round (g, 5);
+	}
+
+	/// <summary>
+	/// Gradiente Descent para aprender o theta da função atualizando
+	/// simultaneamente o gradiente de theta.
+	/// </summary>
+	public double[] GradientDescentLogistic (double[,] X, int[] y, double[] theta, double alpha, int num_itera)
+	{
+		double[] temp = new double[2];
+
+		double H = 0;
+
+		double soma0 = 0;
+		double soma1 = 0;
+
+		double m = y.Count ();
+
+		for (int iter = 0; iter < num_itera; iter++) {
+			soma0 = 0;
+			soma1 = 0;
+
+			for (int i = 0; i < m; i++) {
+
+				//-----------------------
+
+				H = Sigmoid (X [i, 0] * theta [0] + X [i, 1] * theta [1]);
+
+				soma0 = soma0 + ((H - y [i]) * X [i, 0]);
+
+
+				//-----------------------
+
+				H = Sigmoid (X [i, 0] * theta [0] + X [i, 1] * theta [1]);
+
+				soma1 = soma1 + ((H - y [i]) * X [i, 1]);
+
+			}
+
+			temp [0] = theta [0] - (alpha * ((1 / m) * soma0));
+
+			temp [1] = theta [1] - (alpha * ((1 / m) * soma1));
+
+			theta [0] = Math.Round (temp [0], 5);
+
+			theta [1] = Math.Round (temp [1], 5);
+
+
+		}
+
+		return theta;
+	}
+
+	/// <summary>
+	/// Este metodo prever  a probabilidade de acerto
+	/// dado um valor de dificuldade.
+	/// </summary>
+	public double Previsao (double dificuldade, double[] theta)
+	{
+		double prob;
+
+		double[] vetorDif = new double[2] { 1, 0 };
+		vetorDif [1] = dificuldade;
+
+		prob = Math.Round (Sigmoid (vetorDif [0] * theta [0] + vetorDif [1] * theta [1]), 5);
+
+		return prob;
+	}
+	// -----------------------------------------
+        #endregion
+
+        #region  Dados da logica de primeira ordem
+	
+	public double difMaxima;
+	public double taxaDeAcerto;
+	public double mediaGeral;
+	public double probAcerto;
+	
+        #endregion
+
+
+	/// <summary>
+	/// Calcula taxa de acerto da variavel y.
+	/// </summary>
+	public double CaulcTaxaDeAcerto (int[] y)
+	{
+		////Debug.Log("Count de y: "+y.Count());
+		if (y.Count () > 0) {
+			double temp = 0;
+			
+			for (int i = 0; i < y.Count(); i++) {
+				temp = temp + y [i];
+			}
+		
+			////Debug.Log("temp:  "+temp);
+			////Debug.Log("temp/y.count:  "+temp/y.Count());
+			
+			return temp / y.Count ();
+			
+		} else {
+			return 0;
+		}
+		
+	}
+
+	/// <summary>
+	/// Calcula Media Geral dos acertos .
+	/// </summary>
+	public double CaulcMediaGeral (double[,] X, int[] y)
+	{
+		double soma = 0;
+		int quantDeTentaComAcertos = 0;
+
+		for (int i = 0; i < y.Count(); i++) {
+			if (y [i] == 1) {
+				soma = soma + X [i, 1];
+				quantDeTentaComAcertos++;
+			}
+		}
+		
+		if (quantDeTentaComAcertos > 0) {
+			return Math.Round (soma / quantDeTentaComAcertos, 5);
+		} else {
+			return Math.Round (0.00001, 5);
+		}
+
+		
+	}
+
+	/// <summary>
+	/// Executa logica de primeira ordem.
+	/// Retorna 1 para criança aprendeu palavra ou 0 para não aprendeu palavra
+	/// </summary>
+	public byte LogicaDePrimeiraOrdem (double taxaDeAcerto, double mediaGeral, double probAcerto, double difMaxima)
+	{
+		byte isAprendizagem = 0;
+
+		if (
+                (taxaDeAcerto >= 0.4)
+                &&
+                (mediaGeral >= (difMaxima * 0.4))
+                &&
+                (probAcerto >= 0.4)
+                ) {
+			isAprendizagem = 1;
+		}
+		
+//		//Debug.Log("taxaDeAcerto: "+taxaDeAcerto + " | mediaGeral: " +mediaGeral +" | difMaxima :"+difMaxima+" | probAcerto: "+probAcerto);
+
+		return isAprendizagem;
+	}
+
+	/// <summary>
+	/// Pega a probabilidade de acerto da metade da dificuldade maxima
+	/// e Retorna um valor de probabilidade double.
+	/// Por parametro utiliza-se uma lista de tentativas.
+	/// </summary>
+	public double GetProbabilidade (ArrayList listaDeTentativas, double difMaxima)
+	{
+		//Verifica se a lista de tentativas é nula. Se sim retorna probabilidade de acerto iqual a 0
+		if ((listaDeTentativas == null) || (listaDeTentativas.Count == 0)) {
+			return 0;
+		}
+		
+		//Atribui para o atributo thetaGerado o theta resultado do algoritmo gradient descent
+		thetaGerado = GetTheta (listaDeTentativas);
+		//Probabilidade de Acerto para me0tade da dificuldade maxima
+		return Previsao (difMaxima / 2, thetaGerado);
+	}
+	
+	public double[] GetTheta (ArrayList listaDeTentativas)
+	{
+		//Declara a matriz de dificuldade           
+		X = new double[listaDeTentativas.Count, 2];
+		//Declara o vetor de acertos
+		y = new int[listaDeTentativas.Count];
+
+		//Pega a dificuldade e acerto da lista de tentativas e preenche no vetor X e y
+		for (int i = 0; i < listaDeTentativas.Count; i++) {
+			X [i, 0] = 1;
+			X [i, 1] = (listaDeTentativas [i] as Task).Difficulty;
+			y [i] = (listaDeTentativas [i]as Task).Correct;
+		}
+
+		//Encontra valores de theta 
+		return GradientDescentLogistic (X, y, initial_theta, alpha, num_itera);
+
+	}
+
+	/// <summary>
+	/// Pega a Taxa de acerto da lista de tentativas
+	/// passada por parametro.
+	/// No parametro utiliza-se uma lista de tentativas.
+	/// </summary>
+	public double GetTaxaAcerto (ArrayList listaDeTentativas)
+	{
+		
+		//Verifica se a lista de tentativas é nula. Se sim retorna taxa de acerto iqual a 0
+		if ((listaDeTentativas == null) || (listaDeTentativas.Count == 0)) {
+			return 0;
+		}
+		
+		//Exibe y para taxa de acerto. Isso é um TESTE
+		//int aux = y.Count();
+		////Debug.Log("----------");
+		//for (int i = 0; i < aux; i++) {
+		////Debug.Log(y[i]);
+		//}
+		////Debug.Log("----------");
+		
+		return Math.Round (CaulcTaxaDeAcerto (y), 5);
+	}
+	
+	
+	/// <summary>
+	/// Retorna um valor indicando o grau de aprendizado 
+	/// para esse objeto treinado.
+	/// No parametro utiliza-se um valor de dificuldade.
+	/// Esse valor deve ser o valor de dificuldade maxima de uma palavra.
+	/// </summary>
+	public double GetGrauDeAprendizado (double difMaxima)
+	{
+		//Probabilidade de Acerto para a dificuldade maxima
+		return Previsao (difMaxima, thetaGerado);
+		//return Previsao (difMaxima, GetTheta (listaDeTentativas));
+	}
+	
+	
+	/// <summary>
+	/// Retorna um valor indicando o aprendizado deste objeto.
+	/// Retorna 0 para false e 1 para true.
+	/// No parametro utiliza-se um valor de dificuldade maxima da palavra que se
+	/// quer obter o aprendizado.
+	/// </summary>
+	public byte GetAprendizado (double difMaxima)
+	{
+
+		//Taxa de Acerto      
+		taxaDeAcerto = CaulcTaxaDeAcerto (y);
+		
+		//Media Geral     
+		mediaGeral = CaulcMediaGeral (X, y);
+
+		//Probabilidade de Acerto para metade da dificuldade maxima
+//		//Debug.Log(" difMaxima/2: "+difMaxima/2 +"|thetaGerado[0]: "+thetaGerado[0]+"|thetaGerado[1]: "+thetaGerado[1]);		
+		
+		probAcerto = Previsao (difMaxima / 2, thetaGerado);
+		double probAcerto1 = Previsao (difMaxima / 4, thetaGerado);
+		double probAcerto2 = Previsao (difMaxima / 6, thetaGerado);
+		double probAcertoDaDifMax = Previsao (difMaxima, thetaGerado);
+		
+		////Debug.Log ("probAcertoDaDifMax: "+probAcertoDaDifMax +"|probAcerto: "+probAcerto+"|probAcerto1: "+probAcerto1+"|probAcerto2: "+probAcerto2);
+
+		return LogicaDePrimeiraOrdem (taxaDeAcerto, mediaGeral, probAcerto, difMaxima);
+
+	}
+	
+	/// <summary>
+	/// Pega as Informacoes do Aprendizado de maquina.
+	/// </summary>
+	/// <returns>
+	/// Retorna uma struct de LearningInfo com dados do aprendizado de maquina.
+	/// </returns>
+	/// <param name='listaDeTentativas'>
+	/// Lista de tentativas.
+	/// </param>
+	/// <param name='difMaxima'>
+	/// Dif maxima.
+	/// </param>
+	public LearningInfo GetLearningInfo (ArrayList listaDeTentativas, double difMaxima)
+	{
+		
+		LearningInfo li = new LearningInfo ();
+		if (listaDeTentativas != null) {
+			if (listaDeTentativas.Count > 0) {
+				
+				//Debug.Log("Quantidades de tentativas: "+listaDeTentativas.Count);
+				
+				li.probabilidade = GetProbabilidade (listaDeTentativas, difMaxima);
+				li.taxaDeAcerto = GetTaxaAcerto (listaDeTentativas);
+				li.grauDeAprendizado = GetGrauDeAprendizado (difMaxima);
+				li.aprendizado = GetAprendizado (difMaxima);
+			}
+		}
+		return li;
+		
+	}
+	
+}
+
+public struct LearningInfo
+{
+	public double probabilidade;
+	public double taxaDeAcerto;
+	public double grauDeAprendizado;
+	public byte   aprendizado;
+}

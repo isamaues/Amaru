@@ -1,0 +1,267 @@
+using UnityEngine;
+using System.Collections;
+using System.Linq;
+
+//REVISION 126
+public class Proximity 
+{
+	#region Tabela de proximidade já construida para cada palavra do sistema. 15 palavras no total.
+	public double[,] tabela_de_proximidade = new double[,] 
+        { 
+        {1		,	0.15	,	0.15	,	0.525	,	0.25	,	0.525	,	0.15	,	0.5	,	0.2	,	0.175	,	0.225	,	0.3	,	0.225	,	0.15	,	0.25},
+        {0.15	,	1		,	0.225	,	0.15	,	0.225	,	0.525	,	0.2		,	0.225	,	0.2	,	0.175	,	0.35	,	0.15	,	0.5	,	0.625	,	0.4},
+        {0.15	,	0.225	,	1		,	0.225	,	0.45	,	0.15	,	0.225	,	0.6	,	0.15	,	0.525	,	0.2	,	0.3	,	0.2	,	0.25	,	0.225},
+        {0.525	,	0.15	,	0.225	,	1		,	0.15	,	0.325	,	0.275	,	0.225	,	0.325	,	0.15	,	0.15	,	0.2	,	0.15	,	0.225	,	0.25},
+        {0.225	,	0.225	,	0.5		,	0.15	,	1		,	0.15	,	0.25	,	0.325	,	0.15	,	0.3	,	0.35	,	0.15	,	0.4	,	0.225	,	0.25},
+        {0.525	,	0.525	,	0.15	,	0.325	,	0.15	,	1		,	0.15	,	0.2	,	0.275	,	0.225	,	0.325	,	0.2	,	0.275	,	0.2	,	0.275},
+        {0.15	,	0.2		,	0.225	,	0.275	,	0.25	,	0.15	,	1		,	0.2	,	0.525	,	0.225	,	0.15	,	0.15	,	0.2	,	0.35	,	0.525},
+        {0.5	,	0.225	,	0.525	,	0.225	,	0.35	,	0.2		,	0.2		,	1	,	0.375	,	0.475	,	0.25	,	0.225	,	0.175	,	0.15	,	0.3},
+        {0.2	,	0.2		,	0.15	,	0.325	,	0.15	,	0.275	,	0.525	,	0.375	,	1	,	0.15	,	0.475	,	0.15	,	0.275	,	0.25	,	0.575},
+        {0.15	,	0.175	,	0.525	,	0.15	,	0.3		,	0.25	,	0.225	,	0.475	,	0.15	,	1	,	0.2	,	0.2	,	0.375	,	0.275	,	0.15},
+        {0.225	,	0.325	,	0.2		,	0.15	,	0.35	,	0.3		,	0.15	,	0.25	,	0.475	,	0.2	,	1	,	0.225	,	0.35	,	0.275	,	0.5},
+        {0.275	,	0.15	,	0.275	,	0.2		,	0.15	,	0.2		,	0.15	,	0.225	,	0.15	,	0.2	,	0.225	,	1	,	0.15	,	0.15	,	0.2},
+        {0.225	,	0.475	,	0.2		,	0.15	,	0.4		,	0.275	,	0.2		,	0.175	,	0.275	,	0.375	,	0.325	,	0.15	,	1	,	0.525	,	0.25},
+        {0.15	,	0.575	,	0.25	,	0.225	,	0.225	,	0.2		,	0.4		,	0.15	,	0.25	,	0.275	,	0.275	,	0.15	,	0.525	,	1	,	0.375},
+        {0.25	,	0.4		,	0.225	,	0.25	,	0.225	,	0.275	,	0.5		,	0.3	,	0.625	,	0.15	,	0.5	,	0.2	,	0.275	,	0.55	,	1}        
+        };
+     #endregion
+	
+	#region Atributos da Classe
+	
+	public ArrayList Palavras = new ArrayList();
+	public ArrayList TamanhoDasPalavras= new ArrayList();
+	
+	public int TamanhoDaPalavra1 = 0 ;
+	public int TamanhoDaPalavra2 = 0 ;
+	public string palavra1="";
+	public string palavra2="";
+	public ArrayList silabasPalavra1 = new ArrayList();
+	public ArrayList silabasPalavra2 = new ArrayList();
+	public int DifEntreAsDuasPalavras = 0;
+	public int DiferencaMaxima = 0;	
+	
+	public int indiceUltimoTamanhoPalavra = 0;		
+	public int ultimoTamanho = 0;
+	public int primeiroTamanho = 0;	
+	
+	public double ValorDaRegra1 = 0;
+	public double ValorDaRegra2 = 0;
+	public double ValorDaRegra3 = 0;
+	public double ValorDaRegra4 = 0;
+	public double ValorDaRegra5 = 0;
+		
+	public double PesoDaRegra1;
+	public double PesoDaRegra2;
+	public double PesoDaRegra3;
+	public double PesoDaRegra4;
+	public double PesoDaRegra5; 
+	
+	#endregion
+	
+	//Construtor
+	public Proximity(ArrayList ListaDePalavras, AIGameConfiguration config)
+	{
+	    PesoDaRegra1 = config.Peso_Do_Alg_Prox_Da_Regra1;
+		PesoDaRegra2 = config.Peso_Do_Alg_Prox_Da_Regra2;
+		PesoDaRegra3 = config.Peso_Do_Alg_Prox_Da_Regra3;
+		PesoDaRegra4 = config.Peso_Do_Alg_Prox_Da_Regra4;
+		PesoDaRegra5 = config.Peso_Do_Alg_Prox_Da_Regra5;
+		
+		Palavras = ListaDePalavras; 			
+		
+		IdentificaTamanhoDasPalavras();	
+	
+	}
+	
+	public void IdentificaTamanhoDasPalavras () 
+	{
+		//Pega o tamanho das palavras
+		foreach (Word p in Palavras) {
+			
+			TamanhoDasPalavras.Add(p.Name.Length);					
+		}
+		
+		//Ordena Vetor com tamanho das palavras para identificar qual a diferença entre a maior e menor palavra
+		TamanhoDasPalavras.Sort();
+		
+	}
+	
+	public void CalculaDiferencasEntrePalavras (ArrayList Palavras, int idPalavra1, int idPalavra2)
+	{
+		indiceUltimoTamanhoPalavra = (TamanhoDasPalavras.Count) - 1;		
+		ultimoTamanho = (int)TamanhoDasPalavras[indiceUltimoTamanhoPalavra];
+		primeiroTamanho = (int)TamanhoDasPalavras[0];		
+		
+		DiferencaMaxima  = ultimoTamanho - primeiroTamanho;
+		
+		DifEntreAsDuasPalavras = Mathf.Abs(TamanhoDaPalavra1-TamanhoDaPalavra2);
+	}
+	
+	public double CalculaProx (int idPalavra1, int idPalavra2)
+	{
+		CalculaDiferencasEntrePalavras(Palavras, idPalavra1, idPalavra2);
+		
+		//Se For a Mesma palavra retorna 1. Significa que são palavras identicas
+		if (idPalavra1 == idPalavra2) {
+			return 1;
+		}
+		
+		//Pega o tamanho das palavras
+		foreach (Word p in Palavras) {
+		    	
+			if (p.WordId == idPalavra1) {
+				TamanhoDaPalavra1 = p.Name.Length;
+				palavra1 = p.Name;
+				silabasPalavra1= p.Syllables;
+			}
+			if (p.WordId == idPalavra2) {
+				TamanhoDaPalavra2 = p.Name.Length;
+				palavra2 = p.Name;
+				silabasPalavra2= p.Syllables;
+			}
+		}
+		
+		//Primeira regra - Tamanho da Palavra em Letras
+		if (DifEntreAsDuasPalavras == 0) {			
+			ValorDaRegra1 = PesoDaRegra1;		
+		} else{		
+			ValorDaRegra1 = PesoDaRegra1 - ( (DifEntreAsDuasPalavras/DiferencaMaxima)*PesoDaRegra1 );		
+		}
+		
+		//Segunda Regra     -  1ª letra é igual		
+        if ((palavra1.First()) == (palavra2.First())) {
+            ValorDaRegra2 = PesoDaRegra2;
+		}else{
+            ValorDaRegra2 = 0;         
+        }
+		
+		//Terceira Regra	- 1ª sílaba é igual	
+		if ((silabasPalavra1[0]) == (silabasPalavra2[0])) {
+            ValorDaRegra3 = PesoDaRegra3;
+		}else{
+            ValorDaRegra3 = 0;         
+        }
+		
+		//Quarta Regra		- última sílaba é igual
+		if ((silabasPalavra1[silabasPalavra1.Count-1]) == (silabasPalavra2[silabasPalavra2.Count-1])) {
+            ValorDaRegra5 = PesoDaRegra5;
+		}else{
+            ValorDaRegra5 = 0;         
+        }		
+		
+		//Quinta Regra		- última letra é igual
+		if ((palavra1.Last()) == (palavra2.Last())) {
+            ValorDaRegra4 = PesoDaRegra4;
+		}else{
+            ValorDaRegra4 = 0;         
+        }
+	
+		
+//		if (idPalavra2==14) {
+//			Debug.Log("Diferenca entre duas palavrs : " +DifEntreAsDuasPalavras + "Diferenca maxima "+ DiferencaMaxima);
+//				    Debug.Log("Peso 1 : " +PesoDaRegra1+ " Valor Regra 1: " + ValorDaRegra1);
+//		Debug.Log("Peso 2 : " +PesoDaRegra2+ " Valor Regra 2: " + ValorDaRegra2);
+//		Debug.Log("Peso 3 : " +PesoDaRegra3+ " Valor Regra 3: "+ ValorDaRegra3);
+//		Debug.Log("Peso 4 : " +PesoDaRegra4+ " Valor Regra 4: "+ ValorDaRegra4);
+//		Debug.Log("Peso 5 : " +PesoDaRegra5+ " Valor Regra 5: "+ ValorDaRegra5);
+////		
+//		}
+
+		
+		return ValorDaRegra1+ValorDaRegra2+ValorDaRegra3+ValorDaRegra4+ValorDaRegra5;
+	}
+	
+	//Algoritmo De Proximidade de Palavras para calculo de leitura "Estrutural" e não "orientacao a objeto"
+	public double AlgoritmoDeProx (ArrayList Palavras, int idPalavra1, int idPalavra2)
+	{			
+
+		//Pega o tamanho das palavras
+		foreach (Word p in Palavras) {
+		    	
+			TamanhoDasPalavras.Add(p.Name.Length);
+			
+			if (p.WordId == idPalavra1) {
+				TamanhoDaPalavra1 = p.Name.Length;
+				palavra1 = p.Name;
+				silabasPalavra1= p.Syllables;
+			}
+			if (p.WordId == idPalavra2) {
+				TamanhoDaPalavra2 = p.Name.Length;
+				palavra2 = p.Name;
+				silabasPalavra2= p.Syllables;
+			}
+		}
+		
+		//Ordena Vetor com tamanho das palavras para identificar qual a diferença entre a maior e menor palavra
+		TamanhoDasPalavras.Sort();
+		
+		//Calcula diferenças dos tamanhos das duas palavras e diferença entre as duas palavras do sistema
+		int indiceUltimoTamanhoPalavra = (TamanhoDasPalavras.Count) - 1;		
+		int ultimoTamanho = (int)TamanhoDasPalavras[indiceUltimoTamanhoPalavra];
+		int primeiroTamanho = (int)TamanhoDasPalavras[0];		
+		
+		DiferencaMaxima  = ultimoTamanho - primeiroTamanho;
+		
+		DifEntreAsDuasPalavras = Mathf.Abs(TamanhoDaPalavra1-TamanhoDaPalavra2);
+		
+		#region Começa Atribuição dos pesos baseado nas regras
+		
+	
+		//Primeira regra - Tamanho da Palavra em Letras
+		if (DifEntreAsDuasPalavras == 0) {
+			
+			ValorDaRegra1 = PesoDaRegra1;
+		
+		} else{
+		
+			ValorDaRegra1 = PesoDaRegra1 - ( (DifEntreAsDuasPalavras/DiferencaMaxima)*PesoDaRegra1 );		
+		}
+		
+		//Segunda Regra     -  1ª letra é igual
+        if ((palavra1.First()) == (palavra2.First())) {
+
+            ValorDaRegra2 = PesoDaRegra2;
+
+		}else{
+
+            ValorDaRegra2 = 0;         
+        }
+		
+		//Terceira Regra	- 1ª sílaba é igual	
+		if ((silabasPalavra1[0]) == (silabasPalavra2[0])) {
+
+            ValorDaRegra3 = PesoDaRegra3;
+
+		}else{
+
+            ValorDaRegra3 = 0;         
+        }
+		
+		//Quarta Regra		- última sílaba é igual
+		if ((silabasPalavra1[silabasPalavra1.Count-1]) == (silabasPalavra2[silabasPalavra2.Count-1])) {
+
+            ValorDaRegra5 = PesoDaRegra5;
+
+		}else{
+
+            ValorDaRegra5 = 0;         
+        }		
+		
+		//Quinta Regra		- última letra é igual
+		if ((palavra1.Last()) == (palavra2.Last())) {
+
+            ValorDaRegra4 = PesoDaRegra4;
+
+		}else{
+
+            ValorDaRegra4 = 0;         
+        }
+		#endregion		
+
+		
+		return ValorDaRegra1+ValorDaRegra2+ValorDaRegra3+ValorDaRegra4+ValorDaRegra5;
+	}
+	
+	
+}
+

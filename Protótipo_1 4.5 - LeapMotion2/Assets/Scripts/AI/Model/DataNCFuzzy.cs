@@ -1,0 +1,4 @@
+public class DataNCFuzzy
+{
+	public float HNC_1, HNC_2, HNC_3, HNC_4, TNC_1, TNC_2, TNC_3, TNC_4;
+}

@@ -1,0 +1,182 @@
+using UnityEngine;
+using System.Collections;
+
+public class PauseMenu 
+{	
+	private Sprite pauseSprite;
+	private Button[] pauseButtons = new Button[5];
+	private StringSprite warningMsg;
+	private GUIStyle menuStyle;
+	private int buttonIndex;
+	private readonly Vector2 buttonNormalSize = new Vector2(350, 45);
+	private readonly Vector2 buttonSelectedSize = new Vector2(380, 50);
+	private int lastScreenWidth;
+	
+	public bool showConfirmation;
+	
+	public bool Paused{get; set;}
+	
+	
+	public PauseMenu () 
+	{	
+		
+		this.buttonIndex = 0;
+		float centralScreenXPosition = Screen.width / 2;
+		
+		this.pauseSprite = new Sprite(new Vector2(centralScreenXPosition, 10), Resources.Load("Textures/Menus/pause") as Texture2D);
+		this.pauseSprite.Position2 = new Vector2(centralScreenXPosition - this.pauseSprite.Size.x/2,10);
+		
+		centralScreenXPosition = this.pauseSprite.Size.x/2;
+		
+		
+		this.pauseButtons[0] = new Button(new Vector2(centralScreenXPosition, 100), "Continuar", buttonNormalSize);
+		this.pauseButtons[1] = new Button(new Vector2(centralScreenXPosition, 160), "Palavras Aprendidas", buttonNormalSize);
+		this.pauseButtons[2] = new Button(new Vector2(centralScreenXPosition, 220), "Sair", buttonNormalSize);
+		this.warningMsg = new StringSprite(new Rect(centralScreenXPosition - 200, 220, 400, 200), "Voce tem certeza? Seu jogo sera perdido.");
+		this.pauseButtons[3] = new Button(new Vector2(centralScreenXPosition - 100, 380), "SIM", new Vector2(100, 45));
+		this.pauseButtons[4] = new Button(new Vector2(centralScreenXPosition + 100, 380), "NAO", new Vector2(100, 45));
+		
+		
+		
+		Paused = showConfirmation = false;
+		this.pauseButtons[0].Select();
+		this.lastScreenWidth = Screen.width;
+	}
+	
+	public void Update () 
+	{	
+		if(this.lastScreenWidth != Screen.width)
+		{
+			this.lastScreenWidth = Screen.width;
+			
+			this.pauseSprite.AdjustRectangle();
+			this.warningMsg.AdjustRectangle();			
+			for (int i = 0; i < this.pauseButtons.Length; i++) 
+				pauseButtons[i].AdjustRectangle();
+			
+		}
+		
+		if(Input.GetKeyDown (KeyCode.UpArrow))	
+		{
+			this.pauseButtons[buttonIndex].Diselect();
+			
+			if(this.buttonIndex == 0)
+			{
+				if(showConfirmation)
+				{
+					this.buttonIndex = this.pauseButtons.Length - 1;
+				}
+				else
+					this.buttonIndex = 2;
+			}
+			else this.buttonIndex -= 1;
+			
+			this.pauseButtons[buttonIndex].Select();
+		}
+		else if(Input.GetKeyDown (KeyCode.DownArrow))	
+		{
+			this.pauseButtons[buttonIndex].Diselect();
+			
+			if(showConfirmation)
+			{
+				if(this.buttonIndex == this.pauseButtons.Length - 1)
+				{
+					this.buttonIndex = 0;
+				}
+				else
+					this.buttonIndex += 1;
+			}
+			else if(this.buttonIndex == 2)
+				this.buttonIndex = 0;
+			else this.buttonIndex += 1;
+			
+			this.pauseButtons[buttonIndex].Select();
+		}
+		
+		if(Input.GetKeyDown (KeyCode.Return))	
+		{
+			switch (buttonIndex) {
+			case  0 :
+				Paused = false;
+				Time.timeScale = 1f;
+				break;
+				
+			case  1 :
+				//TODO mostrar Palavras Aprendidas ( nesse caso pode mostrar o blueprint e as peças)
+				break;
+				
+			case  2 :
+				this.showConfirmation = true;
+				break;
+				
+			case  3 :
+				this.showConfirmation = false;
+				Time.timeScale = 1f;
+				Application.LoadLevel("MainMenu");
+				break;
+				
+			case  4 :
+				this.showConfirmation = false;
+				this.pauseButtons[buttonIndex].Diselect();
+				this.buttonIndex = 2;
+				this.pauseButtons[buttonIndex].Select();				
+				break;
+			}
+		}
+		
+	
+	}
+	
+	public void OnGUI () 
+	{		
+		if (Paused) 
+		{		
+			this.pauseSprite.Draw();
+			GUI.BeginGroup (this.pauseSprite.Rectangle);
+			
+			menuStyle = GUI.skin.button;			
+			menuStyle.fontSize = 13;
+			menuStyle.font = BaseMenu.menuFont;
+			
+			if(this.pauseButtons[0].OnGUI())
+			{
+				Paused = false;
+				Time.timeScale = 1f;				
+			}
+			
+			if(this.pauseButtons[1].OnGUI())
+			{
+				//TODO mostrar Palavras Aprendidas ( nesse caso pode mostrar o blueprint e as peças)
+			}
+			
+			if(this.pauseButtons[2].OnGUI())
+				this.showConfirmation = true;
+			
+			if(showConfirmation)
+			{				
+				if(this.pauseButtons[3].OnGUI())
+				{
+					this.showConfirmation = false;
+					Time.timeScale = 1f;					
+					Application.LoadLevel("MainMenu");
+				}
+				
+				if(this.pauseButtons[4].OnGUI())
+				{
+					this.showConfirmation = false;
+					this.pauseButtons[buttonIndex].Diselect();
+					this.buttonIndex = 2;
+					this.pauseButtons[buttonIndex].Select();
+				}
+				menuStyle = GUI.skin.label;			
+				menuStyle.fontSize = 14;
+				menuStyle.font = BaseMenu.menuFont;
+				menuStyle.alignment = TextAnchor.MiddleCenter;
+				
+				this.warningMsg.Draw();
+			}
+			
+			GUI.EndGroup ();
+		}	
+	}
+}

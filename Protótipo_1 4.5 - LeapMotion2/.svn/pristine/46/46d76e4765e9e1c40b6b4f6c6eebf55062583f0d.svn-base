@@ -1,0 +1,237 @@
+using UnityEngine;
+using System.Collections.Generic;
+using System.IO;
+using System.Globalization;
+
+public class EditPlayer : BaseMenu
+{	
+	private Vector2 studanteScrollPosition;
+	private Vector2 dataScrollPosition;
+	private Rect studentsBoxPosition;
+	private Rect studentsScrollInetRect;
+	private Rect dataBoxPosition;
+	private Rect dataScrollInerRect;
+	private static List<AIGameConfiguration> studentsConfigs;
+	private static AIGameConfiguration selectedConfig;
+	
+	private Rect confirmRect;
+	private bool showConfirmation;
+	private Texture2D confirmTexture;
+	private static MenuLabel[] labels;
+	
+	public EditPlayer ()
+	{	
+		labels = new MenuLabel[7];
+		labels[0] = new MenuLabel("participante", new Vector2(15, 30));
+		labels[1] = new MenuLabel("login", new Vector2(15, 80));
+		labels[2] = new MenuLabel("senha", new Vector2(15, 130));
+		labels[3] = new MenuLabel("responsavel", new Vector2(15, 180));
+		labels[4] = new MenuLabel("taxa de acerto", new Vector2(15, 230), 80);
+		labels[5] = new MenuLabel("probabilidade de acerto", new Vector2(15, 280), 80);
+		labels[6] = new MenuLabel("taxa da media geral", new Vector2(15, 330), 80);
+		
+		//carregar XML
+		studentsConfigs = new List<AIGameConfiguration> ();
+		LoadPlayers ();
+		
+		
+					
+		//setta buttons defaults		
+		this.buttonName = new string[2]{"Voltar", "Menu Inicial"};
+		this.buttonPressed = new bool[buttonName.Length];
+		this.buttonWidth -= 30;
+		
+		this.BackgroundImage = Resources.Load ("Textures/Menus/BackGrounds/menu_opcoes") as Texture2D;
+				
+		
+		//setta tela de selecionar o nome do estudante
+		this.studanteScrollPosition = new Vector2 (Screen.width - this.buttonWidth - 40, 10);		
+		this.studentsBoxPosition = new Rect (this.studanteScrollPosition.x, this.studanteScrollPosition.y, 
+					    	     		     Screen.width - this.studanteScrollPosition.x - 10, Screen.height - 150);
+		this.studentsScrollInetRect = this.studentsBoxPosition;
+		this.studentsScrollInetRect.height = (this.buttonHeight + 10) * (studentsConfigs.Count + 1); 
+		
+		//seta tela dos dados do estudante
+		this.dataScrollPosition = new Vector2 (10, 10);
+		this.dataBoxPosition = new Rect (this.dataScrollPosition.x, this.dataScrollPosition.y, 
+						 				 this.studentsBoxPosition.x - this.dataScrollPosition.x - 10,
+						 				 this.studentsBoxPosition.height);
+		this.dataScrollInerRect = this.dataBoxPosition;
+		this.dataScrollInerRect.width += 150; 
+		//this.dataScrollInerRect.height += labels.Length * 12;
+		
+		this.buttonsInicialVerticalPosition = (uint)(this.studentsBoxPosition.y + this.studentsBoxPosition.height + 10);
+		
+		//setta a tela de confirmação
+		this.showConfirmation = false;
+		this.confirmTexture = Resources.Load("Textures/Menus/Misc/confirmacao") as Texture2D;
+		this.confirmRect = new Rect(this.dataBoxPosition.x, this.dataBoxPosition.y + this.dataBoxPosition.height / 2 - this.confirmTexture.height/2, 
+									this.confirmTexture.width, this.confirmTexture.height);
+		
+	}
+	
+	private static void LoadPlayers ()
+	{
+		DirectoryInfo info = new DirectoryInfo(Paths.USER_PATH);
+		DirectoryInfo[] directoryInfo = info.GetDirectories();
+		
+		foreach (DirectoryInfo f in directoryInfo) 
+		{
+			
+			AIGameConfiguration _config = XMLManager.LoadXML<AIGameConfiguration> (f.ToString(), "Configuracoes.xml");
+			studentsConfigs.Add (_config);
+		}
+		
+		if(studentsConfigs.Count>0)
+		{
+			selectedConfig = studentsConfigs [0];
+			EditPlayer.UpdateLabels();
+		}
+		//Debug.Log("count: "+studentsConfigs.Count);
+	}
+	
+	public static void LoadNewPlayer(string path)
+	{
+		AIGameConfiguration _config = XMLManager.LoadXML<AIGameConfiguration> (path, "Configuracoes.xml");
+		studentsConfigs.Add (_config);
+		selectedConfig = studentsConfigs[0];
+		selectedConfig = studentsConfigs[0];
+		UpdateLabels();
+	}
+	
+	public override void OnGUI ()
+	{
+		base.OnGUI ();		
+		
+		if(studentsConfigs.Count == 0 )
+			GUI.Label(new Rect(50,50,Screen.width,200), "Nenhum Aluno Cadastrado");
+		
+		else
+		{
+			GUI.Box (this.dataBoxPosition, "Dados");
+			this.dataScrollPosition = GUI.BeginScrollView (this.dataBoxPosition, this.dataScrollPosition, 
+				this.dataScrollInerRect);
+			GUI.BeginGroup (this.dataScrollInerRect);
+			
+			for (int i = 0; i < labels.Length; i++)
+				labels[i].OnGUI();
+			
+			GUI.EndGroup ();
+			GUI.EndScrollView ();	
+			
+			
+			this.studentsScrollInetRect.height = (buttonHeight + 10) * (studentsConfigs.Count + 1); 
+			
+			
+			GUI.Box (this.studentsBoxPosition, "Alunos");
+			this.studanteScrollPosition = GUI.BeginScrollView (this.studentsBoxPosition, 
+																this.studanteScrollPosition, 
+																this.studentsScrollInetRect);
+			GUI.BeginGroup (this.studentsScrollInetRect);
+			
+			//Debug.Log("OnGUI: "+studentsConfigs.Count);
+			for (int i = 0; i < studentsConfigs.Count; i++) {
+				if (GUI.Button (new Rect (15, 40 + i * (this.buttonHeight + 10), 
+						          this.buttonWidth, this.buttonHeight), 
+							    studentsConfigs[i].login))
+				{
+					AudioSource.PlayClipAtPoint (buttonPressedSound, Camera.main.transform.position);
+					selectedConfig = studentsConfigs [i];
+					UpdateLabels();
+				}
+			}		
+			GUI.EndGroup ();
+			GUI.EndScrollView ();			
+			
+			GUI.color = Color.white;
+			if (GUI.Button (new Rect (10, this.buttonsInicialVerticalPosition, this.buttonWidth, this.buttonHeight), "Alterar")) 
+			{
+				
+				AudioSource.PlayClipAtPoint (buttonPressedSound, Camera.main.transform.position);				
+				ChangeStudent();
+			}
+			
+			if (GUI.Button (new Rect (10, this.buttonsInicialVerticalPosition + this.buttonHeight + 10, this.buttonWidth, this.buttonHeight), "Excluir Aluno")) {
+				this.showConfirmation = true;
+				AudioSource.PlayClipAtPoint (buttonPressedSound, Camera.main.transform.position);	
+			}
+			
+			ShowConfirmationScreen();
+		}
+		
+		if (buttonPressed [0]) 
+		{
+				MainMenuManager.GoTo (MenuState.PsychologistOptions);
+		}
+			
+		if (buttonPressed [1]) 
+		{
+				MainMenuManager.GoTo (MenuState.MainMenu);
+		}
+	}
+	
+	private static void UpdateLabels ()
+	{
+		labels[0].Field = selectedConfig.participante;	
+		labels[1].Field = selectedConfig.login;	
+		labels[2].Field = selectedConfig.senha;	
+		labels[3].Field = selectedConfig.responsavel;
+		
+		labels[4].Field = selectedConfig.Percentagem_Da_Taxa_De_Acerto.ToString(CultureInfo.InvariantCulture);	
+		labels[5].Field = selectedConfig.Percentagem_Da_Probabilidade_De_Acerto.ToString(CultureInfo.InvariantCulture);	
+		labels[6].Field = selectedConfig.Percentagem_Da_Media_Geral.ToString(CultureInfo.InvariantCulture);	
+	}
+	
+	private void ChangeStudent()
+	{
+		AIGameConfiguration aux = selectedConfig;
+		
+		aux.participante = labels[0].Field;
+		//aux.login = labels[1].Field;  login não pode ser alterado
+		aux.senha = labels[2].Field;
+		aux.responsavel = labels[3].Field;
+		aux.Percentagem_Da_Taxa_De_Acerto = double.Parse(labels[4].Field);	
+		aux.Percentagem_Da_Probabilidade_De_Acerto = double.Parse(labels[5].Field);
+		aux.Percentagem_Da_Media_Geral = double.Parse(labels[6].Field);
+		
+		XMLManager.CreateXML<AIGameConfiguration> (Paths.USER_PATH + selectedConfig.login, "Configuracoes.xml", aux);
+	}
+	
+	
+	
+	private void ShowConfirmationScreen()
+	{
+		if(this.showConfirmation)
+			{
+				GUI.color = Color.white;
+				GUI.DrawTexture(this.confirmRect, this.confirmTexture);
+				GUI.BeginGroup (this.confirmRect);
+				if((GUI.Button (new Rect (320, 160, this.buttonWidth, this.buttonHeight), "Confirmar")))
+				{
+					AudioSource.PlayClipAtPoint (buttonPressedSound, Camera.main.transform.position);
+					this.showConfirmation=false;
+					RemoveStudent();
+				}
+				if((GUI.Button (new Rect (320, 160 + this.buttonHeight + 10, this.buttonWidth, this.buttonHeight), "Cancelar")))
+				{
+					AudioSource.PlayClipAtPoint (buttonPressedSound, Camera.main.transform.position);
+					this.showConfirmation=false;
+				}
+				GUI.EndGroup();
+			}
+	}
+	
+	private void RemoveStudent()
+	{
+		studentsConfigs.Remove(selectedConfig);	
+		
+		//Debug.Log(Paths.USER_PATH + this.selectedConfig.login);
+		Directory.Delete(Paths.USER_PATH + selectedConfig.login, true);
+		
+		if(studentsConfigs.Count > 0)
+		{
+			selectedConfig = studentsConfigs[0];
+			UpdateLabels();	
+		}
+	}
+}

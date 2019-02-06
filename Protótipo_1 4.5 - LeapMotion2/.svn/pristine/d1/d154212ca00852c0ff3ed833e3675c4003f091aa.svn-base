@@ -1,0 +1,105 @@
+using UnityEngine;
+using System.Collections;
+
+public class MainMenu : BaseMenu
+{
+	private Texture2D logoTexture;
+	private Texture2D uramaTexture;
+	private Rect uramaRect;
+	private Rect logoRect;
+	private float uramaAngle;
+	private float logoAngle;
+	private const float waveSpeed = 1.5f;
+	private const float logoSpeed = 2.8f;
+	private MenuIcoButtons[] buttonsIcons;
+	
+	public MainMenu ()
+	{
+		this.uramaAngle = 90;
+		this.logoAngle = 0;
+		
+		
+		
+		this.BackgroundImage = Resources.Load ("Textures/Menus/BackGrounds/main_menu_background") as Texture2D;			
+				
+		this.logoTexture = Resources.Load ("Textures/Menus/BackGrounds/logo_menu") as Texture2D;
+		this.uramaTexture = Resources.Load ("Textures/Menus/BackGrounds/urama_menu") as Texture2D;
+		
+		this.buttonWidth = 100;
+		this.buttonHeight = 100;
+		this.buttonsInicialHorizontalPosition-=50;
+				
+		this.logoRect = new Rect (HalfScreenWidth - logoTexture.width/2, 20, this.logoTexture.width, logoTexture.height);		
+		this.uramaRect = new Rect (30, HalfScreenHeight, uramaTexture.width, uramaTexture.height);
+		
+		this.buttonsIcons = new MenuIcoButtons[5];
+		this.buttonsIcons[0] = new MenuIcoButtons(Resources.Load ("Textures/Menus/BackGrounds/MenuButtons/loadgame") as Texture2D, 
+						    					  new Rect (HalfScreenWidth - this.buttonWidth - this.buttonWidth/2 - 10, 
+								  				  this.buttonsInicialHorizontalPosition, 
+								  				  this.buttonWidth, this.buttonHeight));
+		this.buttonsIcons[1] = new MenuIcoButtons(Resources.Load ("Textures/Menus/BackGrounds/MenuButtons/newgame") as Texture2D,
+												  new Rect (HalfScreenWidth - this.buttonWidth/2, 
+												  this.buttonsInicialHorizontalPosition,
+								  				  this.buttonWidth, this.buttonHeight));
+		this.buttonsIcons[2] = new MenuIcoButtons(Resources.Load ("Textures/Menus/BackGrounds/MenuButtons/conf") as Texture2D,
+												  new Rect (HalfScreenWidth + this.buttonWidth/2 + 10, 
+												  this.buttonsInicialHorizontalPosition,
+								  				  this.buttonWidth, this.buttonHeight));
+		this.buttonsIcons[3] = new MenuIcoButtons(Resources.Load ("Textures/Menus/BackGrounds/MenuButtons/staff") as Texture2D,
+												  new Rect (HalfScreenWidth - this.buttonWidth - 10, 
+												  this.buttonsInicialHorizontalPosition + this.buttonHeight + 10,
+								  				  this.buttonWidth, this.buttonHeight));
+		this.buttonsIcons[4] = new MenuIcoButtons(Resources.Load ("Textures/Menus/BackGrounds/MenuButtons/exit") as Texture2D,
+												  new Rect (HalfScreenWidth + 10, 
+												  this.buttonsInicialHorizontalPosition + this.buttonHeight + 10,
+								  				  this.buttonWidth, this.buttonHeight));
+		this.buttonPressed = new bool[buttonsIcons.Length];	
+	}
+	
+	public override void OnGUI ()
+	{
+		GUI.DrawTexture (this.logoRect, this.logoTexture);
+		
+		GUI.color = Color.white;		
+		
+			
+		for (int i = 0; i < buttonsIcons.Length; i++) {
+			buttonPressed [i] = this.buttonsIcons[i].OnGUI();
+			if (buttonPressed [i]) 
+			{
+				AudioSource.PlayClipAtPoint (buttonPressedSound, Camera.main.transform.position);
+				if (i == 0)
+					MainMenuManager.GoTo (MenuState.Login);
+				else if (i == 1)	
+				{
+					MainMenuManager.GoTo (MenuState.NewGamer);
+				}
+				else if (i == 2)				
+					MainMenuManager.GoTo (MenuState.GeneralOptions);
+				else if (i == 3)
+					MainMenuManager.GoTo (MenuState.Staff);
+				else if (i == 4)
+					Application.Quit ();
+			}	
+		}
+		
+		
+		//SinMoviment ();		
+		
+		GUI.DrawTexture (this.uramaRect, this.uramaTexture);
+	}
+	
+	private void SinMoviment ()
+	{			
+		this.uramaAngle = (this.uramaAngle + waveSpeed * Time.deltaTime) % 360;	
+		this.logoAngle = (this.logoAngle + logoSpeed * Time.deltaTime) % 360;
+		//Debug.Log(this.uramaRect.width/this.uramaRect.height);		
+		
+		this.uramaRect.y -= Mathf.Sin (uramaAngle);
+		
+		float logoSin = Mathf.Sin (this.logoAngle);
+		this.logoRect.width += logoSin;
+		this.logoRect.height -= logoSin;
+		
+	}
+}

@@ -1,0 +1,200 @@
+using UnityEngine;	using System.Collections;
+	
+public class taFuzzyPalavras
+{
+	
+	//public enum NivelFuzzy{Baixo, Medio, Alto}
+	
+	public static float FuzzyficacaoGenerica (float valorML)
+	{
+		//
+		float pertinecia = 0;
+		if (valorML <= 16.5f) {
+			pertinecia = 1;
+		} else if (valorML > 16.5f && valorML <= 33f) {
+			pertinecia = (-1f) * ((valorML / 16.5f) - 2);
+		} else if (valorML > 49.5f && valorML < 69f) {
+			pertinecia = (-1f) * ((valorML / 19.5f) - 3.538461f);
+		} else if (valorML > 30f && valorML <= 49.5f) {
+			pertinecia = (((valorML / 19.5f) - 2.538461f) + 1f);
+		} else if (valorML > 66f && valorML <= 85.5f) {
+			pertinecia = (((valorML / 19.5f) - 4.384615f) + 1f);
+		} else if (valorML > 85.5f) {
+			pertinecia = 1;
+		}
+			
+		return pertinecia;
+	}
+		
+	// Tipo de Tarefa por Acerto TTxA.
+	public static int FuzzyficacaoNaoNormalizada (float valorML)
+	{
+		int t = 0;
+			
+		if (valorML <= 33f) { 
+			t = 1;
+		} else if (valorML > 33f && valorML <= 66f) {
+			t = 2;
+		} else if (valorML > 66f) { 
+			t = 3;
+		}
+			
+		return t;
+	}
+		
+	//retorna a pertinecia media do valor linguistico ativado
+	public static float MediaPertinencia (float valor1, float valor2)
+	{
+		float pertinencia = 0;	
+			
+		pertinencia = (FuzzyficacaoGenerica (valor1) + FuzzyficacaoNaoNormalizada (valor2)) / 2;
+			
+		return pertinencia;
+	}
+		
+	public static int InferenciaPalavras (float FPxT, float HC)//checar
+	{
+		int fFPxT, fHC, resultado = 0;
+		fFPxT = FuzzyficacaoNaoNormalizada (FPxT);
+		fHC = FuzzyficacaoNaoNormalizada (HC);
+			
+		if (fFPxT == 1 && fHC == 1) { 
+			resultado = 1;
+			
+		} else if (fFPxT == 1 && fHC == 2) { 
+			resultado = 2;
+		} else if (fFPxT == 1 && fHC == 3) { 
+			resultado = 2;
+		} else if (fFPxT == 2 && fHC == 1) { 
+			resultado = 1;
+		} else if (fFPxT == 2 && fHC == 2) { 
+			resultado = 3;
+		} else if (fFPxT == 2 && fHC == 3) { 
+			resultado = 2;
+		} else if (fFPxT == 3 && fHC == 1) { 
+			resultado = 2;	
+		} else if (fFPxT == 3 && fHC == 2) {
+			resultado = 1;
+		} else if (fFPxT == 3 && fHC == 3) { 
+			resultado = 1;
+		} else
+			resultado = 1;
+			
+		return resultado;
+	}
+		
+	public static ArrayList DecisaoPalavras (int model, dadosFuzzyPalavras dados, int comp)
+	{
+			
+		ArrayList Palavras = new ArrayList ();
+		ArrayList Aux = new ArrayList ();
+			
+		// 
+		
+		int levelCount = 3;
+		
+		while (Aux.Count < comp) {
+			
+			for (int i = 0; i < dados.HPalavra.Length; i++) {			  
+				if (InferenciaPalavras (dados.FPalavra [i], dados.HPalavra [i]) == levelCount) {
+					if (!Aux.Contains (i)) {
+						Aux.Add (i);
+					}
+//					Debug.LogWarning (":>: " + (((int)Aux [i]) + 1));
+				}
+			}
+			
+			if (Aux.Count != 0) {
+				int x, y;
+				object index;
+				for (x=1; x<Aux.Count; x++) {
+					index = Aux [x];
+					y = x;
+					while ((y>0) && (MediaPertinencia (dados.FPalavra[(int)Aux[y - 1]], dados.HPalavra[(int)Aux[y - 1]])) < MediaPertinencia (dados.FPalavra[(int)index], dados.HPalavra[(int)index])) {
+						Aux [y] = Aux [y - 1];
+						y = y - 1;
+					}
+					Aux [y] = index;
+				}
+			}
+			
+			levelCount--;
+			
+			if (levelCount <= 0) {
+				break;	
+			}
+		}
+		
+		for (int i = 0; i< comp; i++) {
+			if (i < Aux.Count - 1) {
+				if ((((int)Aux [i]) + 1) != model)
+					Palavras.Add (((int)Aux [i]) + 1);
+				else
+					comp++;
+			}
+		}
+			
+		/*	
+		for (int n = 3; n > 0; n--) {
+			if (Aux.Count < comp) {
+				Aux.Clear ();
+				for (int i = 0; i < dados.HPalavra.Length; i++) {			  
+					if (InferenciaPalavras (dados.FPalavra [i], dados.HPalavra [i]) == n) {
+						
+						Aux.Add (i);
+						Debug.LogWarning (":>: " + (((int)Aux [i]) + 1));
+					}
+				}
+				if (Aux.Count != 0) {
+					
+					int x, y;
+		
+					object index;
+					for (x=1; x<Aux.Count; x++) {
+						index = Aux [x];
+						y = x;
+						while ((y>0) && (MediaPertinencia (dados.FPalavra[(int)Aux[y - 1]], dados.HPalavra[(int)Aux[y - 1]])) < MediaPertinencia (dados.FPalavra[(int)index], dados.HPalavra[(int)index])) {
+							Aux [y] = Aux [y - 1];
+							y = y - 1;
+						}
+						Aux [y] = index;
+					}
+				}
+				Debug.LogWarning (" ---- ---- ---- ---- ");
+				
+				continue;
+			} 
+			for (int i = 0; i< comp; i++) {
+				Palavras.Add (((int)Aux [i]) + 1);	
+			}
+			break;
+			
+		}*/
+		
+		return Palavras;
+				
+	}
+	
+	public static float[] ordena (float[] lista)
+	{
+		int i, j;
+		
+		float index;
+		for (i=1; i<lista.Length; i++) {
+			index = lista [i];
+			j = i;
+			while ((j>0) && (lista [j - 1])>index) {
+				lista [j] = lista [j - 1];
+				j = j - 1;
+			}
+			lista [j] = index;
+						
+		}
+		return lista;
+	}
+	
+	
+}
+	
+	
+

@@ -1,0 +1,83 @@
+using UnityEngine;
+using System.Collections;
+
+//REVISION 126
+public class BaseMenu
+{	
+	//atributos dos botões
+	protected uint buttonWidth = 200;
+	protected uint buttonHeight = 25;
+	protected uint buttonVerticalSeparation = 30;
+	protected uint buttonsInicialVerticalPosition;
+	protected uint buttonsInicialHorizontalPosition;
+	protected string[] buttonName;
+	protected bool[] buttonPressed;
+	protected int fontSize;
+	
+	//atributos menu
+	public readonly static Font menuFont = Resources.Load ("Fonts/akaDylanPlain") as Font;
+	public readonly static Font buttonFont = Resources.Load ("Fonts/arial") as Font;
+	public readonly static AudioClip buttonPressedSound = Resources.Load ("SoundFX/Misc/button_pressed") as AudioClip;
+	protected static GUIStyle labelStyle;
+	public Texture2D BackgroundImage;
+	
+	
+	#region Proprieties
+	
+	protected static float HalfScreenWidth
+	{
+		get {return Screen.width / 2;}
+	}
+	protected static float HalfScreenHeight
+	{
+		get {return Screen.height / 2;}
+	}
+	
+	#endregion
+	
+	public BaseMenu ()
+	{
+		this.buttonsInicialVerticalPosition = (uint)(HalfScreenHeight - buttonHeight / 2);
+		this.buttonsInicialHorizontalPosition = (uint)(HalfScreenWidth - buttonWidth / 2);	
+		
+		/*if(Screen.width > 900)
+			this.fontSize = 32;
+		else
+			this.fontSize = 22;*/
+		
+		this.fontSize = Screen.width / 22;
+	}
+	
+	//desenha os botões abstratamente
+	public virtual void OnGUI ()
+	{	
+		GUI.color = Color.black;
+		labelStyle = GUI.skin.button;
+		labelStyle.fontSize = 16;
+		labelStyle.font = buttonFont;
+		
+		for (int i = 0; i < buttonName.Length; i++) {
+			buttonPressed [i] = GUI.Button (new Rect (buttonsInicialHorizontalPosition, 
+								  buttonsInicialVerticalPosition + i * buttonVerticalSeparation, 
+								  buttonWidth, buttonHeight), buttonName [i]);
+			
+			if (buttonPressed [i]) 
+			{
+				AudioSource.PlayClipAtPoint (buttonPressedSound, Camera.main.transform.position);
+			}
+		}
+				
+		
+		labelStyle = GUI.skin.label;
+		labelStyle.fontSize = 16;
+		labelStyle.font = menuFont;		
+		
+	}
+	
+	
+	public static Vector2 CalcStringLengthPixel(string s)
+	{
+		return labelStyle.CalcSize(new GUIContent(s));
+	}
+	
+}

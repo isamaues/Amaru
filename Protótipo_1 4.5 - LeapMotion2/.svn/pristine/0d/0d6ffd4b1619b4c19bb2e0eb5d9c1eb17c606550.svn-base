@@ -1,0 +1,26 @@
+using UnityEngine;
+using System.Collections;
+
+public class Staff : BaseMenu
+{
+	public Staff ()
+	{
+		this.buttonsInicialVerticalPosition = (uint)(Screen.height - this.buttonHeight * 2);
+		
+		this.buttonName = new string[1]{"Voltar"};
+		this.buttonPressed = new bool[buttonName.Length];	
+		
+		this.BackgroundImage = Resources.Load ("Textures/Menus/BackGrounds/menu_staff") as Texture2D;
+		
+	}
+	
+	public override void OnGUI ()
+	{
+		base.OnGUI ();
+		
+		if (buttonPressed [0])
+			MainMenuManager.GoTo (MenuState.MainMenu);
+		
+	}
+	
+}

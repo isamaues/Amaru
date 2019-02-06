@@ -1,0 +1,72 @@
+using UnityEngine;
+using System.Collections;
+
+public class Menu : MonoBehaviour
+{
+	
+	
+	
+	#region Fields
+	private string instructionText = "Instrucoes do jogo: \nSetas esquerda e direita ou clique do mouse para andar, " +
+		"seta para cima para pular";
+	private int buttonWhidth = 200;
+	private int buttonHeight = 50;
+	private Rect mainWindowRect;
+	public Texture2D menu_texture;
+	public Texture2D buttton_texture;
+	public Font game_font;
+	
+	void Start ()
+	{
+
+	
+		mainWindowRect = new Rect (Screen.width / 2 - buttonWhidth / 2, (Screen.height / 2) - (buttonHeight + 10) * 2, buttonWhidth, buttonHeight);
+		
+	}
+	
+	#endregion
+	
+	#region Functions
+	
+	void OnGUI ()
+	{
+		if (my_style == null) {
+			my_style = GUI.skin.button;
+			my_style.normal.background = buttton_texture;
+			my_style.hover.background = buttton_texture;
+			my_style.hover.textColor = Color.grey;
+			my_style.hover.textColor = new Color (.6f, .6f, 1f, 1f);
+			my_style.font = game_font;
+		}
+		GUI.Button (new Rect (0, 0, 200, 50), "BoTãO", my_style);
+		
+		
+		mainWindowRect = GUI.Window (0, mainWindowRect, CreateMainWindow, "");	
+	
+	}
+	
+	GUIStyle my_style;
+	
+	void CreateMainWindow (int windowId)
+	{
+		
+		Rect temp = new Rect (0, 0, buttonWhidth, buttonHeight);
+		if (GUI.Button (temp, "Começar Jogo", my_style)) {	
+			Application.LoadLevel ("StartGame");
+		}
+		GUI.Button (new Rect (Screen.width / 2 - buttonWhidth / 2,
+			(Screen.height / 2) - (buttonHeight + 10), buttonWhidth, buttonHeight), "Opcoes");
+		
+		GUI.Button (new Rect (Screen.width / 2 - buttonWhidth / 2,
+			(Screen.height / 2), buttonWhidth, buttonHeight), "Creditos");
+		
+		GUI.Button (new Rect (Screen.width / 2 - buttonWhidth / 2,
+			(Screen.height / 2) + (buttonHeight + 10), buttonWhidth, buttonHeight), "Sair");
+		
+	}
+		
+	
+	#endregion
+	
+	
+}

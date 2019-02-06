@@ -1,0 +1,617 @@
+using UnityEngine;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Text;
+
+public class TaskManager : MonoBehaviour
+{
+   
+    public static int TaskCount { get; set; }
+
+    private static char separator = '/';
+    private ArrayList tasks = new ArrayList();
+    private Dictionary<string, int> words = new Dictionary<string, int>();
+    private Dictionary<string, int> taskTypes = new Dictionary<string, int>();
+    private Dictionary<int, string> miniGames = new Dictionary<int, string>();
+
+
+
+    // Use this for initialization
+    void Awake()
+    {
+        GenerateDatabase();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
+
+    void GenerateDatabase()
+    {
+        //ler o arquivo que associa cada palavra com seu index. Armazena na lista palavras.
+        //ler o arquivo que associa cada tipo de tentativa com seu index. Armazena na lista tipoTentativa.
+        //ler o arquivo que associa cada mini jogo com seu index. Armazena na lista miniJogo.
+        string line;
+        StreamReader srAux = null;
+        string[] parts = null;
+
+        try
+        {
+            srAux = new StreamReader(@"Assets\Scripts\BD\words.txt", Encoding.UTF8);
+            while ((line = srAux.ReadLine()) != null)
+            {
+                parts = line.Split(separator);
+                words.Add(parts[1], int.Parse(parts[0]));
+            }
+
+            srAux = null;
+            line = null;
+            parts = null;
+
+            srAux = new StreamReader(@"Assets\Scripts\BD\task_types.txt", Encoding.UTF8);
+            while ((line = srAux.ReadLine()) != null)
+            {
+                parts = line.Split(separator);
+                taskTypes.Add(parts[1], int.Parse(parts[0]));
+            }
+
+            srAux = null;
+            line = null;
+            parts = null;
+
+            srAux = new StreamReader(@"Assets\Scripts\BD\mini_games.txt", Encoding.UTF8);
+            while ((line = srAux.ReadLine()) != null)
+            {
+                parts = line.Split(separator);
+                miniGames.Add(int.Parse(parts[0]), parts[1]);
+            }
+
+
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError("::" + ex.Message.ToString());
+            Debug.LogError("::" + ex.StackTrace.ToString());
+            Debug.Log("Erro ao ler o bd das palavras, tipoTentativa ou miniJogos.");
+        }
+        finally
+        {
+            if (srAux != null)
+                srAux.Close();
+        }
+
+    }
+
+    public ArrayList ReadTask(string path)
+    {
+        string line = null;
+        if (File.Exists(path))
+        {
+            StreamReader sr = null;
+
+            try
+            {
+                sr = new StreamReader(path);
+                while ((line = sr.ReadLine()) != null)
+                {
+
+                    Task task = new Task();
+                    string[] parts = line.Split(separator);
+					
+					int indice = 0;
+					
+                    task.Id = int.Parse(parts[indice++]); //ID
+					
+					
+//					Debug.LogWarning(parts[indice]);
+					try {
+						string format = "dd-MM-yyyy_HH:mm:ss";
+						task.DateTime = DateTime.ParseExact(parts[indice], format, null); //DATA
+					} catch (FormatException ex) {
+							Debug.LogError(ex.StackTrace.ToString());
+					}finally{
+						indice++;	
+					}
+					
+                    task.MiniGame = int.Parse(parts[indice++]); //MINIGAME
+                    task.Latency = float.Parse(parts[indice++], CultureInfo.CurrentUICulture);//LATENCIA
+                    task.Difficulty = float.Parse(parts[indice++], CultureInfo.CurrentUICulture);//DIFICULDDE
+                    task.Correct = byte.Parse(parts[indice++]);//CORRECAO
+                    task.CompareNumber = int.Parse(parts[indice++]);//NUM DE COMPARACOES
+                    task.TaskType = int.Parse(parts[indice++]);//TIPO DE TAREFA
+                    task.Model = short.Parse(parts[indice++]);//MODELO
+
+                    while (indice < parts.Length) //OUTRAS ESCOLHAS
+                    {
+                        task.Choices.Add(int.Parse(parts[indice++]));
+                       
+                    }
+
+                    tasks.Add(task);
+                }
+
+            }
+            catch (System.Exception ex)
+            {
+                //Debug.LogError (ex.Message.ToString());
+                Debug.LogError("::" + ex.StackTrace.ToString());
+                Debug.Log("Erro no ReadTentativa!\nDica: pode haver linhas desnecessárias no arquivo lido.");
+
+            }
+            finally
+            {
+                if (sr != null)
+                    sr.Close();
+
+                TaskCount = tasks.Count;
+            }
+            return tasks;
+        }
+
+        return null;
+    }
+
+    public void WriteTask(string path)
+    {
+        StreamWriter sw = null;
+        try
+        {
+
+            string aux = char.ToString(separator);
+            sw = new StreamWriter(path);
+
+            foreach (Task task in tasks)
+            {
+                sw.Write(task.Id + aux + task.MiniGame + aux + task.Latency + aux + task.Difficulty + aux +
+                              task.Correct + aux + task.CompareNumber + aux + task.TaskType + aux + task.Model);
+
+                for (int j = 0; j < task.Choices.Count; j++)
+                {
+                    sw.Write(aux + task.Choices[j]);
+                }
+
+                if (task.Id != tasks.Count)
+                    sw.WriteLine();
+            }
+
+        }
+        catch
+        {
+            Debug.Log("Erro ao escrever arquivo");
+        }
+        finally
+        {
+            if (sw != null)
+                sw.Close();
+        }
+    }
+
+    public void DisplayTasks()
+    {
+        foreach (Task task in tasks)
+        {
+//            Debug.Log(task.Id + " - " + task.MiniGame + " - " + task.Latency + " - " + task.Difficulty + " - " +
+//                              task.Correct + " - " + task.CompareNumber + " - " + task.TaskType + " - " + task.Model);
+
+            for (int j = 0; j < task.Choices.Count; j++)
+            {
+//                Debug.Log(" " + task.Choices[j]);
+            }
+//            Debug.Log("");
+        }
+
+    }
+
+    public ArrayList GetTasks()
+    {
+        return tasks;
+    }
+
+	
+
+    public ArrayList GetTasksByModel(short model)
+    {
+        ArrayList selectedTasks = new ArrayList();
+
+        foreach (Task task in tasks)
+        {
+            if (task.Model == model)
+            {
+                selectedTasks.Add(task);
+            }
+        }
+
+        return selectedTasks;
+    }
+
+    public ArrayList GetTasksByModel(ArrayList source, short model)
+    {
+        ArrayList selectedTasks = new ArrayList();
+
+        foreach (Task task in source)
+        {
+            if (task.Model == model)
+            {
+                selectedTasks.Add(task);
+            }
+        }
+
+        return selectedTasks;
+    }
+
+    public ArrayList GetTasksByModel(string model)
+    {
+        ArrayList selectedTasks = new ArrayList();
+
+        foreach (Task task in tasks)
+        {
+            if (task.Model == words[model])
+            {
+                selectedTasks.Add(task);
+            }
+        }
+
+        return selectedTasks;
+    }
+
+    public ArrayList GetTasksByModel(ArrayList source, string model)
+    {
+        ArrayList selectedTasks = new ArrayList();
+
+        foreach (Task task in source)
+        {
+            if (task.Model == words[model])
+            {
+                selectedTasks.Add(task);
+            }
+        }
+
+        return selectedTasks;
+    }
+
+    public ArrayList GetTasksByType(string type)
+    {
+        ArrayList selectedTasks = new ArrayList();
+
+        foreach (Task task in tasks)
+        {
+            if (task.TaskType == taskTypes[type])
+            {
+                selectedTasks.Add(task);
+            }
+        }
+
+        return selectedTasks;
+    }
+
+    public ArrayList GetTasksByType(ArrayList source, string type)
+    {
+        ArrayList selectedTasks = new ArrayList();
+
+        foreach (Task task in source)
+        {
+            //			Task task = GetTaskById(task);
+            if (task.TaskType == taskTypes[type])
+            {
+                selectedTasks.Add(task);
+            }
+        }
+
+
+
+        return selectedTasks;
+    }
+
+    public Task GetTaskById(int id)
+    {
+        foreach (Task task in tasks)
+        {
+            if (task.Id == id)
+            {
+                return task;
+            }
+        }
+        return null;
+    }
+
+    public ArrayList GetTasksByMiniGame(int miniGame)
+    {
+        ArrayList selectedTasks = new ArrayList();
+
+        foreach (Task task in tasks)
+        {
+            if (task.MiniGame.Equals(miniGames[miniGame]))
+            {
+                selectedTasks.Add(task);
+            }
+        }
+
+        return selectedTasks;
+    }
+
+    public ArrayList GetTasksByMiniGame(ArrayList source, int miniGame)
+    {
+        ArrayList selectedTasks = new ArrayList();
+
+        foreach (Task task in source)
+        {
+            if (task.MiniGame.Equals(miniGames[miniGame]))
+            {
+                selectedTasks.Add(task);
+            }
+        }
+
+        return selectedTasks;
+    }
+
+    public ArrayList GetTasksByCompareCount(ArrayList source, int compNum)
+    {
+        ArrayList selectedTasks = new ArrayList();
+
+        foreach (Task task in source)
+        {
+            if (task.CompareNumber == compNum)
+            {
+                selectedTasks.Add(task);
+            }
+        }
+
+        return selectedTasks;
+    }
+
+    public ArrayList GetTasksByChoices(ArrayList choices)
+    {
+        return GetTasksByChoices(tasks, choices);
+    }
+
+    public ArrayList GetTasksByChoices(ArrayList source, ArrayList choices)
+    {
+        ArrayList selectedTasks = new ArrayList();
+
+        foreach (Task task in source)
+        {
+            for (int j = 0; j < choices.Count; j++)
+            {
+                if (choices[j].GetType() == typeof(int))
+                {
+                    if (task.Choices.Contains(choices[j]) && !selectedTasks.Contains(task.Id))
+                    {
+                        selectedTasks.Add(task);
+                    }
+                }
+                else
+                {
+                    if (task.Choices.Contains(words[(string)choices[j]]) && !selectedTasks.Contains(task.Id))
+                    {
+                        selectedTasks.Add(task);
+                    }
+                }
+
+            }
+        }
+
+        if (selectedTasks.Count == 0)
+        {
+            Debug.Log("Nenhuma tentativa encontrada");
+        }
+        return selectedTasks;
+    }
+
+    public ArrayList GetTasksByChoices(ArrayList source, int wordId)
+    {
+        ArrayList selectedTasks = new ArrayList();
+
+        foreach (Task task in source)
+        {
+            if (task.Choices.Contains(wordId))
+            {
+                selectedTasks.Add(task);
+            }
+        }
+
+//        if (selectedTasks.Count == 0)
+//        {
+//            Debug.Log("Nenhuma tentativa encontrada");
+//        }
+        return selectedTasks;
+    }
+
+    public ArrayList GetTasks(string model, string type, int compCount, ArrayList choices)
+    {
+        ArrayList selectedTasks = new ArrayList();
+
+        bool hasModel = model.Length > 0 ? true : false;
+        bool hasType = type.Length > 0 ? true : false;
+        bool hasCompCount = compCount != -1 ? true : false;
+        bool hasChoices = choices.Count > 0 ? true : false;
+
+        if (hasModel && hasType && hasCompCount && hasChoices)
+        { //tudo é especificado
+            selectedTasks = GetTasksByModel(tasks, model);
+            selectedTasks = GetTasksByType(selectedTasks, type);
+            selectedTasks = GetTasksByCompareCount(selectedTasks, compCount);
+            selectedTasks = GetTasksByChoices(selectedTasks, choices);
+        }
+
+        if (!hasModel)
+        {
+            if (!hasType)
+            {
+                if (!hasCompCount)
+                {
+                    if (!hasChoices)
+                    { //nada é especificado. Deve-se retornar tudo
+                        return GetTasks();
+                    }
+                    else
+                    { //só as escolhas são especificadas
+                        selectedTasks = GetTasksByChoices(tasks, choices);
+                    }
+                }
+                else
+                { //numComparação é especidicado
+                    selectedTasks = GetTasksByCompareCount(tasks, compCount);
+
+                    if (hasChoices) //numComparação e escolhas são especificados.
+                        selectedTasks = GetTasksByChoices(selectedTasks, choices);
+                }
+            }
+            else
+            { //taskTypes é especificado
+                selectedTasks = GetTasksByType(tasks, type);
+
+                if (hasCompCount) //tipoTentaiva e numComparação são especificados.
+                    selectedTasks = GetTasksByCompareCount(selectedTasks, compCount);
+
+                if (hasChoices) //tipoTentaiva e escolhas são especificados.
+                    selectedTasks = GetTasksByChoices(selectedTasks, choices);
+            }
+        }
+        else
+        { //modelo é especificado
+            selectedTasks = GetTasksByModel(tasks, model);
+
+            if (hasType) //modelo e taskTypes são especificados.
+                selectedTasks = GetTasksByType(selectedTasks, type);
+
+            if (hasCompCount) //modelo e numComparação são especificados.
+                selectedTasks = GetTasksByCompareCount(selectedTasks, compCount);
+
+            if (hasChoices) //modelo e escolhas são especificados.
+                selectedTasks = GetTasksByChoices(selectedTasks, choices);
+        }
+
+
+        if (selectedTasks.Count > 0)
+        {
+            return selectedTasks;
+        }
+
+        Debug.Log("Nada encontrado");
+        return null;
+    }
+
+    public ArrayList GetTasksToRead(string model)
+    {
+        ArrayList readTasks = new ArrayList();
+
+        foreach (Task task in tasks)
+        {
+            if ((model.Equals("") ? true : task.Model == words[model]) && (task.TaskType == taskTypes["AB"] || task.TaskType == taskTypes["AC"] ||
+                                                     task.TaskType == taskTypes["BC"] || task.TaskType == taskTypes["CB"]))
+            {
+                readTasks.Add(task);
+            }
+        }
+
+        //		if (readTasks.Count > 0) {
+        return readTasks;
+        //		}
+        //		
+        //		Debug.Log ("Nenhuma tentativa de leitura encontrada.");
+        //		return null;
+    }
+	
+	//duvida
+    public ArrayList GetTasksToWrite(string model)
+    {
+        ArrayList writeTasks = new ArrayList();
+
+        foreach (Task task in tasks)
+        {
+            if ((model.Equals("") ? true : task.Model == words[model]) &&
+                (task.TaskType == taskTypes["AE"]
+                || task.TaskType == taskTypes["CE"]
+                || task.TaskType == taskTypes["BE"]))
+            {
+                writeTasks.Add(task);
+            }
+        }
+
+        if (writeTasks.Count > 0)
+        {
+            return writeTasks;
+        }
+
+//        Debug.Log("Nenhuma tentativa de escrita encontrada.");
+        return null;
+    }
+	
+	public void AddTask(Task task){
+		
+		AddTentativa(task.Id, task.MiniGame, task.Latency, task.Difficulty, task.CompareNumber, task.Correct, task.TaskType, task.Model, task.Choices);
+	}
+
+    public void AddTentativa(int id, int miniGame, float latency, double difficulty, int compCount, byte correct, int taskType, short model, ArrayList choices)
+    {
+
+        try
+        {
+            Task aux = new Task();
+            aux.Id = id;
+            aux.MiniGame = miniGame;
+            aux.Latency = latency;
+            aux.Difficulty = difficulty;
+            aux.Model = model;
+            aux.Correct = correct;
+            aux.TaskType = taskType;
+            aux.CompareNumber = compCount;
+
+            for (int j = 0; j < choices.Count; j++)
+            {
+                aux.Choices.Add(choices[j]);
+            }
+
+            tasks.Add(aux);
+
+//            Debug.Log("\nModelo de tentativa: " + ((Task)tasks[TaskCount]).Model + " add com sucesso!\n");
+
+
+            TaskCount++;
+        }
+        catch
+        {
+            Debug.Log("Problemas ao adicionar tentativa.");
+        }
+    }
+
+    public string GetModelName(short model)
+    {
+
+        foreach (string key in words.Keys)
+        {
+            if (words[key] == model)
+            {
+                return key;
+            }
+        }
+
+        return "";
+
+    }
+
+    public string GetTaskTypeName(int taskType)
+    {
+
+        foreach (string key in taskTypes.Keys)
+        {
+            if (taskTypes[key] == taskType)
+            {
+                return key;
+            }
+        }
+
+        return "";
+
+    }
+
+    public Dictionary<string, int> GetWords()
+    {
+        return words;
+    }
+}

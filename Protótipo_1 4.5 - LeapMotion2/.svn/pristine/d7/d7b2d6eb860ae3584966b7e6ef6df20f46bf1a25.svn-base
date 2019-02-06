@@ -1,0 +1,28 @@
+using UnityEngine;
+using System.Collections;
+
+public class UserManager
+{
+ 
+	private static UserManager scoreManager = null;
+	private Config currentUser = null;
+ 
+	public static UserManager getInstance ()
+	{
+		if (scoreManager == null) {
+			scoreManager = new UserManager ();
+		}
+ 
+		return scoreManager;
+	}
+ 
+	public Config getCurrentUser ()
+	{
+		return currentUser;
+	}
+ 
+	public void setCurrentUser (Config currentUser)
+	{
+		this.currentUser = currentUser;
+	}
+}

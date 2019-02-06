@@ -1,0 +1,165 @@
+using UnityEngine;
+using System.Collections;
+
+//REVISION 126
+public class PlayerMovement : MonoBehaviour
+{	
+	public enum Direction
+	{
+		Left,
+		Right,
+	}
+	
+	public Vector3 MoveDirection ;
+	private PauseMenu pauseMenu;
+
+	public float VerticalVelocity { get; set; }
+	
+	public float MoveSpeed = 16f;
+	public float JumpSpeed = 8f;
+	public float Gravity = 20f;
+	public float variance = 30f;
+	public Direction direction;
+	public bool canMove = true;
+	private CharacterController controller;
+	private PlayerAnimation animator; 
+	private bool _paused;
+	private AudioClip jump;
+	
+	void Start ()
+	{
+		jump = Resources.Load ("Sounds/jump") as AudioClip;
+		pauseMenu = new PauseMenu ();
+		
+		controller = transform.GetComponent<CharacterController> ();
+		animator = transform.GetComponent<PlayerAnimation> ();
+	}
+	
+	void Update ()
+	{
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+			pauseMenu.Paused = pauseMenu.Paused ? false : true;
+			Time.timeScale = pauseMenu.Paused ? 0f : 1f;
+			pauseMenu.showConfirmation = false;
+		}
+	
+		if (pauseMenu.Paused)
+			pauseMenu.Update ();
+		else
+			ProcessMotion ();
+	}
+	
+	public float decreaseGravity = 3f;
+	
+	void ProcessMotion ()
+	{                
+		if (controller.isGrounded) 
+		{
+			MoveDirection = new Vector3 (Input.GetAxis ("Horizontal") * MoveSpeed, 0, 0);
+                        
+                        
+			if ((Input.GetButtonDown ("Jump")) || (Input.GetKeyDown (KeyCode.UpArrow)) || Input.GetMouseButtonDown (1)) {
+				animator.currentState = PlayerAnimation.State.Jump;
+                                
+				if (animation.IsPlaying ("Jump"))
+					animation.Stop ("Jump");
+                                
+				animation.Play ("Jump"); 
+                                
+				AudioSource.PlayClipAtPoint (jump, Camera.main.transform.position);
+				MoveDirection.y = JumpSpeed;
+			}                       
+		} else {
+			MoveDirection = new Vector3 (Input.GetAxis ("Horizontal") * MoveSpeed, MoveDirection.y, 0);
+                        
+			if (animator.currentState != PlayerAnimation.State.Fall && Input.GetButtonUp ("Jump") && MoveDirection.y >= 0) {
+				MoveDirection.y -= decreaseGravity * Gravity * Time.deltaTime;
+			}
+                        
+			if (animator.currentState != PlayerAnimation.State.Fall && 
+                                animator.currentState != PlayerAnimation.State.Jump && animator.currentState != PlayerAnimation.State.Land) {
+				animator.currentState = PlayerAnimation.State.Fall;
+				animation.CrossFade ("Fall"); 
+			}
+		}
+                
+		if (Input.GetMouseButton (0) && !UramaBehaviour.OnMousePressing) {
+			Vector3 position2D = Camera.main.WorldToScreenPoint (transform.position);
+                
+			if (position2D.x + variance < Input.mousePosition.x) {
+				MoveDirection = new Vector3 (1 * MoveSpeed, MoveDirection.y, 0);
+			} else if (position2D.x - variance > Input.mousePosition.x) {
+				MoveDirection = new Vector3 (-1 * MoveSpeed, MoveDirection.y, 0);
+			}
+		}
+               
+		/*
+		if (Input.touches.Length != 0) {        
+			Vector3 position2D = Camera.main.WorldToScreenPoint (transform.position);
+                
+			if (position2D.x + variance < Input.touches [0].position.x) {
+				MoveDirection = new Vector3 (1 * MoveSpeed, MoveDirection.y, 0);
+			} else if (position2D.x - variance > Input.touches [0].position.x) {
+				MoveDirection = new Vector3 (-1 * MoveSpeed, MoveDirection.y, 0);
+			}
+		}
+		*/
+                
+		MoveDirection.y -= Gravity * Time.deltaTime;
+                
+		if (MoveDirection.x > 0) {
+			direction = Direction.Right;
+			animator.inMovement = true;
+		} else if (MoveDirection.x < 0) {
+			direction = Direction.Left;
+			animator.inMovement = true;
+		} else {
+			animator.inMovement = false;    
+		}
+                
+                        
+                
+		if (direction == Direction.Right) {
+			transform.rotation = Quaternion.Euler (Vector3.Lerp (transform.rotation.eulerAngles, 
+                                new Vector3 (transform.rotation.eulerAngles.x, 90, transform.rotation.eulerAngles.z), 0.1f));
+		} else {
+			transform.rotation = Quaternion.Euler (Vector3.Lerp (transform.rotation.eulerAngles, 
+                                new Vector3 (transform.rotation.eulerAngles.x, 270, transform.rotation.eulerAngles.z), 0.1f));
+		}
+           
+		
+		if (animator.currentState != PlayerAnimation.State.Fall && animator.currentState != PlayerAnimation.State.Jump && 
+                        animator.currentState != PlayerAnimation.State.Land) {
+			if (controller.isGrounded) {
+				if (animator.inMovement) {
+					animator.currentState = PlayerAnimation.State.Walk;
+				} else {
+					animator.currentState = PlayerAnimation.State.Idle;
+				}
+			}
+		}
+		
+                
+		if (MoveDirection.y < 0 && animator.currentState == PlayerAnimation.State.Jump) {
+			animator.currentState = PlayerAnimation.State.Fall;
+		}
+                
+		if (!canMove) {
+			MoveDirection = new Vector3 (0, MoveDirection.y, MoveDirection.z);      
+		}
+				
+		if ((transform.position.x - Camera.main.ScreenToWorldPoint (Vector3.zero).x < 0.5f && direction == Direction.Left) || 
+			(Camera.main.ScreenToWorldPoint (new Vector3 (Camera.main.pixelWidth, Camera.main.pixelHeight, 0f)).x - transform.position.x < 0.5f && direction == Direction.Right)) {
+
+			MoveDirection = new Vector3 (0, MoveDirection.y, MoveDirection.z);  
+		}
+				
+		controller.Move (MoveDirection * Time.deltaTime);
+	}
+	
+	void OnGUI ()
+	{
+		pauseMenu.OnGUI ();
+	}
+	
+}

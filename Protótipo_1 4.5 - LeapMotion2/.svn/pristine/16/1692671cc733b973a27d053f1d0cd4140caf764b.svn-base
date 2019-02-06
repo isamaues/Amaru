@@ -1,0 +1,182 @@
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Text;
+
+
+public class WordManager : MonoBehaviour
+{
+	
+        public static int WORD_NUMBER { get; set; }
+        static ArrayList wordList = new ArrayList();
+        private Dictionary<string, int> wordListDict = new Dictionary<string, int>();
+        private static char separation = '/';
+	    
+	    public ArrayList GetWords(){
+		 return wordList;
+		
+    	}
+
+        #region Códigos de Leitura e Escrita
+
+        public void ReadWord(string path)
+        {
+
+            string line;
+            if (File.Exists(path))
+            {
+                StreamReader sr = null;
+                try
+                {
+                    sr = new StreamReader(path, Encoding.UTF7);
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        Word word = new Word();
+                        string[] parts = line.Split(separation);
+                        string[] silabs = parts[2].Split('-');
+					
+                        word.wordId = int.Parse (parts [0]);
+                        word.Name = parts[1];
+
+                        wordListDict.Add(word.Name, word.wordId);
+
+                        for (int s = 0; s < silabs.Length; s++)
+                        {
+                            word.Syllables.Add(silabs[s]);
+                        }
+
+                        word.SyllablesNumber = short.Parse (parts [3]);
+                        word.MaxReadDif = float.Parse (parts [4], CultureInfo.CurrentUICulture);
+                        word.LearningDegreeRead = float.Parse (parts [5], CultureInfo.CurrentUICulture);
+                        word.LearnedRead = short.Parse (parts [6]);
+                        word.MaxWriteDif = float.Parse (parts [7], CultureInfo.CurrentUICulture);
+                        word.LearningDegreeWrite = float.Parse (parts [8], CultureInfo.CurrentUICulture);
+                        word.LearnedWrite = short.Parse (parts [9]);
+
+                        wordList.Add(word);
+                    }
+                }
+                catch(UnityException ex)
+                {
+                    Debug.Log("Erro no ReadWord!"+ ex.StackTrace);
+                }
+
+                finally
+                {
+                    if (sr != null){
+                        sr.Close();
+					}
+                    WORD_NUMBER = wordList.Count;
+                }
+            }
+            else Debug.Log("Problemas no caminho dado.");
+        }
+
+        public void displayWords()
+        {
+            foreach (Word p in wordList)
+            {
+                Debug.Log(p.wordId + " " + p.Name + " [");
+
+                foreach (string s in p.Syllables)
+                {
+                    Debug.Log(" " + s + " ");
+                }
+
+                Debug.Log("] " + p.SyllablesNumber + " " + p.MaxReadDif + " " + p.LearningDegreeRead
+                                   + " " + p.LearnedRead + " " + p.MaxWriteDif + " " + p.LearningDegreeWrite
+                                   + " " + p.LearnedWrite);
+
+            }
+
+            //Console.ReadKey();
+        }
+
+
+        public void WriteWord(string path)
+        {
+            StreamWriter sw = null;
+            string aux = separation.ToString();
+            try
+            {
+                sw = new StreamWriter(File.Create(path));
+
+                foreach (Word i in wordList)
+                {
+                    sw.Write(i.wordId + aux + i.Name + aux);
+
+                    for (int s = 0; s < i.Syllables.Count; s++)
+                    {
+                        if (s == i.Syllables.Count - 1)
+                            sw.Write(i.Syllables[s]);
+                        else
+                            sw.Write(i.Syllables[s] + "-");
+                    }
+
+                    sw.Write(aux + i.SyllablesNumber + aux + i.MaxReadDif + aux + i.LearningDegreeRead
+                               + aux + i.LearnedRead + aux + i.MaxWriteDif + aux + i.LearningDegreeWrite
+                               + aux + i.LearnedWrite);
+
+                    if (i.wordId != wordList.Count)
+                        sw.WriteLine();
+                }
+            }
+
+            catch
+            {
+                Debug.Log("Erro no WriteWord!");
+            }
+
+            finally
+            {
+                if (sw != null)
+                    sw.Close();
+            }
+        }
+
+        #endregion
+
+        #region Códigos Selects
+
+        public ArrayList SelectWords()
+        {
+            return wordList;
+        }
+		
+	
+        public ArrayList SelectWords(string nome)
+        {
+            ArrayList wordListSelecionadas = new ArrayList();
+
+            foreach (Word i in wordList)
+            {
+                if (i.Name.Equals(nome))
+                {
+                    wordListSelecionadas.Add(i);
+                }
+            }
+
+            return wordListSelecionadas;
+        }
+
+        public ArrayList SelectWords(int id)
+        {
+            ArrayList wordListSelecionadas = new ArrayList();
+
+            foreach (Word i in wordList)
+            {
+                if (i.wordId == id)
+                {
+                    wordListSelecionadas.Add(i);
+                }
+            }
+
+            return wordListSelecionadas;
+        }
+
+        #endregion
+
+    }
+

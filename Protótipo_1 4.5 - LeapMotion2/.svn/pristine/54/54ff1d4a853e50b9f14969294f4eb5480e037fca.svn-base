@@ -1,0 +1,422 @@
+using UnityEngine;
+using System.Collections;
+
+//REVISION 126
+public class CubeMiniGame : BaseMiniGame
+{
+	private GameObject cancelCube = null;
+	private GameObject okCube = null;
+	private GameObject cubePrefab;
+	private GameObject textPrefab;
+	private Vector3 selectedPosition = Vector3.zero;
+	//private Vector2 cubeScale = new Vector2 (1f, 1f);
+	
+	// Public Variables
+	
+	public float upFactor = 4f;
+	public float minDistance = 1f;
+	
+	//public Vector2 normalCubeScale = new Vector2 (1f, 1.1f);
+	//public Vector2 syllableCubeScale = new Vector2 (0.5f, 0.55f);
+	
+	
+	
+	public CubeMiniGame (): base ()
+	{			
+	}
+	
+	public override void Update ()
+	{		
+		base.Update ();
+		
+		CubeScript cs;
+		foreach (GameObject item in comparisonList) {
+			cs = item.transform.GetComponent<CubeScript> ();
+			if (cs) {
+			
+				if (cs.sendInfo) {
+					cs.sendInfo = false;
+					VerifyCube (cs);
+					break;
+				}
+			}			
+		}
+	
+		cs = okCube.transform.GetComponent<CubeScript> ();
+		if (cs) {
+	
+			if (cs.sendInfo) {
+				cs.sendInfo = false;
+				VerifyCube (cs);
+			}
+		}	
+	
+		cs = cancelCube.transform.GetComponent<CubeScript> ();
+		if (cs) {
+		
+			if (cs.sendInfo) {
+				cs.sendInfo = false;
+				VerifyCube (cs);
+			}
+		}	
+		/*
+		Debug.DrawLine (cubePrefab.renderer.bounds.max, cubePrefab.renderer.bounds.min);
+		
+		Debug.DrawLine (new Vector3 (itensMidPoint.x - ((ChoicesSize () + (cubePrefab.renderer.bounds.extents.x * 2)) / 2), itensMidPoint.y, itensMidPoint.z), 
+			new Vector3 (itensMidPoint.x + ((ChoicesSize () + (cubePrefab.renderer.bounds.extents.x * 2)) / 2), itensMidPoint.y, itensMidPoint.z));
+		Debug.DrawLine (new Vector3 (itensMidPoint.x, itensMidPoint.y + 1, itensMidPoint.z), 
+			new Vector3 (itensMidPoint.x + (ChoicesSize () + (cubePrefab.renderer.bounds.extents.x * 2)), itensMidPoint.y + 1, itensMidPoint.z), Color.blue);
+		Debug.DrawLine (new Vector3 (itensMidPoint.x, itensMidPoint.y + 2, itensMidPoint.z), 
+			new Vector3 (itensMidPoint.x + 40.5f, itensMidPoint.y + 2, itensMidPoint.z), Color.yellow);
+		
+		//Debug.Log (">> " + (okCube.transform.position.x - cancelCube.transform.position.x));
+		*/
+			
+		
+	}
+	
+	public override void LoadMiniGame ()
+	{
+		textPrefab = Resources.Load ("Prefabs/TextPrefab") as GameObject;	
+		cubePrefab = Resources.Load ("Prefabs/CubePrefab") as GameObject;	
+		itensMidPoint = new Vector3 (Camera.main.transform.position.x, upFactor * 1.7f, 0);
+	}
+	
+	private string GetChoice (ArrayList list)
+	{
+		string s = "";
+		foreach (GameObject item in list) {
+			CubeScript cs = item.gameObject.GetComponent<CubeScript> ();
+			if (cs != null) {
+				s += cs.CubeInfo;
+			}
+		}
+		return s;
+	}
+	
+	public override void CancelChoice ()
+	{
+		if (selectionList.Count > 0) {
+			GameObject item = selectionList [selectionList.Count - 1] as GameObject;
+			CubeScript cs = item.gameObject.GetComponent<CubeScript> ();
+			cs.Animating = true;
+			cs.dir = CubeScript.Direction.DOWN;
+			cs.Velocity = 0.4f;
+			selectionList.Remove (item);	
+			OrganizeCubes (selectionList, itensMidPoint + Vector3.up * upFactor, 0, false);
+		}
+	}
+	
+	public override void OrganizeChoices ()
+	{
+		OrganizeCubes (comparisonList, itensMidPoint, spaceBetweenItens, true);
+	}
+	
+	public void OrganizeCubes (ArrayList objList, Vector3 center, float space, bool initial)
+	{
+		
+		var prefabSize = cubePrefab.renderer.bounds.extents.x * 2;
+		var xIntial = center.x - ((((objList.Count - 1) * space) + (objList.Count * prefabSize)) / 2) + (prefabSize / 2);
+		var nextPos = prefabSize + space;
+		
+		Debug.Log("(objList.Count - 1) * space + objList.Count * prefabSize) = "+ ( (objList.Count - 1) * space + objList.Count * prefabSize).ToString());
+		
+		if (objList.Count > 0) {
+			
+			for (int i = 0; i < objList.Count; i++) {
+				
+				GameObject item = objList [i] as GameObject;
+				var position = new Vector3 (xIntial + (i * nextPos), center.y, center.z);
+                			
+				CubeScript cs = item.gameObject.GetComponent<CubeScript> ();
+				if (cs != null) {
+					if (initial) {
+						cs.StartPosition = position;
+						item.transform.position = cs.StartPosition;
+						
+					} else {
+						cs.FinalPosition = position;
+						cs.Animating = true;
+						if (cs.dir == CubeScript.Direction.NONE) {
+							cs.dir = CubeScript.Direction.SORT;
+						}
+					}
+				}
+				                  
+			}
+		}
+                
+	}
+	
+	void VerifyCube (CubeScript cs)
+	{
+		if (cs.CubeInfo.Equals ("seta")) {
+			AcceptChoice ();
+		} else if (cs.CubeInfo.Equals ("borracha")) {
+			CancelChoice ();
+		} else {
+			if (!CurrentTaskType.Name.Contains ("D") && !CurrentTaskType.Name.Contains ("E")) {   
+				
+				CancelChoice ();
+			}
+			if (!selectionList.Contains (cs.gameObject))
+				selectionList.Add (cs.gameObject); 		
+			OrganizeCubes (selectionList, itensMidPoint + Vector3.up * upFactor, 0, false);
+						
+		}		
+		var t = Camera.main.ScreenToWorldPoint (new Vector3 (Camera.main.pixelWidth, Camera.main.pixelHeight, 0f)) - Camera.main.ScreenToWorldPoint (new Vector3 (0f, 0f, 0f));
+				
+	}
+	
+	#region Criação dos cubos
+	
+	public  override void CreateCancelAcceptChoice ()
+	{		
+		Vector3 position;
+		Transform border;
+		CubeScript cs;
+		
+		position = new Vector3 ( itensMidPoint.x - ((( ChoicesSize () )/ 2) + (cubePrefab.renderer.bounds.extents.x * 2) + spaceBetweenItens)  , itensMidPoint.y, itensMidPoint.z);
+		cancelCube = CreateCube (Resources.Load ("Textures/Misc/borracha") as Texture2D, position, cubePrefab);
+		border = cancelCube.transform.FindChild ("Border") as Transform;
+		if (border) {
+			border.renderer.enabled = false;
+		}
+		cs = cancelCube.gameObject.GetComponent<CubeScript> ();
+		if (cs != null) {
+			cs.StartPosition = cancelCube.transform.position;
+			cs.Velocity = 0.4f;
+			cs.FinalPosition = cs.StartPosition + Vector3.up * upFactor;
+			cs.IsPingPong = true;
+			cs.smooth = false;
+		}
+		
+		position = new Vector3 (itensMidPoint.x + ((( ChoicesSize () )/ 2) + (cubePrefab.renderer.bounds.extents.x * 2) + spaceBetweenItens), itensMidPoint.y, itensMidPoint.z);
+		okCube = CreateCube (Resources.Load ("Textures/Misc/seta") as Texture2D, position, cubePrefab);
+		border = okCube.transform.FindChild ("Border") as Transform;
+		if (border) {
+			border.renderer.enabled = false;
+		}
+		cs = okCube.gameObject.GetComponent<CubeScript> ();
+		if (cs != null) {		
+			cs.StartPosition = okCube.transform.position;
+			cs.Velocity = 0.4f;
+			cs.FinalPosition = cs.StartPosition + Vector3.up * upFactor;
+			cs.IsPingPong = true;
+			cs.smooth = false;
+		}
+		
+	}
+	
+	private GameObject CreateCube (Texture2D texture, Vector3 pos, GameObject source)
+	{
+		source.renderer.enabled = true;
+
+		GameObject inst = GameObject.Instantiate (source, pos, Quaternion.identity) as GameObject;
+		inst.renderer.material = new Material (Shader.Find ("Transparent/Diffuse"));
+		inst.renderer.material.mainTexture = texture;
+		//inst.renderer.material.mainTextureScale = this.cubeScale;
+		//inst.renderer.material.mainTextureOffset = new Vector2 ((1f) / 2f, (1f) / 2f);
+                
+		//inst.transform.localScale *= cubeScale.x;//normalCubeScale.x;
+		inst.transform.Rotate (new Vector3 (0, 0, 180f));
+        
+		CubeScript cs = inst.gameObject.AddComponent<CubeScript> ();
+		if (cs != null) {
+			cs.CubeInfo = texture.name;
+			cs.Velocity = 0.2f;
+			cs.MinDistance = 0.01f;
+		}
+
+		return inst;
+	}
+	
+	public override void CreateBChoice ()
+	{
+		comparisonList.Add (CreateCube (MinigameSetup.GetTextureById (CurrentTask.Model), Vector3.zero, cubePrefab));
+
+		for (int i = 0; i < CurrentTask.Choices.Count; i++) {
+			Texture2D texture = MinigameSetup.GetTextureById ((int)CurrentTask.Choices [i]);
+			int randomIndex = Random.Range (0, comparisonList.Count + 1);
+			comparisonList.Insert (randomIndex, CreateCube (texture, Vector3.zero, cubePrefab));
+		}
+                
+	}
+
+	public override  void CreateCChoice ()
+	{
+
+		comparisonList.Add (CreateText (MinigameSetup.GetTextureById (CurrentTask.Model).name, Vector3.zero, cubePrefab));
+
+		for (int i = 0; i < CurrentTask.Choices.Count; i++) {
+
+			string str = MinigameSetup.GetTextureById ((int)CurrentTask.Choices [i]).name;
+			int randomIndex = Random.Range (0, comparisonList.Count + 1);
+			comparisonList.Insert (randomIndex, CreateText (str, Vector3.zero, cubePrefab));
+
+		}
+	}
+	
+	public override void CreateDChoice ()
+	{
+		string str = MinigameSetup.GetTextureById (CurrentTask.Model).name;
+		for (int j = 0; j < str.Length; j++) {
+			comparisonList.Add (CreateText (str [j].ToString (), Vector3.zero, cubePrefab));
+		}
+		
+
+		for (int i = 0; i < CurrentTask.Choices.Count; i++) {
+			str = MinigameSetup.GetTextureById ((int)CurrentTask.Choices [i]).name;
+			for (int j = 0; j < str.Length; j++) {
+				int randomIndex = Random.Range (0, comparisonList.Count + 1);
+				comparisonList.Insert (randomIndex, CreateText (str [j].ToString (), Vector3.zero, cubePrefab));
+			}
+		}
+	}
+	
+	public override void CreateEChoice ()
+	{
+		Word w = MinigameSetup.GetWordById (CurrentTask.Model);
+		for (int j = 0; j < w.Syllables.Count; j++) {
+			comparisonList.Add (CreateText (w.Syllables [j].ToString (), Vector3.zero, cubePrefab));
+		}
+		
+
+		for (int i = 0; i < CurrentTask.Choices.Count; i++) {
+			w = MinigameSetup.GetWordById ((int)CurrentTask.Choices [i]);
+			
+			for (int j = 0; j <  w.Syllables.Count; j++) {
+				int randomIndex = Random.Range (0, comparisonList.Count + 1);
+				comparisonList.Insert (randomIndex, CreateText (w.Syllables [j].ToString (), Vector3.zero, cubePrefab));
+			}
+		}
+	}
+	
+	private GameObject CreateText (string name, Vector3 pos, GameObject source)
+	{		
+		source.renderer.enabled = false;
+
+		GameObject inst = GameObject.Instantiate (source, pos, Quaternion.identity) as GameObject;
+		//inst.transform.localScale *= cubeScale.x;
+		inst.name = name;
+		
+		GameObject textObject = GameObject.Instantiate (textPrefab, pos, Quaternion.identity) as GameObject;
+		TextMesh gText = textObject.GetComponent (typeof(TextMesh)) as TextMesh;
+		gText.text = name;		
+		gText.renderer.material.color = Color.blue;
+
+		Bounds textBounds = gText.renderer.bounds;
+                
+		while (textBounds.extents.x * 2 + 0.5f > inst.renderer.bounds.extents.x * 2) {
+			gText.transform.localScale *= 1f - (0.01f);
+			textBounds = gText.renderer.bounds;
+		}
+		textObject.transform.parent = inst.transform;  
+		textObject.transform.position = inst.transform.position 
+                        + new Vector3 (- textBounds.extents.x * 2 / 2f, textBounds.size.y / 2f, 0f);
+                
+		
+		CubeScript cs = inst.gameObject.AddComponent<CubeScript> ();
+		if (cs != null) {
+			cs.CubeInfo = name;
+			cs.Velocity = 0.2f;
+			cs.MinDistance = 0.01f;
+		}
+
+		return inst;
+	}
+	
+	
+	
+	#endregion
+	
+	
+	public override void EraseAll ()
+	{
+		EraseCompareList ();
+		DestroyCancelAcceptChoice ();
+	}
+
+	public void EraseCompareList ()
+	{
+		
+		foreach (GameObject item in comparisonList) {
+			item.gameObject.GetComponent<CubeScript> ().enabled = false;
+			item.collider.enabled = false;
+			GameObject.Destroy (item);
+		}
+		comparisonList = new ArrayList ();
+                      
+	}
+	
+	public void DestroyCancelAcceptChoice ()
+	{
+		GameObject.Destroy (okCube);
+		GameObject.Destroy (cancelCube);
+	}
+	
+	public override bool MiniGameResult ()
+	{		
+		return MinigameSetup.GetTextureById (CurrentTask.Model).name == GetChoice (selectionList);
+	}
+	
+	public override void AdjustCamera ()
+	{
+		float height = Camera.mainCamera.orthographicSize * 2f;
+		
+		//tamanho da tela = (num_comp(n) + model(1))*espaco_entre(space_between) + accept(1) + cancel(1); 		
+		float width = height * Camera.main.aspect;
+				
+		//Accept + Cancel
+		float buttons = cubePrefab.renderer.bounds.extents.x * 2f;
+					
+		float Total = buttons + ChoicesSize ();
+		//Debug.Log (":" + Total);
+		
+		var oSize = (Total * Camera.main.aspect) / 2f;
+		
+		if(oSize > Camera2DTracker.InicialOrthographicSize)
+			Camera2DTracker.Zoom = oSize - Camera.main.orthographicSize;
+		else
+			Camera2DTracker.Zoom = 5;
+			
+	}
+	
+	private float ChoicesSize ()
+	{
+		int escolhas = 0;  
+				
+		ArrayList list = new ArrayList ();
+		list.AddRange (CurrentTask.Choices);
+		int model = CurrentTask.Model;//necessário para conversão short to int
+		list.Add (model);
+		for (int i = 0; i < list.Count; i++) {
+			Word w = MinigameSetup.GetWordById ((int)list [i]);
+		
+			if (CurrentTaskTypeName [1].ToString ().Equals ("B") || CurrentTaskTypeName [1].ToString ().Equals ("C")) {
+				escolhas ++;
+				
+			} else if (CurrentTaskTypeName [1].ToString ().Equals ("D")) {
+				escolhas += w.Name.Length;
+				
+			} else if (CurrentTaskTypeName [1].ToString ().Equals ("E")) {
+				//Debug.Log("entrou");
+				escolhas += w.SyllablesNumber;
+			
+			}
+		}	
+		
+		escolhas++;
+		
+		//Debug.Log ("::" + escolhas + " - " + cubePrefab.renderer.bounds.extents.x * 2);
+		//(Escolhas + modelo) * tamanho_do_cubo
+		float escolhasTamanho = escolhas * (cubePrefab.renderer.bounds.extents.x);
+		
+		//  Count(E + M )*spaceBetween
+		float espaco = escolhas * spaceBetweenItens;		
+	
+		//Debug.Log ("::" + (espaco + escolhasTamanho));
+		return espaco + escolhasTamanho;
+	}
+	
+}

@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 33dd8dfbe2586304f91f0a5489625c7a
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - topTexture: {fileID: 2800000, guid: ab70cbc6b72b3344da67a04211f645e5, type: 1}
+  - coreTexture: {fileID: 2800000, guid: 2d22d519baa9020448fc6e847d688ed5, type: 1}
+  - gearPrefab: {fileID: 100000, guid: 0dbe772aace659b48a530c2518c198f6, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}

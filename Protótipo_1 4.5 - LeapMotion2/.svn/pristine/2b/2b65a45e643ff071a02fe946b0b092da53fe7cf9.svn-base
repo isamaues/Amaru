@@ -1,0 +1,453 @@
+using UnityEngine;
+using System.Collections;
+
+/**
+ *  autor: Pedro Afonso , Gilberto Nerino
+ *  versão: 0.1
+ */
+public class LogicaDeSessao : MonoBehaviour
+{	
+	
+	ArrayList ListaDePalavras = new ArrayList () ;//= Lista com todas as palavras do Jogo.
+	ArrayList ListaDeSonda = new ArrayList ();// = Lista de palavras que o aluno já aprendeu.
+	ArrayList ListaASerEnsinada = new ArrayList ();// = Lista de todas as palavras que o aluno não aprendeu.
+	ArrayList ListaAuxiliarDePalavrasASeremEnsinadas = new ArrayList ();// = É uma lista auxiliar de palavras a serem ensinadas  contendo um número restritos de palavras. A geração de tarefas e verificação do aprendizado será executado para as palavras dessa lista.
+	ArrayList tarefasGeradas = new ArrayList (); //Tarefas a serem executadas 
+	int PalavrasAprendidas = 0;// = contador para identificar quantas palavras foram “aprendidas” nesta sessão.
+	int PalavrasPorSessao = 4;
+	public int numTarefasGeradas = 3;
+	Task currentTask;
+	
+			
+	// DADOS DO BOSCO
+	DadosTTFuzzy DataTTFuzzy = new DadosTTFuzzy ();
+	DadosFuzzyNumComp DataNCFuzzy = new DadosFuzzyNumComp ();
+	DadosFuzzyPalavras DataPFuzzy = new DadosFuzzyPalavras ();
+	private bool gameover;
+
+	private bool isGameOver ()
+	{
+		return gameover;
+	}
+	
+			
+	/// <summary>
+	/// A logica e sessão começa depois que foi executado o pré-teste
+	/// </summary>
+	public void StartLogicaDeSessao (TaskManager tm, MachineLearning ml, WordManager wm)
+	{
+		ListaDePalavras = wm.GetWords ();
+		foreach (Word palavra in ListaDePalavras) {
+			// Verifica se aprendeu a palavra
+			if (VerificarPalavra (tm, ml, palavra)) {
+				IncluirEmSonda (palavra);
+			} else {
+			//###TESTE DE CENARIO. Diminuir as amostras bloqueando as palavras que não são bolo,tatu,apito,tomate,muleta de entrarem na logica de sessão.
+				if ((palavra.Name=="bolo")||(palavra.Name=="tatu")||(palavra.Name=="apito")||(palavra.Name=="tomate")||(palavra.Name=="muleta")) {
+				   IncluiEmListaASerEnsinada (palavra);
+			//###TESTE DE CENARIO
+				}				
+			}
+		}
+		//Exibe Lista a ser ensinada
+		DisplayLista(ListaASerEnsinada,"ListaASerEnsinada");
+		
+		//Gerar ListaAuxiliarDePalavrasASeremEnsinadas contendo 3 palavras da regra1 da ListaASerEnsinada
+		ListaAuxiliarDePalavrasASeremEnsinadas = GetPalavrasNaoAprendidas (numTarefasGeradas, ListaASerEnsinada);
+		
+		//Excluir as 3 palavras da regra1 da ListaASerEnsinada
+		LimparDaListaASeremEnsinadas (ListaAuxiliarDePalavrasASeremEnsinadas, ListaASerEnsinada);
+		
+		//Exibe Lista Auxiliar
+		DisplayLista(ListaAuxiliarDePalavrasASeremEnsinadas,"ListaAuxiliarDePalavrasASeremEnsinadas");
+		
+		//Iniciar contador PalavrasAprendidas igual a 0
+		PalavrasAprendidas = 0;
+		
+		//Exibe Lista a ser ensinada
+		DisplayLista(ListaDeSonda,"ListaDeSonda");
+	}
+	
+
+	
+	public void VerificarSessao (TaskManager tm, MachineLearning ml, WordManager wm)
+	{
+		if (ListaASerEnsinada.Count == 0) {
+			gameover = true;
+			return;
+		}
+		// Se PalavrasAprendidas igual 4 ou tempo dercorrido for maior que 40 minutos
+		if (PalavrasAprendidas == PalavrasPorSessao || ContadorTempo () > 2400f) {
+			//Salva no Base de Dados e finaliza o sessão, e aluno retorna a jogar outro dia.
+			FinalizarSessao ();
+		} else {
+			// Gerar tarefas para cada palavra da ListaAuxiliarDePalavrasASeremEnsinadas
+			tarefasGeradas = GerarTarefasParaListaAux (tm, ml, wm);
+		}
+	}
+	
+
+	
+//  Executar as tarefas da ListaAuxiliarDePalavrasASeremEnsinadas no jogo
+	public ArrayList GetTarefaGeradaParaListaAux ()
+	{
+		return tarefasGeradas;
+	}
+	
+	// Deve ser executado quando as todas as tarefas geradas (que estarão na lista de tarefas da TaskMAnager) forem executadas 
+	public void AtualizarListaAuxiliarESonda (WordManager wm, MachineLearning ml, TaskManager tm)//, DadosTTFuzzy dadosTTFuzzy, DadosFuzzyNumComp dadosNCFuzzy, DadosFuzzyPalavras dadosPFuzzy)
+	{
+	
+		var listToRemove = new ArrayList ();
+	
+		// Verificar aprendizado de cada palavra da ListaAuxiliarDePalavrasASeremEnsinadas
+		foreach (Word palavra in ListaAuxiliarDePalavrasASeremEnsinadas) {
+				
+			// Se aprendeu
+			if (VerificarPalavra (tm, ml, palavra)) {
+
+				// incluir palavra aprendida em ListaDeSonda
+				ListaDeSonda.Add (palavra);
+
+				// excluir palavra aprendida de ListaAuxiliarDePalavrasASeremEnsinadas
+				listToRemove.Add (palavra);
+
+				//incrementar 1 a PalavrasAprendidas
+				PalavrasAprendidas++;
+			}
+		}
+		
+		foreach (Word palavra in listToRemove) {
+			ListaAuxiliarDePalavrasASeremEnsinadas.Remove (palavra);
+		}
+		
+		//VERFICAR se os parâmetros de GRAU DE APRENDIZAGEM, LEARNREAD e LEARNWRITE estão sendo atualizados
+		foreach (Word palavra in GetPalavrasNaoAprendidas(listToRemove.Count, ListaASerEnsinada)) {
+			ListaAuxiliarDePalavrasASeremEnsinadas.Add (palavra);
+		}
+			
+		//Tira da lista de palavras a serem ensinadas.
+		LimparDaListaASeremEnsinadas (ListaAuxiliarDePalavrasASeremEnsinadas, ListaASerEnsinada);
+		
+	}
+
+	
+	//  executa a tarefa gerada acima no jogo
+	public void VerificarSonda (Task tarefa, Word palavra)
+	{		
+		if (ListaDeSonda.Contains (palavra)) {
+			//	Se aluno errar a tarefa para a palavra sonda gerada acima
+			if ((tarefa.Latency != 0) && (tarefa.Correct == 0)) {
+				// incluir essa palavra em ListaASerEnsinada
+				ListaASerEnsinada.Add (palavra);
+				// retirar palavra da Lista de Sonda
+				ListaDeSonda.Remove (palavra);
+			}
+		}
+		
+	}
+
+	
+	#region Entrou no Pseudo-código
+	
+	
+	// Verificar cada palavra em ListaDePalavras
+	private bool VerificarPalavra (TaskManager tm, MachineLearning ml, Word palavra)
+	{     			
+		//É necessário atualizar também a lista de palavras original com essas informações novas pq é ela que vai ser jogada no txt , né?
+		
+		
+		Debug.Log("---Logica de 1 Ordem. Tarefas de LEITURA. para a Palavra: "+palavra.Name +" ---");
+		//Select de Tarefas de leitura
+		ArrayList TasksOfRead = tm.GetTasksToRead (palavra.Name); 			   
+		LearningInfo liRead = ml.GetLearningInfo (TasksOfRead, palavra.MaxReadDif);
+	
+		//Atribuicao das variveis de GrauDeAprendizado e se ele Aprendeu ou nao a palavra
+		palavra.LearningDegreeRead = (float)liRead.grauDeAprendizado;			
+		palavra.LearnedRead = liRead.aprendizado;
+	    
+		Debug.Log("---Logica de 1 Ordem. Tarefas de ESCRITA.  Palavra: "+palavra.Name+" ---");
+		//Select de Tarefas de Escrita
+		ArrayList TasksOfWrite = tm.GetTasksToWrite (palavra.Name); 
+		LearningInfo liWrite = ml.GetLearningInfo (TasksOfWrite, palavra.MaxWriteDif);
+	
+		//Atribuicao das variveis de GrauDeAprendizado e se ele Aprendeu ou nao a palavra
+		palavra.LearningDegreeWrite = (float)liWrite.grauDeAprendizado;			
+		palavra.LearnedWrite = liWrite.aprendizado;		
+				
+		return palavra.LearnedRead == 1 && palavra.LearnedWrite == 1;		
+	}
+		
+	private void IncluirEmSonda (Word palavra)
+	{
+		ListaDeSonda.Add (palavra);
+	}
+	
+	private void IncluiEmListaASerEnsinada (Word palavra)
+	{
+		ListaASerEnsinada.Add (palavra);
+	}
+	
+	//REGRA1 Pegar as palavras que o aluno mais sabe (grau de aprendizado maior) e que ele ainda não aprendeu da ListaASerEnsinada		
+	private ArrayList GetPalavrasNaoAprendidas (int quant, ArrayList Lista)
+	{
+		ArrayList lpOrdenadaPorGA = new ArrayList ();	
+		
+		ArrayList tempLista = OrdenaListaPorGrauDeAprendizado (Lista, false);
+		
+		int countAux = 0;
+		
+		for (int i = 0; i < tempLista.Count; i++) {
+			
+			if ((tempLista [i] as Word).LearnedRead == 0 || (tempLista [i] as Word).LearnedRead == 0) {
+				lpOrdenadaPorGA.Add (tempLista [i]);
+				countAux++;
+			}
+			
+			if (countAux >= quant) {
+				break;
+			}
+		}
+		
+		return lpOrdenadaPorGA;
+	}
+	
+	private ArrayList OrdenaListaPorGrauDeAprendizado (ArrayList lista, bool ascendente)
+	{
+		
+		ArrayList temp = new ArrayList ();
+		temp.Add (lista [0]);
+		for (int i = 1; i < lista.Count; i++) {
+			bool flag = false;
+			for (int j = 0; j < temp.Count; j++) {
+				Word item = (Word)temp [j];
+				if (ascendente) {
+					if ((item.LearningDegreeRead + item.LearningDegreeWrite) / 2f >= (((Word)lista [i]).LearningDegreeRead + ((Word)lista [i]).LearningDegreeWrite) / 2f) {
+						temp.Insert (j, lista [i]);
+						flag = true;
+						break;
+					}
+				} else {
+					if ((item.LearningDegreeRead + item.LearningDegreeWrite) / 2f <= (((Word)lista [i]).LearningDegreeRead + ((Word)lista [i]).LearningDegreeWrite) / 2f) {
+						temp.Insert (j, lista [i]);
+						flag = true;
+						break;
+					}
+				}
+			}
+			if (!flag) {
+				temp.Add (lista [i]);
+			}
+		}
+		
+		return temp;
+	}
+	
+	private void LimparDaListaASeremEnsinadas (ArrayList ListaAux, ArrayList listOrigem)
+	{
+		foreach (Word palavra in ListaAux) {
+			listOrigem.Remove (palavra);
+		}
+	}
+	
+	private float ContadorTempo ()
+	{
+		return 0f;	
+	}
+	
+	private void FinalizarSessao ()
+	{
+		
+	}
+		
+	//  Gerar tarefas para cada palavra da ListaAuxiliarDePalavrasASeremEnsinadas
+	private ArrayList GerarTarefasParaListaAux (TaskManager tm, MachineLearning ml, WordManager wm)
+	{
+		ArrayList list = new ArrayList ();
+
+		//int countTask = 0;
+		for (int i = 0; i < ListaAuxiliarDePalavrasASeremEnsinadas.Count; i++) {			
+			//TODO :: :: :: :: :: :: :: VERIFICAR ESSE METODO SE ESTÁ GERANDO OU NÂO A TAREFA DE MANEIRA CORRETA
+			list.Add (GenerateTask ((Word)ListaAuxiliarDePalavrasASeremEnsinadas [i], ListaDePalavras, wm, ml, tm));
+		}
+		
+		Task ts = PegaSonda (wm, ml, tm);
+		
+		if (ts != null) {
+			list.Add (ts);	
+		}
+		
+		return list;
+	}
+	
+	private Task GenerateTask (Word  rw, ArrayList readWords, WordManager wm, MachineLearning ml, TaskManager tm)//, DadosTTFuzzy DataTTFuzzy, DadosFuzzyNumComp DataNCFuzzy, DadosFuzzyPalavras DataPFuzzy)
+	{
+				
+		ArrayList TaskOfModelo;
+		ArrayList TaskOfType;
+		ArrayList TaskOfNumComp;
+				
+		TaskOfModelo = tm.GetTasksByModel (rw.Name); 
+				
+		TaskOfType = tm.GetTasksByType (TaskOfModelo, "AB");
+		DataTTFuzzy.dadoHTT_AB = (float)ml.GetProbabilidade (TaskOfType, rw.MaxReadDif);
+		DataTTFuzzy.dadoTTxA_AB = (float)ml.GetTaxaAcerto (TaskOfType);
+								
+		TaskOfType = tm.GetTasksByType (TaskOfModelo, "AC");
+		DataTTFuzzy.dadoHTT_AC = (float)ml.GetProbabilidade (TaskOfType, rw.MaxReadDif);
+		DataTTFuzzy.dadoTTxA_AC = (float)ml.GetTaxaAcerto (TaskOfType);
+				
+		TaskOfType = tm.GetTasksByType (TaskOfModelo, "AE");
+		DataTTFuzzy.dadoHTT_AE = (float)ml.GetProbabilidade (TaskOfType, rw.MaxWriteDif);
+		DataTTFuzzy.dadoTTxA_AE = (float)ml.GetTaxaAcerto (TaskOfType);
+				
+		TaskOfType = tm.GetTasksByType (TaskOfModelo, "BC");
+		DataTTFuzzy.dadoHTT_BC = (float)ml.GetProbabilidade (TaskOfType, rw.MaxReadDif);
+		DataTTFuzzy.dadoTTxA_BC = (float)ml.GetTaxaAcerto (TaskOfType);
+				
+		TaskOfType = tm.GetTasksByType (TaskOfModelo, "BE");
+		DataTTFuzzy.dadoHTT_BE = (float)ml.GetProbabilidade (TaskOfType, rw.MaxWriteDif);
+		DataTTFuzzy.dadoTTxA_BE = (float)ml.GetTaxaAcerto (TaskOfType);
+				
+		TaskOfType = tm.GetTasksByType (TaskOfModelo, "CE");
+		DataTTFuzzy.dadoHTT_CE = (float)ml.GetProbabilidade (TaskOfType, rw.MaxWriteDif);
+		DataTTFuzzy.dadoTTxA_CE = (float)ml.GetTaxaAcerto (TaskOfType);
+
+		//DisplayTasksNamed (TaskOfModelo, readWords);// Mostra as tentativas no debug		
+				
+		TaskOfNumComp = tm.GetTasksByCompareCount (TaskOfModelo, 2);			
+		DataNCFuzzy.HNC_1 = (float)ml.GetProbabilidade (TaskOfNumComp, rw.MaxReadDif);
+		DataNCFuzzy.TNC_1 = (float)ml.GetTaxaAcerto (TaskOfNumComp);
+				
+		TaskOfNumComp = tm.GetTasksByCompareCount (TaskOfModelo, 3);
+		DataNCFuzzy.HNC_2 = (float)ml.GetProbabilidade (TaskOfNumComp, rw.MaxReadDif);
+		DataNCFuzzy.TNC_2 = (float)ml.GetTaxaAcerto (TaskOfNumComp);				
+				
+		TaskOfNumComp = tm.GetTasksByCompareCount (TaskOfModelo, 4);
+		DataNCFuzzy.HNC_3 = (float)ml.GetProbabilidade (TaskOfNumComp, rw.MaxReadDif);
+		DataNCFuzzy.TNC_3 = (float)ml.GetTaxaAcerto (TaskOfNumComp);
+
+		//--------------
+		foreach (Word item in readWords) {
+			var listOfIncorrectWords = new ArrayList ();
+					
+			if (!item.Name.Equals (rw.Name)) {
+						
+				listOfIncorrectWords = tm.GetTasksByChoices (TaskOfModelo, item.wordId);
+				DataPFuzzy.HPalavra [item.wordId - 1] = 
+							(float)ml.GetProbabilidade (listOfIncorrectWords, 
+								(rw.MaxReadDif + rw.MaxWriteDif) / 2);
+				DataPFuzzy.FPalavra [item.wordId - 1] = 
+							(float)ml.GetTaxaAcerto (listOfIncorrectWords);
+			}
+					
+		}			
+		//-------------
+		int taskType = TaFuzzy.EscolhaFuzzyTT (DataTTFuzzy);
+		int compareNumber = TaFuzzyNumComp.DecisaoNumComp (DataNCFuzzy);
+		ArrayList palavrasIncorretas = taFuzzyPalavras.DecisaoPalavras (rw.wordId, DataPFuzzy, compareNumber);
+		
+		string incorWords = "";
+		foreach (int ch in palavrasIncorretas) {
+			incorWords += " " + ch;
+		}
+				
+		Task novaTarefa = new Task ();
+		novaTarefa.CompareNumber = compareNumber;
+		novaTarefa.TaskType = taskType;
+		novaTarefa.Choices.AddRange (palavrasIncorretas);
+				
+		var taskName = tm.GetTaskTypeName (taskType);
+				
+				
+				
+		DifficultyIdentifier difId = new DifficultyIdentifier (ref readWords);
+				
+		if (!taskName.Contains ("E")) {
+			novaTarefa.Difficulty = difId.GerarDificuldadeLeitura ((short)rw.wordId, palavrasIncorretas, taskType, compareNumber);
+		} else {
+			novaTarefa.Difficulty = difId.GerarDificuldadeEscrita (wm.GetWords (), (short)rw.wordId, palavrasIncorretas, taskType, compareNumber);
+		}
+		
+		novaTarefa.Model = (short)rw.wordId;
+		novaTarefa.MiniGame = GetMiniGame ();
+		//Debug.Log("------------------------------------------------------------------------------------------");
+		Debug.Log("----------Ultimo ID: "+tm.GetTasks().Count+"| IDNovo: "+(tm.GetTasks().Count + 1+ " ----------"));
+		
+		novaTarefa.Id = tm.GetTasks ().Count + 1;
+				
+		tm.AddTask (novaTarefa);
+		
+		return novaTarefa;
+	}
+	
+	private Task PegaSonda (WordManager wm, MachineLearning ml, TaskManager tm)
+	{
+		Task tarefaParaPalavraSonda = null;
+		if (ListaDeSonda.Count > 0) {
+
+			ArrayList tempLista = GetPalavraMaisDificeis (1, ListaDeSonda);
+			
+			foreach (Word palavra in tempLista) {
+				//Gera uma tarefa para a palavra Sonda : Verifica se ta certo ae pedro!!!
+				tarefaParaPalavraSonda = GenerateTask (palavra, ListaDePalavras, wm, ml, tm);
+			}
+		}	
+		return tarefaParaPalavraSonda;
+	}
+	
+		
+	// REGRA2 Pegar as palavras “aprendidas”, mas que tem o menor grau de aprendizado da ListaASerEnsinada
+	private ArrayList GetPalavraMaisDificeis (int quant, ArrayList Lista)
+	{
+		ArrayList lpOrdenadaPorGA = new ArrayList ();
+
+		ArrayList tempLista = OrdenaListaPorGrauDeAprendizado (Lista, true);
+		
+		int countAux = 0;
+		
+		for (int i = 0; i < tempLista.Count; i++) {
+			
+			if ((tempLista [i] as Word).LearnedRead == 1 && (tempLista [i] as Word).LearnedRead == 1) {
+				lpOrdenadaPorGA.Add (tempLista [i]);
+				countAux++;
+			}
+			
+			if (countAux == quant) {
+				break;
+			}
+		}
+		
+		return lpOrdenadaPorGA;
+	}
+
+	#endregion
+	
+	
+	//Display para exibir listas
+	private void DisplayLista(ArrayList Lista, string NomeDaLista)
+	{	
+		int indice=0;
+		string Resultado="";
+		  foreach (Word palavra in Lista) {
+		    	indice++;
+		    	Resultado = Resultado+"  "+indice.ToString()+" ->  "+palavra.Name+"  ";
+		  }		
+		Debug.Log(NomeDaLista +": "+ Resultado);
+	}
+	
+
+	#region USELESS
+	
+
+  	
+	
+	public int GetMiniGame ()
+	{
+		// TODO Gerar minigames de acordo com a sessão.
+		return 1;
+		
+	}	
+	
+	#endregion
+}

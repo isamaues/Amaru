@@ -1,0 +1,32 @@
+using UnityEngine;
+using System.Collections;
+
+public class EditPlayer : Scene {
+
+	private string newPlayerName = "";
+
+	public EditPlayer(){
+		buttonsYOffset += 50;	//o y dos botões desceram para permitir o nome do jogador
+		buttonName = new string[2]{"Editar Jogador", "Voltar"};
+		buttonListening = new bool[buttonName.Length];	
+	}
+	
+	public override void OnGUI() {
+		base.OnGUI();
+		
+		newPlayerName = GUI.TextField(new Rect(Screen.width/2-100, buttonsYDefaultOffset, 200, 25), newPlayerName, 35);
+		
+		//criar método save depois
+		if(buttonListening[0])
+		{
+			Debug.Log("Jogador " + newPlayerName + " alterado!");
+			newPlayerName = "";
+		}
+		
+		if(buttonListening[1])
+		{
+			newPlayerName = "";
+			SceneScreenManager.currentScene = ScreenState.MainMenu;
+		}
+	}
+}

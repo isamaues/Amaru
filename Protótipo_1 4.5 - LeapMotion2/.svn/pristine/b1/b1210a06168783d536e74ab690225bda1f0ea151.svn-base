@@ -1,0 +1,345 @@
+using UnityEngine;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+public class TestScenario : MonoBehaviour
+{
+	//atributos para a caixa da tela
+	private float horOffset = 10;
+	private float verOffset = 20;
+	private float boxWidth;
+	private float boxHeigth;
+	
+	//atributos para o efeito de trannsição de tela
+	private string currentModel = "Modelo";
+	public int buttonSize = 60;
+	public int space = 5;
+	public int qtdTarefas = 1;
+	public string task_txt_path = @"Assets\Scripts\BD\tentativas_teste\tasks.1TesteLGSPreenchido.txt";
+	public string word_txt_path = @"Assets\Scripts\BD\words.txt";
+	private TaskManager tm;
+	private WordManager wm ;
+	private SessionLogic sl ;
+	private DifficultyIdentifier di;
+	private ArrayList palavrasLidas = new ArrayList ();
+	private ArrayList tarefasLidas = new ArrayList ();
+	private Task tarefa;
+	private bool jogando;
+	private int indice = 0;
+
+	void Start ()
+	{
+		boxWidth = Screen.width - 2 * horOffset;
+		boxHeigth = Screen.height - 2 * verOffset;		
+	
+		tm = transform.gameObject.AddComponent<TaskManager> ();
+		tm.ReadTask (task_txt_path);             					// Ler tentativas
+		tarefasLidas = tm.GetTasks ();
+		tm.DisplayTasks ();
+
+		wm = transform.gameObject.AddComponent<WordManager> ();
+		wm.ReadWord (word_txt_path);             					// Ler palavras do txt
+		palavrasLidas = wm.GetWords ();
+		
+		sl = transform.gameObject.AddComponent<SessionLogic> ();
+		
+		di = new DifficultyIdentifier (ref palavrasLidas);
+		di.ProcessarDifEmLote (ref tarefasLidas);
+		//di.ProcessarDificuldadeMaxima(ref palavrasLidas);
+	}
+
+	void Update ()
+	{
+		
+		if (!jogando && tarefasLidas != null && tarefasLidas.Count > 0) {
+			if (indice < tarefasLidas.Count) {
+				tarefa = (Task)tarefasLidas [indice];
+				jogando = true;
+				currentModel = wm.GetWord (tarefa.Model);
+			} else {
+				GerarLogicaDeSessao ();
+			}
+		}
+		
+		if (escolhas != null) {
+			var i = 0;
+			foreach (bool botao in escolhas) {
+				if (botao) {
+					Debug.LogWarning (wm.GetWord (tarefa.Model) + " - " + currentModel);
+					if (i == 0) {
+						tarefa.Correct = 1;	
+					} else {
+						tarefa.Correct = 0;	
+					}
+					tarefa.DateTime = DateTime.Now;
+					
+					tarefasConcluidas.Add (tarefa);
+					
+					indice++;
+					scrollTarefasPosition += new Vector2 (0, 20);
+					jogando = false;
+					break;
+				}
+				i++;
+			}
+		} else {
+			escolhas = new bool[tarefa.Choices.Count + 1];
+		}
+		
+	}
+	
+	void GerarLogicaDeSessao ()
+	{
+		sl.StartLogic (wm.GetWords (), tm, wm, word_txt_path);
+		tarefasLidas = tm.GetTasks ();
+	}
+	
+	#region GUI
+	
+	bool[] escolhas;
+	private Vector2 scrollTarefasPosition = Vector2.zero;
+	private Vector2 scrollPalavraPosition = Vector2.zero;
+	private ArrayList tarefasConcluidas = new ArrayList ();
+	Rect botoesRect;
+	Rect palavrasRect;
+	Rect tarefasRect;
+
+	void OnGUI ()
+	{
+		var boxW = Screen.width - 4 * horOffset;
+		var boxH = (Screen.height - 4 * verOffset);	
+		palavrasRect = GUI.Window (0, new Rect (2 * horOffset, 2 * verOffset, (boxW / 5) * 2 - 10, (boxH / 2) - 20), DoPalavrasTable, "PALAVRAS");
+		
+		botoesRect = GUI.Window (1, new Rect (2 * horOffset + (boxW / 5) * 2, 2 * verOffset, (boxW / 5) * 3, (boxH / 2) - 20), DoBotoesTable, "TAREFA");
+		
+		if (tarefasLidas != null && tarefasLidas.Count > 0) {
+				
+			tarefasRect = GUI.Window (2, new Rect (2 * horOffset, Screen.height / 2, boxW, boxH / 2), DoTarefasTable, "Tarefas Concluidas");
+		}
+		
+		
+	}
+	
+	void DoBotoesTable (int windowId)
+	{
+		GUI.color = Color.yellow;
+		GUI.Box (new Rect (horOffset, verOffset + 20, botoesRect.width - horOffset * 2, 40), currentModel.ToUpper ());
+		GUI.color = Color.white;
+		if (escolhas != null && escolhas.Length > 0) {
+			if (tarefa != null && tarefa.Choices != null) {
+				int currentPos = (int)(botoesRect.width / 2) - (((tarefa.Choices.Count + 1) * (buttonSize + space)) / 2);
+				
+				escolhas = new bool[tarefa.Choices.Count + 1];
+				escolhas [0] = GUI.Button (new Rect (currentPos, 100, buttonSize, buttonSize), wm.GetWord (tarefa.Model));
+				
+				currentPos += buttonSize + space;
+				for (int i = 0; i < tarefa.Choices.Count; i++) {
+					
+					escolhas [i + 1] = GUI.Button (new Rect (currentPos, 100, buttonSize, buttonSize), wm.GetWord ((int)tarefa.Choices [i]));
+					currentPos += buttonSize + space;
+				}
+			}
+		}
+	}
+
+	void DoTarefasTable (int windowId)
+	{
+		var boxW = Screen.width - 4 * horOffset;
+		var boxH = (Screen.height - 4 * verOffset) / 2;		
+		
+		var listaDeTarefas = tarefasConcluidas.ToArray ();
+		
+		var rect = new Rect (5, 38, boxW - 10, boxH - 40);
+		
+		GUI.Box (rect, "");
+		
+		var sView = new Rect (0, 20, tarefasRect.width - 30, listaDeTarefas.Length * 20);
+		
+		GUI.Box (new Rect (5, 20, boxW - 10, 20), "");
+	
+		var cellSize = (boxW - 10) / 10f;
+		var cellPos = 5f;
+		CreateCell (new Rect (cellPos, 20, 30, 20), new GUIContent ("ID"));
+		
+		cellPos += 30;
+		CreateCell (new Rect (cellPos, 20, cellSize, 20), new GUIContent ("Modelo"));
+		
+		cellPos += cellSize;
+		cellSize /= 2;
+		CreateCell (new Rect (cellPos, 20, cellSize, 20), new GUIContent ("Comp"));
+		
+		cellPos += cellSize;
+		CreateCell (new Rect (cellPos, 20, cellSize, 20), new GUIContent ("Laten"));
+		
+		cellPos += cellSize;
+		cellSize *= 4;
+		CreateCell (new Rect (cellPos, 20, cellSize, 20), new GUIContent ("Data"));
+		
+		cellPos += cellSize;
+		cellSize /= 2;
+		CreateCell (new Rect (cellPos, 20, cellSize - 30, 20), new GUIContent ("Correcao"));
+		
+		cellPos += cellSize - 30;
+		cellSize *= 5;
+		CreateCell (new Rect (cellPos, 20, cellSize, 20), new GUIContent ("Escolhas Erradas"));
+		
+		GUI.color = Color.white;
+		
+			
+		scrollTarefasPosition = GUI.BeginScrollView (rect, scrollTarefasPosition, sView);
+		
+		var firstPos = 20;
+		
+		for (int i = 0; i < listaDeTarefas.Length; i++) {
+			
+			if (((Task)listaDeTarefas [i]).Correct != 0) {
+				GUI.color = new Color (155 / 255f, 255 / 255f, 150 / 255f);
+			} else {
+				GUI.color = new Color (255 / 255f, 150 / 255f, 150 / 255f);
+			}
+			
+			GUI.Box (new Rect (0, firstPos + 20 * (i), boxW, 20), "");
+			
+			
+			
+			cellSize = (boxW) / 10f;
+			cellPos = 5f;
+			GUI.Label (new Rect (cellPos, firstPos + 20 * (i), 30, 20), ((Task)listaDeTarefas [i]).Id.ToString ());
+			cellPos += 30;
+			GUI.Label (new Rect (cellPos, firstPos + 20 * (i), cellSize, 20), wm.GetWord (((Task)listaDeTarefas [i]).Model));
+			cellPos += cellSize;
+			cellSize /= 2;
+			GUI.Label (new Rect (cellPos, firstPos + 20 * (i), cellSize, 20), ((Task)listaDeTarefas [i]).CompareNumber.ToString ());
+			cellPos += cellSize;
+			GUI.Label (new Rect (cellPos, firstPos + 20 * (i), cellSize, 20), ((Task)listaDeTarefas [i]).Latency.ToString ());
+			cellPos += cellSize;
+			cellSize *= 4;
+			GUI.Label (new Rect (cellPos, firstPos + 20 * (i), cellSize, 20), ((Task)listaDeTarefas [i]).DateTime.ToString ());
+			cellPos += cellSize;
+			cellSize /= 2;
+			GUI.Label (new Rect (cellPos, firstPos + 20 * (i), cellSize, 20), ((Task)listaDeTarefas [i]).Correct.ToString ());
+			cellPos = (boxW) / 2f;
+			for (int j = 0; j < ((Task)listaDeTarefas [i]).Choices.Count; j++) {
+				GUI.Label (new Rect (cellPos + (j * cellSize), firstPos + 20 * (i), cellSize, 20), wm.GetWord ((int)((Task)listaDeTarefas [i]).Choices [j]));
+			}
+			
+		}
+		GUI.color = Color.white;
+		GUI.EndScrollView ();
+	}
+
+	void CreateCell (Rect rect, GUIContent content)
+	{
+		CreateCell (rect, content, Color.white);
+	}
+	
+	void CreateCell (Rect rect, GUIContent content, Color color)
+	{
+		if (color != null)
+			GUI.color = color;
+		GUI.BeginGroup (rect);
+		GUI.Box (new Rect (0, 0, rect.width, rect.height), content);
+		GUI.EndGroup ();
+		GUI.color = Color.white;
+	}
+	
+	#endregion
+	
+	
+	#region PALAVRAS TABELA
+	
+	void DoPalavrasTable (int windowId)
+	{
+		var boxW = palavrasRect.width;
+		var boxH = palavrasRect.height;		
+		
+		var listaPalavras = palavrasLidas;
+		
+		var rect = new Rect (5, 38, boxW - 10, boxH - 10);
+		
+		GUI.Box (rect, "");
+		
+		var sView = new Rect (0, 20, palavrasRect.width, listaPalavras.Count * 20);
+		
+		GUI.Box (new Rect (5, 20, boxW - 10, 20), "");
+	
+		var cellSize = 0f;
+		var cellPos = 5f;
+		CreateCell (new Rect (cellPos, 20, 30, 20), new GUIContent ("ID"));
+		
+		cellSize = (boxW - 40) / 7f;
+		cellPos += 30;
+		CreateCell (new Rect (cellPos, 20, cellSize, 20), new GUIContent ("Nome"));
+		
+		cellPos += cellSize;
+		CreateCell (new Rect (cellPos, 20, cellSize, 20), new GUIContent ("LRead"));
+		
+		cellPos += cellSize;
+		CreateCell (new Rect (cellPos, 20, cellSize, 20), new GUIContent ("LWrite"));
+		
+		cellPos += cellSize;
+		CreateCell (new Rect (cellPos, 20, cellSize, 20), new GUIContent ("LDRead"));
+		
+		cellPos += cellSize;
+		CreateCell (new Rect (cellPos, 20, cellSize, 20), new GUIContent ("LDWrite"));
+		
+		cellPos += cellSize;
+		CreateCell (new Rect (cellPos, 20, cellSize, 20), new GUIContent ("MReadD"));
+		
+		cellPos += cellSize;
+		CreateCell (new Rect (cellPos, 20, cellSize, 20), new GUIContent ("MWriteD"));
+		
+		GUI.color = Color.white;
+		
+			
+		scrollPalavraPosition = GUI.BeginScrollView (rect, scrollPalavraPosition, sView);
+		
+		var firstPos = 20;
+		
+		for (int i = 0; i < listaPalavras.Count; i++) {
+			
+			if (((Word)listaPalavras [i]).LearnedRead != 0 && ((Word)listaPalavras [i]).LearnedWrite != 0) {
+				GUI.color = new Color (155 / 255f, 255 / 255f, 150 / 255f);
+			} else {
+				GUI.color = new Color (255 / 255f, 150 / 255f, 150 / 255f);
+			}
+			
+			GUI.Box (new Rect (0, firstPos + 20 * (i), boxW, 20), "");
+			
+			cellPos = 5f;
+			GUI.Label (new Rect (cellPos, firstPos + 20 * (i), 30, 20), ((Word)listaPalavras [i]).wordId.ToString ());
+			
+			cellSize = (boxW - 40) / 7f;
+			cellPos += 30;
+			GUI.Label (new Rect (cellPos, firstPos + 20 * (i), cellSize, 20), ((Word)listaPalavras [i]).Name);
+			
+			cellPos += cellSize;
+			GUI.Label (new Rect (cellPos, firstPos + 20 * (i), cellSize, 20), ((Word)listaPalavras [i]).LearnedRead.ToString ());
+			
+			cellPos += cellSize;
+			GUI.Label (new Rect (cellPos, firstPos + 20 * (i), cellSize, 20), ((Word)listaPalavras [i]).LearnedWrite.ToString ());
+			
+			cellPos += cellSize;
+			GUI.Label (new Rect (cellPos, firstPos + 20 * (i), cellSize, 20), ((Word)listaPalavras [i]).LearningDegreeRead.ToString ());
+			
+			cellPos += cellSize;
+			GUI.Label (new Rect (cellPos, firstPos + 20 * (i), cellSize, 20), ((Word)listaPalavras [i]).LearningDegreeWrite.ToString ());
+			
+			cellPos += cellSize;
+			GUI.Label (new Rect (cellPos, firstPos + 20 * (i), cellSize, 20), ((Word)listaPalavras [i]).MaxReadDif.ToString ("0.###"));
+			
+			cellPos += cellSize;
+			GUI.Label (new Rect (cellPos, firstPos + 20 * (i), cellSize, 20), ((Word)listaPalavras [i]).MaxWriteDif.ToString ("0.###"));
+
+//			cellPos = (boxW) / 2f;
+		
+			
+		}
+		GUI.color = Color.white;
+		GUI.EndScrollView ();
+	}
+	
+	
+	#endregion
+}

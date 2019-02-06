@@ -1,0 +1,133 @@
+using UnityEngine;
+using System.Collections;
+
+public class Border : MonoBehaviour
+{
+	public enum BorderType
+	{
+		Left,
+		Right,
+		Top,
+		Bottom	
+	}
+	
+	public BorderType borderType;
+	public bool isVisible = false;
+	
+	// Update is called once per frame
+	void Update ()
+	{
+		if (Camera.mainCamera != null) {
+			Plane[] planes = GeometryUtility.CalculateFrustumPlanes (Camera.mainCamera);
+		
+			if (GeometryUtility.TestPlanesAABB (planes, gameObject.collider.bounds)) {
+				CameraManager cm = Camera.main.GetComponent<CameraManager> ();
+				if (cm != null) {
+					switch (borderType) {
+					case BorderType.Bottom:
+						cm.blockBottom = true;
+						break;
+					case BorderType.Top:
+						cm.blockTop = true;
+						break;
+					case BorderType.Left:
+						cm.blockLeft = true;
+						break;
+					case BorderType.Right:
+						cm.blockRight = true;
+						break;
+					}
+				}
+			} else {
+				CameraManager cm = Camera.main.GetComponent<CameraManager> ();
+				if (cm != null) {
+					switch (borderType) {
+					case BorderType.Bottom:
+						cm.blockBottom = false;
+						break;
+					case BorderType.Top:
+						cm.blockTop = false;
+						break;
+					case BorderType.Left:
+						cm.blockLeft = false;
+						break;
+					case BorderType.Right:
+						cm.blockRight = false;
+						break;
+					}
+				}
+			}
+		}
+
+	}
+	/*
+
+	void OnBecameVisible ()
+	{
+		if (Camera.main != null) {
+			CameraManager cm = Camera.main.GetComponent<CameraManager> ();
+			if (cm != null) {
+				switch (borderType) {
+				case BorderType.Bottom:
+					cm.blockBottom = true;
+					break;
+				case BorderType.Top:
+					cm.blockTop = true;
+					break;
+				case BorderType.Left:
+					cm.blockLeft = true;
+					break;
+				case BorderType.Right:
+					cm.blockRight = true;
+					break;
+				}
+			}
+		}
+	}
+	
+	void OnBecameInvisible ()
+	{
+		if (Camera.main != null) {
+			CameraManager cm = Camera.main.GetComponent<CameraManager> ();
+			if (cm != null) {
+				switch (borderType) {
+				case BorderType.Bottom:
+					cm.blockBottom = false;
+					break;
+				case BorderType.Top:
+					cm.blockTop = false;
+					break;
+				case BorderType.Left:
+					cm.blockLeft = false;
+					break;
+				case BorderType.Right:
+					cm.blockRight = false;
+					break;
+				}
+			}
+		}
+	}
+	
+	bool IsOnCamera (Bounds other)
+	{
+	
+		return transform.collider.bounds.Intersects (other);
+	}
+	
+	bool IsOnCamera (GameObject obj)
+	{
+		var pos = BoundsToScreenRect (obj.collider.bounds);
+		print (obj.transform.position);
+		return (pos.x + pos.width >= 0) && (pos.x <= Screen.width) && (pos.y >= 0) && (pos.y + pos.height <= Screen.height);
+	}
+	
+	public Rect BoundsToScreenRect (Bounds bounds)
+	{
+		Vector3 origin = Camera.main.WorldToScreenPoint (new Vector3 (bounds.min.x, bounds.max.y, 0f));
+		Vector3 extent = Camera.main.WorldToScreenPoint (new Vector3 (bounds.max.x, bounds.min.y, 0f));
+
+		return new Rect (origin.x, Screen.height - origin.y, extent.x - origin.x, origin.y - extent.y);
+	}*/
+	
+	
+}

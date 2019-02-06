@@ -1,0 +1,15 @@
+using UnityEngine;
+using System.Collections;
+
+public enum MenuState 
+{
+		
+		MainMenu,
+		Login,
+		NewGamer,		
+		GeneralOptions,
+		Staff,
+		PsychologistOptions,
+		EditPlayer		
+	
+}

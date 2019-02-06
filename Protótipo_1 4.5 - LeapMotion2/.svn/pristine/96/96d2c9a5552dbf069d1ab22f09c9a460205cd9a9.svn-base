@@ -1,0 +1,38 @@
+using UnityEngine;
+using System.Collections;
+
+public class StartGame : MonoBehaviour
+{
+
+	#region Fields
+		
+	private int buttonWhidth = 200;
+	private int buttonHeight = 50;
+	
+	#endregion
+	
+	#region Functions
+	
+	void OnGUI ()
+	{
+		
+		if (GUI.Button (new Rect (Screen.width / 2 - buttonWhidth / 2,
+			(Screen.height / 2) - (buttonHeight + 10), buttonWhidth, buttonHeight), "Continuar Jogo")) {	
+			Application.LoadLevel ("Login");
+		}
+		if (GUI.Button (new Rect (Screen.width / 2 - buttonWhidth / 2,
+			(Screen.height / 2), buttonWhidth, buttonHeight), "Novo Aluno")) {	
+			Application.LoadLevel ("Register");
+		}
+		
+		if (GUI.Button (new Rect (Screen.width / 2 - buttonWhidth / 2,
+			(Screen.height / 2) + (buttonHeight + 10), buttonWhidth, buttonHeight), "Voltar")) {
+			Application.LoadLevel ("Menu");	
+		}
+		
+	}
+	
+	#endregion
+	
+	
+}

@@ -1,0 +1,41 @@
+using UnityEngine;
+
+public class CannonManager : MonoBehaviour
+{
+	public float amplitude = 3f;
+	public float velocity = 2f;
+	public float smoothRange = 1.5f;
+
+	private enum State
+	{
+		READY,
+		SETTING,
+		STAND_BY
+	}
+
+	private State currentState;
+
+	// Use this for initialization
+	private void Start()
+	{
+		this.currentState = State.STAND_BY;
+	}
+
+	// Update is called once per frame
+	private void Update()
+	{
+		switch (this.currentState)
+		{
+			case State.STAND_BY:
+				Vector3 finalPosition = new Vector3(transform.position.x, Mathf.PingPong(Time.time * velocity, amplitude), transform.position.z);
+				transform.position = Vector3.Slerp(transform.position, finalPosition, smoothRange);
+				break;
+
+			case State.SETTING:
+				break;
+
+			case State.READY:
+				break;
+		}
+	}
+}

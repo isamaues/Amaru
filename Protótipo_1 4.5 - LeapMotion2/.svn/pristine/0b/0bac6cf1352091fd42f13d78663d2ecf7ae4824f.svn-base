@@ -1,0 +1,81 @@
+using UnityEngine;
+using System.Collections;
+
+public class Login : BaseMenu
+{	
+	
+	private MenuLabel[] labels;
+	private ErroScreen erroScreen;
+	
+	public Login ()
+	{
+		
+		this.erroScreen = new ErroScreen (100, 26);
+		
+		this.buttonName = new string[2]{"Carregar Jogador", "Voltar"};
+		this.buttonPressed = new bool[buttonName.Length];	
+		
+		this.BackgroundImage = Resources.Load ("Textures/Menus/BackGrounds/menu_opcoes") as Texture2D;
+		
+		this.labels = new MenuLabel[2];
+		this.labels[0] = new MenuLabel("nome", new Vector2(HalfScreenWidth - 150, HalfScreenHeight * 0.5f));
+		this.labels[1] = new MenuLabel("senha", new Vector2(HalfScreenWidth - 150, HalfScreenHeight * 0.75f));
+		
+		this.buttonsInicialVerticalPosition = (uint)HalfScreenHeight;
+	}
+	
+	public override void OnGUI ()
+	{
+		base.OnGUI ();	
+		
+		this.labels[0].OnGUI();
+		this.labels[1].OnGUIPassword();
+		
+		GUI.color = Color.white;
+		
+		this.erroScreen.OnGUI();
+		
+		if (buttonPressed [0]) {
+			if (ValidateUser ()) {
+				MainMenuManager.GoToGame();
+			} else {
+				this.labels[0].Field = "";				
+				this.labels[1].Field = "";				
+			}
+		} else if (buttonPressed [1])		
+			MainMenuManager.GoTo (MenuState.MainMenu);	
+		
+	}
+	
+	private bool ValidateUser ()
+	{
+		if (this.labels[0].Field.Equals ("") || this.labels[1].Field.Equals ("")) {			
+			this.erroScreen.ErrorText = "Dados em Branco";
+			return false;
+		} 
+		
+		string fileLocation = Paths.USER_PATH + this.labels[0].Field;
+		
+		//Debug.Log ("Diretorio em: " + fileLocation);
+		
+		if (!System.IO.Directory.Exists (fileLocation)) {
+			this.erroScreen.ErrorText = "Login Nao Cadastrado";
+			return false;
+		}		
+		
+		
+		AIGameConfiguration config = XMLManager.LoadXML<AIGameConfiguration> (fileLocation, "Configuracoes.xml");
+		
+		//Debug.Log("Senha: "+config.
+				
+		if (config.senha != this.labels[1].Field) 
+		{
+			this.erroScreen.ErrorText = "Senha Incorreta";
+			return false;
+		}
+				
+		UserManager.GetInstance().SetCurrentUser (this.labels[0].Field);
+		return true;
+	}
+	
+}

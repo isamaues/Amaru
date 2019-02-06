@@ -1,0 +1,26 @@
+using UnityEngine;
+using System.Collections;
+
+public class MainMenu : Scene {
+	
+	public MainMenu(){
+		buttonName = new string[5]{"Carregar Jogo", "Novo Jogo", "Opcoes", "Creditos", "Sair"};
+		buttonListening = new bool[buttonName.Length];	
+	}
+	
+	public override void OnGUI() {
+		base.OnGUI();
+		
+		if(buttonListening[0])
+			SceneScreenManager.currentScene = ScreenState.Login;
+		
+		else if(buttonListening[1])					
+			SceneScreenManager.currentScene = ScreenState.NewGamer;
+		
+		else if(buttonListening[2])					
+			SceneScreenManager.currentScene = ScreenState.GeneralOptions;
+		
+		else if(buttonListening[3])					
+			SceneScreenManager.currentScene = ScreenState.Staff;
+	}
+}

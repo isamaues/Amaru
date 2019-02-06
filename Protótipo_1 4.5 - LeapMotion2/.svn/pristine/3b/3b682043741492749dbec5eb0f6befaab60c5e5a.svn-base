@@ -1,0 +1,80 @@
+using UnityEngine;
+using System.Collections;
+
+public class CubeScript : MonoBehaviour
+{
+	public enum Direction
+	{
+		UP,
+		DOWN,
+		SORT,
+		NONE
+	}
+		
+	public Vector3 StartPosition{ get; set; }
+	
+	public Vector3 FinalPosition{ get; set; }
+
+	public float Velocity{ get; set; }
+
+	public bool Animating{ get; set; }
+
+	public Direction dir = Direction.NONE;
+	
+	public bool IsPingPong { get; set; }
+		
+	public float MinDistance { get; set; }
+	
+	public string CubeInfo{ get; set; }
+	
+	public bool sendInfo = false;
+	public bool smooth = true;
+	
+	// Use this for initialization
+	void Start ()
+	{
+		
+	}
+	
+	// Update is called once per frame
+	void Update ()
+	{
+		if (Animating) {
+			
+			
+			if (dir == Direction.UP || dir == Direction.SORT) {
+				if (Vector3.Distance (transform.position, FinalPosition) > MinDistance) {
+					if (smooth) {
+						transform.position = Vector3.Slerp (transform.position, FinalPosition, Velocity);	
+					} else {
+						transform.position = Vector3.Lerp (transform.position, FinalPosition, Velocity);	
+					}
+				} else {
+					transform.position = FinalPosition;
+					if (IsPingPong && dir != Direction.SORT) {
+						dir = Direction.DOWN;
+					} else {
+						dir = Direction.NONE;
+					}
+				}				
+			} else if (dir == Direction.DOWN) { 
+				if (Vector3.Distance (transform.position, StartPosition) > MinDistance) {
+					if (smooth) {
+						transform.position = Vector3.Slerp (transform.position, StartPosition, Velocity);	
+					} else {							
+						transform.position = Vector3.Lerp (transform.position, StartPosition, Velocity);	
+					}
+				} else {
+					transform.position = StartPosition;
+					dir = Direction.NONE;
+				}	
+			}
+			
+			if (dir == Direction.NONE) {
+				Animating = false;
+			}
+				
+		}
+	}
+		
+}

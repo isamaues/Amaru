@@ -1,0 +1,96 @@
+using UnityEngine;
+using System.Text;
+using System.Collections;
+
+public class TarefasCreator : MonoBehaviour
+{
+	
+	/*TarefasCreator()
+	{
+		
+	}*/
+	
+
+	private Texture[] textureArray = new Texture[17];
+	private string[] wordArray = new string[17];
+	private  int modeloIndice;
+	private int numComparacoes;
+	
+	
+	
+	// Use this for initialization
+	void Start ()
+	{
+		modeloIndice = Random.Range (0, 17);
+		numComparacoes = Random.Range (1, 9);
+		
+		textureArray [0] = Resources.Load ("estrela") as Texture;
+		textureArray [1] = Resources.Load ("exagono") as Texture;
+		textureArray [2] = Resources.Load ("raio") as Texture;
+		textureArray [3] = Resources.Load ("vaca") as Texture;
+		textureArray [4] = Resources.Load ("bico") as Texture;
+		textureArray [5] = Resources.Load ("vovo") as Texture;
+		textureArray [6] = Resources.Load ("mala") as Texture;
+		textureArray [7] = Resources.Load ("muleta") as Texture;
+		textureArray [8] = Resources.Load ("bolo") as Texture;
+		textureArray [9] = Resources.Load ("tubo") as Texture;
+		textureArray [10] = Resources.Load ("tomate") as Texture;
+		textureArray [11] = Resources.Load ("cavalo") as Texture;
+		textureArray [12] = Resources.Load ("fita") as Texture;
+		textureArray [13] = Resources.Load ("apito") as Texture;
+		textureArray [14] = Resources.Load ("tatu") as Texture;
+		textureArray [15] = Resources.Load ("pipa") as Texture;
+		textureArray [16] = Resources.Load ("luva") as Texture;
+		
+		wordArray [0] = "estrela";
+		wordArray [1] = "exagono";
+		wordArray [2] = "raio";
+		wordArray [3] = "vaca";
+		wordArray [4] = "bico";
+		wordArray [5] = "vovo";
+		wordArray [6] = "mala";
+		wordArray [7] = "muleta";
+		wordArray [8] = "bolo";
+		wordArray [9] = "tubo";
+		wordArray [10] = "tomate";
+		wordArray [11] = "cavalo";
+		wordArray [12] = "fita";
+		wordArray [13] = "apito";
+		wordArray [14] = "tatu";
+		wordArray [15] = "pipa";
+		wordArray [16] = "luva";
+				
+		for (int i = 0; i<numComparacoes; i++) {
+			CubeManipule.CreateCube (SelecionaComparacoes (numComparacoes) [i]);	
+		}
+		
+		CubeManipule.CreateCube (textureArray [modeloIndice]);
+		
+		print (wordArray [modeloIndice]);
+			
+	}
+	
+	// Update is called once per frame
+	void Update ()
+	{		
+	}
+	
+	private Texture[] SelecionaComparacoes (int numComp)
+	{
+		Texture[] texturecomparacoes = new Texture[numComp];
+		int aux;
+		for (int i = 0; i<numComp; i++) {
+			aux = Random.Range (0, 16);
+			while (aux == modeloIndice)
+				aux = Random.Range (0, 16);
+			texturecomparacoes [i] = textureArray [aux];
+		}
+		return texturecomparacoes;
+	}
+	
+	public string getModelo()
+	{
+		return wordArray[modeloIndice];
+		
+	}
+}

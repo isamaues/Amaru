@@ -1,0 +1,180 @@
+using UnityEngine;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+public class TestScenario : MonoBehaviour
+{
+	//atributos para a caixa da tela
+	private float horOffset = 10;
+	private float verOffset = 20;
+	private float boxWidth;
+	private float boxHeigth;
+	
+	//atributos para o efeito de trannsição de tela
+	private string currentModel = "Modelo";
+	public int buttonSize = 75;
+	public int space = 5;
+	public int qtdTarefas = 1;
+	public string task_txt_path = @"Assets\Scripts\BD\tentativas_teste\tasks.1TesteLGSPreenchido.txt";
+	public string word_txt_path = @"Assets\Scripts\BD\words.txt";
+	private TaskManager tm;
+	private WordManager wm ;
+	private ArrayList palavrasLidas;
+	private ArrayList tarefasLidas;
+	private Task tarefa;
+	private bool jogando;
+
+	void Start ()
+	{
+		boxWidth = Screen.width - 2 * horOffset;
+		boxHeigth = Screen.height - 2 * verOffset;		
+	
+		tm = transform.gameObject.AddComponent<TaskManager> ();
+		tm.ReadTask (task_txt_path);             					// Ler tentativas
+		tarefasLidas = tm.GetTasks ();
+		tm.DisplayTasks ();
+
+		wm = transform.gameObject.AddComponent<WordManager> ();
+		wm.ReadWord (word_txt_path);             					// Ler palavras do txt
+		palavrasLidas = wm.GetWords ();
+
+		
+	}
+	
+	bool[] escolhas;
+	
+	void OnGUI ()
+	{
+		GUI.Box (new Rect (horOffset, verOffset, boxWidth, boxHeigth), currentModel);
+		if (escolhas != null && escolhas.Length > 0) {
+			if (tarefa != null && tarefa.Choices != null) {
+				int currentPos = (Screen.width / 2) - (((tarefa.Choices.Count + 1) * (buttonSize + space)) / 2);
+				
+				escolhas = new bool[tarefa.Choices.Count + 1];
+				escolhas [0] = GUI.Button (new Rect (currentPos, 100, buttonSize, buttonSize), wm.GetWord (tarefa.Model));
+				
+				currentPos += buttonSize + space;
+				for (int i = 0; i < tarefa.Choices.Count; i++) {
+					
+					escolhas [i + 1] = GUI.Button (new Rect (currentPos, 100, buttonSize, buttonSize), wm.GetWord ((int)tarefa.Choices [i]));
+					currentPos += buttonSize + space;
+				}
+				
+				
+			}
+		}
+		
+		if (tarefasLidas != null && tarefasLidas.Count > 0) {
+			var boxW = Screen.width - 4 * horOffset;
+			var boxH = (Screen.height - 4 * verOffset) / 2;		
+			GUI.Window (2, new Rect (2 * horOffset, Screen.height / 2, boxW, boxH), DoOtherWindow, "Tarefas Concluidas");
+		}
+	}
+	
+	private Vector2 scrollPosition = Vector2.zero;
+	private ArrayList tarefasConcluidas = new ArrayList ();
+
+	void DoOtherWindow (int windowId)
+	{
+		var boxW = Screen.width - 4 * horOffset;
+		var boxH = (Screen.height - 4 * verOffset) / 2;		
+		
+		var prefabList = tarefasConcluidas.ToArray ();
+		
+		var rect = new Rect (5, 38, boxW - 10, boxH - 40);
+		
+		GUI.Box (rect, "");
+		
+		//var sPos = rect;
+		var sView = new Rect (0, 20, 400, prefabList.Length * 20);
+	
+		
+		
+		GUI.Box (new Rect (5, 20, boxW - 10, 20), "");
+		
+		GUI.Label (new Rect (10, 20, 80, 20), "Modelo");
+		GUI.Label (new Rect (80, 20, 80, 20), "C");
+		GUI.Label (new Rect (100, 20, 80, 20), "L");
+		GUI.Label (new Rect (150, 20, 80, 20), "Data");
+		GUI.Label (new Rect (230, 20, 80, 20), "( )");
+		GUI.Label (new Rect (250, 20, 200, 20), "Escolhas Erradas");
+		GUI.color = Color.white;
+		
+			
+		scrollPosition = GUI.BeginScrollView (rect, scrollPosition, sView);
+		
+		var firstPos = 20;
+		
+		for (int i = 0; i < prefabList.Length; i++) {
+			
+			if (((Task)prefabList [i]).Correct != 0) {
+				GUI.color = new Color (155 / 255f, 255 / 255f, 150 / 255f);
+			} else {
+				GUI.color = new Color (255 / 255f, 150 / 255f, 150 / 255f);
+			}
+			
+			GUI.Box (new Rect (0, firstPos + 20 * (i), 500, 20), "");
+			
+			
+			
+			GUI.Label (new Rect (10, firstPos + 20 * (i), 80, 20), wm.GetWord (((Task)prefabList [i]).Model));
+			GUI.Label (new Rect (80, firstPos + 20 * (i), 80, 20), ((Task)prefabList [i]).CompareNumber.ToString ());
+			GUI.Label (new Rect (100, firstPos + 20 * (i), 80, 20), ((Task)prefabList [i]).Latency.ToString ());
+			GUI.Label (new Rect (150, firstPos + 20 * (i), 80, 20), ((Task)prefabList [i]).DateTime.ToString ());
+			
+			GUI.Label (new Rect (230, firstPos + 20 * (i), 80, 20), ((Task)prefabList [i]).Correct.ToString ());
+			
+			for (int j = 0; j < ((Task)prefabList [i]).Choices.Count; j++) {
+				GUI.Label (new Rect (250 + (j * 60), firstPos + 20 * (i), 80, 20), wm.GetWord ((int)((Task)prefabList [i]).Choices [j]));
+			}
+			
+		}
+		GUI.color = Color.white;
+		GUI.EndScrollView ();
+	}
+	
+	int indice = 0;
+
+	void Update ()
+	{
+		
+		if (!jogando && tarefasLidas != null && tarefasLidas.Count > 0) {
+			if (indice < tarefasLidas.Count) {
+				tarefa = (Task)tarefasLidas [indice];
+				jogando = true;
+				currentModel = wm.GetWord (tarefa.Model);
+			}
+		}
+		
+		if (escolhas != null) {
+			
+			var i = 0;
+			foreach (bool botao in escolhas) {
+//				Debug.LogWarning (botao);
+				if (botao) {
+					Debug.LogWarning (wm.GetWord (tarefa.Model) + " - " + currentModel);
+					if (i == 0) {
+						tarefa.Correct = 1;	
+					} else {
+						tarefa.Correct = 0;	
+					}
+					tarefa.DateTime = DateTime.Now;
+					
+					tarefasConcluidas.Add (tarefa);
+					
+					indice++;
+					scrollPosition += new Vector2 (0, 20);
+					jogando = false;
+					break;
+				}
+				i++;
+			}
+		} else {
+			escolhas = new bool[tarefa.Choices.Count + 1];
+		}
+		
+	}
+	
+	
+}

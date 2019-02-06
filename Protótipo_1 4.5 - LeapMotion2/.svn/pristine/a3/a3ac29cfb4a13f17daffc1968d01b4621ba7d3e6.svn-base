@@ -1,0 +1,12 @@
+using UnityEngine;
+using System.Collections;
+
+public class GameSetup
+{
+	public static float Volume = 0.2f;
+	
+	public static Vector2 GameScreenSize = new Vector2 (800, 640);
+	
+	public static int TotalDefaultWordsToBeLearning = 3;
+	
+}

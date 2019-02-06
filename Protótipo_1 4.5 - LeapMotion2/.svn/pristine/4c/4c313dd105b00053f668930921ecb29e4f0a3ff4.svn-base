@@ -1,0 +1,8 @@
+using System.Collections;
+
+public class DadosTTFuzzy {
+
+	public float dadoHTT_AE, dadoHTT_AB, dadoHTT_AC, dadoHTT_BE, dadoHTT_CE, dadoTTxA_AE, dadoTTxA_AB, dadoTTxA_AC, dadoTTxA_BE, dadoTTxA_CE;
+	public float dadoHTT_BC, dadoHTT_EC,dadoTTxA_BC;
+	
+}

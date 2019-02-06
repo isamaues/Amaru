@@ -1,0 +1,81 @@
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+
+public class SceneScreenManager : MonoBehaviour {	
+		
+	//atributos para a caixa da tela
+	private float horOffset = 10;
+	private float verOffset = 20;
+	private float boxWidth;
+	private float boxHeigth;
+		
+	//atributos para as cenas
+	public static ScreenState currentScene;	
+	private Dictionary<int,string> menuScreens = new Dictionary<int, string>();	
+	private Dictionary<ScreenState, Scene> screens = new Dictionary<ScreenState, Scene>();
+	
+	//atributos para o efeito de trannsição de tela
+	public Texture2D blankScreen;
+	private float defaultImgAsp;
+	private float imgAsp;
+	public static bool showBlankScreen;
+	private float imgAspSpeed = 0.5f;
+	
+	
+	void Start ()
+	{
+		CreateMenuScreens();
+		
+		defaultImgAsp = 1.25f;
+		imgAsp = defaultImgAsp;
+		showBlankScreen = false;
+		
+		
+		boxWidth =  Screen.width - 2 * horOffset;
+		boxHeigth = Screen.height- 2 * verOffset;		
+		
+		currentScene = ScreenState.MainMenu; //mudar para SplashOpening depois		
+	}
+	
+	void OnGUI()
+	{
+		GUI.Box(new Rect(horOffset, verOffset, boxWidth, boxHeigth), menuScreens[(int)currentScene]);
+		
+		screens[currentScene].OnGUI();
+		/*
+		if(showBlankScreen)
+		{
+			GUI.DrawTexture(new Rect(0,0, Screen.width, Screen.height), blankScreen, ScaleMode.ScaleToFit, true, imgAsp);
+			imgAsp+=imgAspSpeed;
+			
+			if(imgAsp>25.0f)
+			{
+				imgAsp = defaultImgAsp;
+				showBlankScreen = false;
+			}
+		}*/
+	}
+	
+	void CreateMenuScreens()
+	{
+		menuScreens.Add(0, "Tela de Splash");
+		menuScreens.Add(1, "Menu do Jogo");
+		menuScreens.Add(2, "Carregar Jogo");
+		menuScreens.Add(3, "Criar Novo Jogador");
+		menuScreens.Add(4, "Opcoes");
+		menuScreens.Add(5, "Creditos");
+		menuScreens.Add(6, "Opcoes do Psicologo");
+		menuScreens.Add(7, "Editar Jogador");
+		menuScreens.Add(8, "Abertura do Jogo");
+		
+		
+		screens.Add(ScreenState.MainMenu, new MainMenu());
+		screens.Add(ScreenState.Login, new LoginScene());
+		screens.Add(ScreenState.NewGamer, new NewGamer());
+		screens.Add(ScreenState.GeneralOptions, new GeneralOptions());
+		screens.Add(ScreenState.PsychologistOptions, new PsychologistOptions());
+		screens.Add(ScreenState.Staff, new Staff());
+		screens.Add(ScreenState.EditPlayer, new EditPlayer());
+	}
+}

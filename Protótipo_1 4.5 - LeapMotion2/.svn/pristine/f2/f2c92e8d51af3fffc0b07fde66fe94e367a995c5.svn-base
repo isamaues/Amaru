@@ -1,0 +1,134 @@
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+
+public class Register : MonoBehaviour
+{
+
+	#region Fields
+	private string InstructionText = "Inserir Login e senha do Jogador";
+	private int buttonWhidth = 85;
+	private int buttonHeight = 30;
+	
+	#endregion
+	
+	#region Interface
+	
+	private string login = "";
+	private string password = "";
+	private string rePassword = "";
+	private Rect windowRect;
+	
+	void OnGUI ()
+	{
+		GUI.Label (new Rect (10, 10, 300, 200), InstructionText);
+		windowRect = GUI.Window (1, new Rect ((Screen.width / 2) - 100, (Screen.height / 2) - 100, 200, 200), CreateWindow, "Login");
+		
+	}
+	
+	int wrongData = 0; // 0 = Nada, 1 = usuário já existe, 2 = senhas divergentes, 3 = senha vazia
+	
+	void CreateWindow (int windowID)
+	{
+		
+		GUI.Label (new Rect (10, 30, 70, 20), "NOME");
+		GUI.Label (new Rect (10, 60, 70, 20), "SENHA");
+		GUI.Label (new Rect (10, 90, 70, 20), "REPETIR SENHA");
+		
+		login = GUI.TextField (new Rect (90, 30, 100, 20), login);
+		password = GUI.PasswordField (new Rect (90, 60, 100, 20), password, '*');
+		rePassword = GUI.PasswordField (new Rect (90, 90, 100, 20), rePassword, '*');
+		
+		if (GUI.Button (new Rect (10, 160, buttonWhidth, buttonHeight), "Voltar")) {	
+			Application.LoadLevel ("StartGame");
+		}
+		
+		if (GUI.Button (new Rect (105, 160, buttonWhidth, buttonHeight), "OK")) {
+			if (ValidateUser ()) {
+				Application.LoadLevel ("InitialStory");
+			} else {
+				if (wrongData == 1) {
+					login = "";
+				} else {
+					password = "";
+					rePassword = "";
+				}
+			}
+		}
+		
+		switch (wrongData) {		
+		case 1:
+			GUI.color = Color.black;
+			GUI.Box (new Rect (10, 120, 180, 30), "");
+			GUI.color = Color.red;
+			GUI.Label (new Rect (20, 125, 160, 20), "Usuário já Cadastrado");
+			break;
+		case 2:
+			GUI.color = Color.black;
+			GUI.Box (new Rect (10, 120, 180, 30), "");
+			GUI.color = Color.red;
+			GUI.Label (new Rect (20, 125, 160, 20), "Senhas Diferentes");
+			break;
+		case 3:
+			GUI.color = Color.black;
+			GUI.Box (new Rect (10, 120, 180, 30), "");
+			GUI.color = Color.red;
+			GUI.Label (new Rect (20, 125, 160, 20), "Dados em Branco");
+			break;
+		}
+		
+	}
+	
+	#endregion
+	
+	#region Functions
+	bool ValidateUser ()
+	{
+		string fileLocation = Application.dataPath + "\\Data";
+		if (!Directory.Exists (fileLocation)) {
+			Directory.CreateDirectory (fileLocation);	
+		}
+		UsersData data;
+		if (!File.Exists (fileLocation + "\\Users.xml")) {
+			data = new UsersData ();
+			XMLManager.CreateXML<UsersData> (fileLocation, "Users.xml", data); 
+		}
+		
+		data = XMLManager.LoadXML<UsersData> (fileLocation, "Users.xml");		
+		
+		foreach (Config userConfig in data.users) {
+			if (userConfig.login == login) {
+				wrongData = 1;
+				return false;
+			}
+		}
+		
+		if (login.Equals ("") || password.Equals ("") || rePassword.Equals ("")) {
+			wrongData = 3;
+			return false;
+		} else if (!password.Equals (rePassword)) {
+			wrongData = 2;
+			return false;
+		}
+		
+		Config config = new Config ();
+		config.senha = password;
+		config.login = login;
+		
+		data.users.Add (config);
+		
+		XMLManager.CreateXML<UsersData> (fileLocation, "Users.xml", data);
+		
+		UserManager.getInstance().setCurrentUser(config);
+		
+		return true;
+	}
+	#endregion
+}
+
+public class UsersData
+{
+	public List<Config> users;
+		
+}

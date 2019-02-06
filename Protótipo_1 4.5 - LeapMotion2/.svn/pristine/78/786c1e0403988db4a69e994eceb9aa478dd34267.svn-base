@@ -1,0 +1,25 @@
+using UnityEngine;
+using System.Collections;
+
+public class PsychologistOptions : Scene {
+
+	public PsychologistOptions(){
+		buttonName = new string[3]{"Editar Jogador", "Voltar a Tela de Opcoes", "Voltar a Tela Principal"};
+		buttonListening = new bool[buttonName.Length];	
+	}
+	
+	public override void OnGUI() {
+		base.OnGUI();
+		
+		if(buttonListening[0])
+			SceneScreenManager.currentScene = ScreenState.EditPlayer;
+		
+		else if(buttonListening[1])
+			SceneScreenManager.currentScene = ScreenState.GeneralOptions;
+		
+		else if(buttonListening[2])					
+			SceneScreenManager.currentScene = ScreenState.MainMenu;
+	
+		
+	}
+}

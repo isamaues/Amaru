@@ -1,0 +1,42 @@
+using UnityEngine;
+using System.Collections;
+	
+public class ButtonMenu
+{
+	
+	private string name;
+	private Rect position;
+	private Vector2 centralPosition;
+	
+	public ButtonMenu (string buttonName, Vector2 centralPosition, Vector2 size)
+	{
+		this.name = buttonName;
+		this.centralPosition = centralPosition;
+		this.position = new Rect (centralPosition.x - size.x / 2, centralPosition.y - size.y / 2,
+									 size.x, size.y);
+	
+	}
+	
+	public bool OnGUI ()
+	{
+		return GUI.Button (this.position, name);
+	}
+	
+	public void Select ()
+	{
+		this.position.x -= 15;
+		this.position.width += 30;
+	
+		this.position.y -= 4;
+		this.position.height += 8;
+	}
+	
+	public void Diselect ()
+	{
+		this.position.x += 15;
+		this.position.width -= 30;
+	
+		this.position.y += 4;
+		this.position.height -= 8;
+	}
+}

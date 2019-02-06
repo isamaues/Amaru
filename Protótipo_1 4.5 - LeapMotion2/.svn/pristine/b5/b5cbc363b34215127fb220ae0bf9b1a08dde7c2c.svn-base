@@ -1,0 +1,21 @@
+using UnityEngine;
+using System.Collections;
+
+public class GeneralOptions : Scene {
+
+	public GeneralOptions(){
+		buttonName = new string[2]{"Opcoes do Psicologo", "Voltar"};
+		buttonListening = new bool[buttonName.Length];	
+	}
+	
+	public override void OnGUI() {
+		base.OnGUI();
+		
+		if(buttonListening[0])
+			SceneScreenManager.currentScene = ScreenState.PsychologistOptions;
+		
+		else if(buttonListening[1])					
+			SceneScreenManager.currentScene = ScreenState.MainMenu;
+		
+	}
+}

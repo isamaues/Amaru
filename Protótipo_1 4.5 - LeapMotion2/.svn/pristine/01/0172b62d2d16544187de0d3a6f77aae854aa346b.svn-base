@@ -1,0 +1,100 @@
+using UnityEngine;
+using System.Collections;
+
+public class CreateFloor : MonoBehaviour
+{
+	
+	public GameObject model;
+	private ArrayList tiles = new ArrayList ();
+	private static GameObject temp;
+	
+
+	// Use this for initialization
+	void Start ()
+	{
+		if (temp == null) {
+			temp = new GameObject ();
+			temp.name = "Temp";
+		}
+		UpdateFloor ();
+	}
+	
+	
+	
+	// Update is called once per frame
+	void Update ()
+	{
+		if (tiles.Count > 0) {
+			if (IsOnCamera ((tiles [tiles.Count - 1] as GameObject)) || IsCameraUnderTile (tiles [tiles.Count - 1] as GameObject)) {
+				UpdateFloor ();
+			} else {
+				if (tiles.Count > 1) {
+					var obj = (tiles [tiles.Count - 2] as GameObject);
+					
+					if (!IsOnCamera (obj)) {
+						var last = (tiles [tiles.Count - 1] as GameObject);
+						tiles.Remove (last);
+						Destroy (last);
+						
+					}
+				}
+			}
+		} else if (IsOnCamera(this.gameObject) ) {
+			UpdateFloor();
+		}
+	}
+	
+	void UpdateFloor ()
+	{
+		if (model != null) {
+			
+			var initPos = Vector3.zero;
+			if (tiles.Count > 0) {
+				initPos = (tiles [tiles.Count - 1] as GameObject).transform.position;
+			} else {
+				initPos = this.transform.position;
+			}
+					
+			var distance = Camera.main.WorldToScreenPoint (initPos);	
+			var rect = BoundsToScreenRect (this.collider.bounds);
+			
+			for (int i = 0; i < (distance.y/rect.height); i++) {
+				var pos = new Vector3 (initPos.x, initPos.y - (i + 1), initPos.z);
+				var obj = Instantiate (model, pos, this.transform.rotation) as GameObject;
+				obj.transform.GetComponent<Tile> ().enabled = false;
+				tiles.Add (obj);
+				obj.transform.parent = temp.transform;
+			}
+			
+		}
+	}
+	
+	bool IsOnCamera (GameObject obj)
+	{
+		Plane[] planes = GeometryUtility.CalculateFrustumPlanes (Camera.mainCamera);
+		return GeometryUtility.TestPlanesAABB (planes, obj.collider.bounds);
+//		var pos = BoundsToScreenRect (obj.collider.bounds);
+//		return (pos.x + pos.width >= 0) && (pos.x <= Screen.width) && (pos.y >= 0) && (pos.y + pos.height <= Screen.height);
+	}
+	
+	bool IsCameraUnderTile (GameObject tile)
+	{
+		var pos = BoundsToScreenRect (tile.collider.bounds);
+		return (pos.x + pos.width >= 0) && (pos.x <= Screen.width) && (pos.y + pos.height < Camera.main.transform.position.y);
+	}
+	
+	public Rect BoundsToScreenRect (Bounds bounds)
+	{
+		Vector3 origin = Camera.main.WorldToScreenPoint (new Vector3 (bounds.min.x, bounds.max.y, 0f));
+		Vector3 extent = Camera.main.WorldToScreenPoint (new Vector3 (bounds.max.x, bounds.min.y, 0f));
+
+		return new Rect (origin.x, Screen.height - origin.y, extent.x - origin.x, origin.y - extent.y);
+	}
+	
+	void OnDestroy ()
+	{
+		foreach (GameObject item in tiles) {
+			Destroy (item);
+		}
+	}
+}

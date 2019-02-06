@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<MinigameList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<arrayList>
+
+		<MiniGame>
+			<Id>1</Id>
+			<Name>Cube</Name>
+		</MiniGame>
+
+		<MiniGame>
+			<Id>2</Id>
+			<Name>Cannon</Name>
+		</MiniGame>
+	</arrayList>
+</MinigameList>

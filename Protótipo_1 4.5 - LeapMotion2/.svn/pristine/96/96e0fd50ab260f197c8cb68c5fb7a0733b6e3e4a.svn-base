@@ -1,0 +1,20 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\BD\tasks.txt">
+    <Files>
+      <File FileName="Assets\Scripts\Misc\TempTest.cs" Line="9" Column="46" />
+      <File FileName="Assets\Scripts\Level\LevelManager.cs" Line="352" Column="45" />
+      <File FileName="Assets\Scripts\Misc\SessionLogic.cs" Line="21" Column="4" />
+      <File FileName="Assets\Scripts\AI\Model\Task.cs" Line="21" Column="2" />
+      <File FileName="Assets\Scripts\AI\Model\Word.cs" Line="19" Column="47" />
+      <File FileName="Assets\Scripts\AI\MachineLearning.cs" Line="51" Column="80" />
+      <File FileName="Assets\Scripts\BD\tasks.txt" Line="22" Column="29" />
+      <File FileName="Assets\Scripts\AI\Config.cs" Line="52" Column="44" />
+      <File FileName="Assets\Scripts\BD\tentativas_teste\tentativas-ParaApresetacaoSbgames.txt" Line="1" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

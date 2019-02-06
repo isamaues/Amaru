@@ -1,0 +1,321 @@
+﻿<Window x:Class="Amaru_Controle.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="clr-namespace:Amaru_Controle"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        Title="MainWindow"
+        Width="902.254"
+        Height="754.23"
+        mc:Ignorable="d">
+    <Grid Margin="0,0,0,-2">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="216" />
+            <ColumnDefinition Width="113*" />
+        </Grid.ColumnDefinitions>
+        <Grid Width="216"
+              HorizontalAlignment="Left"
+              Background="#FF9B9B9B">
+            <ListBox x:Name="UsuariosListBox"
+                     Margin="10,50,10,42"
+                     ItemsSource="{Binding UsuariosCollection,
+                                           RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+            <Button x:Name="TrocarUsuarioButton"
+                    Height="21"
+                    Margin="10,0,10,15"
+                    VerticalAlignment="Bottom"
+                    Click="TrocarUsuarioButton_Click"
+                    Content="Trocar Usuario" />
+            <TextBlock x:Name="NomeUsuario"
+                       Height="35"
+                       Margin="10,10,10,0"
+                       VerticalAlignment="Top"
+                       FontSize="24"
+                       TextWrapping="Wrap"><Run Language="pt-br" Text="{Binding CurrentUser, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+                <LineBreak /><Run Language="pt-br" />
+            </TextBlock>
+        </Grid>
+        <TabControl Grid.Column="1" DataContext="{Binding UsuarioAtual, RelativeSource={RelativeSource AncestorType={x:Type Window}}}">
+            <TabItem Header="Geral">
+                <Grid Background="#FFE5E5E5">
+                    <GroupBox Height="569"
+                              Margin="10,10,10,0"
+                              VerticalAlignment="Top"
+                              BorderBrush="Black"
+                              BorderThickness="2"
+                              Header="Perfil">
+                        <Grid Margin="4,10,-2,2">
+                            <TextBox Width="147"
+                                     Height="26"
+                                     Margin="97,10,0,0"
+                                     HorizontalAlignment="Left"
+                                     VerticalAlignment="Top"
+                                     Text="{Binding Nome}"
+                                     TextWrapping="Wrap" />
+                            <TextBlock Width="82"
+                                       Height="26"
+                                       Margin="10,10,0,0"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Top"
+                                       RenderTransformOrigin="1.11,4.308"
+                                       TextWrapping="Wrap"><Run Language="pt-br" Text="Nome Usuario:" />
+                            </TextBlock>
+                            <TextBlock Width="82"
+                                       Height="26"
+                                       Margin="10,41,0,0"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Top"
+                                       RenderTransformOrigin="-0.19,-0.875"
+                                       TextWrapping="Wrap"><Run Language="pt-br" Text="Avatar" />
+                                <LineBreak /><Run Language="pt-br" />
+                            </TextBlock>
+                            <ComboBox Margin="92,41,390,0"
+                                      VerticalAlignment="Top"
+                                      ItemsSource="{Binding AvatarList,
+                                                            RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                      SelectedValue="{Binding Avatar,
+                                                              Mode=TwoWay,
+                                                              UpdateSourceTrigger=PropertyChanged}" />
+                            <Image Margin="10,68,93,10" Source="{Binding AvatarPath}" />
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Margin="10,584,10,10"
+                              BorderBrush="Black"
+                              BorderThickness="2"
+                              Header="Opções">
+                        <Grid Margin="4,10,-2,2">
+                            <Button x:Name="SalvarUsuarioButton"
+                                    Width="93"
+                                    HorizontalAlignment="Left"
+                                    Click="SalvarUsuarioButton_Click"
+                                    Content="Salvar" />
+                            <Button x:Name="CopiarUsuarioButton"
+                                    Width="93"
+                                    Margin="98,0,0,0"
+                                    HorizontalAlignment="Left"
+                                    Click="CopiarUsuarioButton_OnClick"
+                                    Content="Copiar" />
+                        </Grid>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Tarefas">
+                <Grid Margin="0,0,8,0">
+                    <DataGrid x:Name="TaskDataGrid"
+                              Margin="10,50,10,42"
+                              AutoGenerateColumns="False"
+                              CanUserDeleteRows="False"
+                              CanUserSortColumns="False"
+                              EnableColumnVirtualization="True"
+                              IsReadOnly="True"
+                              ItemsSource="{Binding Tarefas,
+                                                    RelativeSource={RelativeSource AncestorType={x:Type Window}},
+                                                    UpdateSourceTrigger=PropertyChanged}"
+                              LoadingRow="OnLoadingRow"
+                              SelectionMode="Single"
+                              local:VisualHelper.EnableRowsMove="False" SelectionChanged="TaskDataGrid_SelectionChanged">
+                        <DataGrid.Resources>
+                            <local:RowNumberConverter x:Key="Converter" />
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <!--
+                                <DataGridTextColumn Binding="{Binding Id,
+                                Mode=TwoWay,
+                                UpdateSourceTrigger=PropertyChanged}"
+                                CanUserReorder="False"
+                                Header="ID"
+                                IsReadOnly="True" />
+                            -->
+                            <DataGridTemplateColumn Header="Modelo">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox x:Name="ModeloComboBox"
+                                                  VerticalAlignment="Top"
+                                                  DisplayMemberPath="Name"
+                                                  GotFocus="DataGridComboBox_OnGotFocus"
+                                                  ItemsSource="{Binding Palavras,
+                                                                        RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                  LostFocus="DataGridComboBox_OnLostFocus"
+                                                  SelectedValue="{Binding Model.Id,
+                                                                          Mode=TwoWay,
+                                                                          UpdateSourceTrigger=PropertyChanged}"
+                                                  SelectedValuePath="Id" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Choices">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ListBox x:Name="lbTodoList"
+                                                 HorizontalContentAlignment="Stretch"
+                                                 ItemsSource="{Binding Choices}"
+                                                 SelectionMode="Single">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0,2">
+                                                        <TextBlock Text="{Binding Name}" />
+                                                        <ComboBox x:Name="ModeloComboBox"
+                                                                  VerticalAlignment="Top"
+                                                                  DisplayMemberPath="Name"
+                                                                  GotFocus="DataGridComboBox_OnGotFocus"
+                                                                  ItemsSource="{Binding Palavras,
+                                                                                        RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                                  LostFocus="DataGridComboBox_OnLostFocus"
+                                                                  SelectedValue="{Binding Id,
+                                                                                          Mode=TwoWay,
+                                                                                          UpdateSourceTrigger=PropertyChanged}"
+                                                                  SelectedValuePath="Id" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Escolha Correta">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox x:Name="ModeloComboBox"
+                                                  VerticalAlignment="Top"
+                                                  DisplayMemberPath="Name"
+                                                  GotFocus="DataGridComboBox_OnGotFocus"
+                                                  ItemsSource="{Binding Palavras,
+                                                                        RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                  LostFocus="DataGridComboBox_OnLostFocus"
+                                                  SelectedValue="{Binding Correct.Id,
+                                                                          Mode=TwoWay,
+                                                                          UpdateSourceTrigger=PropertyChanged}"
+                                                  SelectedValuePath="Id" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Tipo Tarefa">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox x:Name="TipoTarefaComboBox"
+                                                  VerticalAlignment="Top"
+                                                  DisplayMemberPath="Nome"
+                                                  GotFocus="DataGridComboBox_OnGotFocus"
+                                                  ItemsSource="{Binding TiposTarefas,
+                                                                        RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                  LostFocus="DataGridComboBox_OnLostFocus"
+                                                  SelectedValue="{Binding TaskType.Nome,
+                                                                          Mode=TwoWay,
+                                                                          UpdateSourceTrigger=PropertyChanged}"
+                                                  SelectedValuePath="Nome" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="MiniGame">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox x:Name="MiniGameComboBox"
+                                                  VerticalAlignment="Top"
+                                                  DisplayMemberPath="Nome"
+                                                  GotFocus="DataGridComboBox_OnGotFocus"
+                                                  ItemsSource="{Binding MiniGames,
+                                                                        RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                  LostFocus="DataGridComboBox_OnLostFocus"
+                                                  SelectedValue="{Binding MiniGame.ID,
+                                                                          Mode=TwoWay,
+                                                                          UpdateSourceTrigger=PropertyChanged}"
+                                                  SelectedValuePath="ID" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Teste?">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="{Binding TaskRoleBool,
+                                                                      Mode=TwoWay,
+                                                                      UpdateSourceTrigger=PropertyChanged}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Reforco Audio?">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="{Binding ReforcoAudio,
+                                                                      Mode=TwoWay,
+                                                                      UpdateSourceTrigger=PropertyChanged}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Reforco Imagem?">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="{Binding ReforcoImagem,
+                                                                      Mode=TwoWay,
+                                                                      UpdateSourceTrigger=PropertyChanged}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn x:Name="DeletarColum" Visibility="Hidden">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button VerticalAlignment="Center"
+                                                Click="DeleteButton_OnClick"
+                                                Content="Deletar" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                        <DataGrid.RowHeaderTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Header, RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}}" />
+                            </DataTemplate>
+                        </DataGrid.RowHeaderTemplate>
+                    </DataGrid>
+                    <Button x:Name="SaveButton"
+                            Width="94"
+                            Height="36"
+                            Margin="10,9,0,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Click="SaveButton_Click"
+                            Content="Salvar" />
+                    <Button Width="94"
+                            Height="36"
+                            Margin="108,9,0,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Click="CarregarCsv_Click_1"
+                            Content="Carregar CSV" />
+                    <Button Width="94"
+                            Height="22"
+                            Margin="10,0,0,15"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Bottom"
+                            Click="NovaTarefa_ButtonClick1"
+                            Content="Nova Tarefa &#10;" />
+                    <Button x:Name="DeletarButton"
+                            Width="94"
+                            Height="22"
+                            Margin="110,0,0,15"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Bottom"
+                            Click="DeletarHabilitar_OnClick"
+                            Content="Deletar Tarefa" />
+                    <CheckBox Width="92"
+                              Height="22"
+                              Margin="208,0,0,15"
+                              HorizontalAlignment="Left"
+                              VerticalAlignment="Bottom"
+                              Checked="CheckBox_Checked_1"
+                              Content="Travar Linhas"
+                              IsChecked="{Binding CanMoveRow,
+                                                  Mode=TwoWay,
+                                                  RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                              Unchecked="CheckBox_Unchecked_1" />
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

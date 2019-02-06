@@ -1,0 +1,16 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Telas\InitialStory.cs">
+    <Files>
+      <File FileName="Assets\Scripts\Level\LevelManager.cs" Line="510" Column="1" />
+      <File FileName="Assets\Scripts\Telas\Menu.cs" Line="68" Column="72" />
+      <File FileName="Assets\Scripts\Teste\TestScenario.cs" Line="177" Column="1" />
+      <File FileName="Assets\Scripts\Telas\InitialStory.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\MenuScreens\MenuScenes\MainMenu.cs" Line="26" Column="4" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

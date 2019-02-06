@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<AIGameConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <participante>felipe</participante>
+  <responsavel>minha mae</responsavel>
+  <login>felipe</login>
+  <senha>1234</senha>
+  <id_Da_Ultima_Tarefa>1</id_Da_Ultima_Tarefa>
+  <quantidade_Parafusos>0</quantidade_Parafusos>
+  <numero_De_Tarefas_A_Serem_Geradas>20</numero_De_Tarefas_A_Serem_Geradas>
+  <utilizar_Algoritmo_de_Proximidade>false</utilizar_Algoritmo_de_Proximidade>
+  <peso_Alfa_Leitura>0.25</peso_Alfa_Leitura>
+  <peso_Beta_Leitura>0.25</peso_Beta_Leitura>
+  <peso_Gama_Leitura>0.25</peso_Gama_Leitura>
+  <peso_Alfa_Escrita>0.3</peso_Alfa_Escrita>
+  <peso_Beta_Escrita>0.2</peso_Beta_Escrita>
+  <peso_Gama_Escrita>0.2</peso_Gama_Escrita>
+  <peso_Sigma_Escrita>0.3</peso_Sigma_Escrita>
+  <numero_de_Escolhas_em_uma_Tarefa>5</numero_de_Escolhas_em_uma_Tarefa>
+  <alfa_Maquina_de_Aprendizado>8</alfa_Maquina_de_Aprendizado>
+  <numero_De_Interacoes_da_Maquina_de_Aprendizado>500</numero_De_Interacoes_da_Maquina_de_Aprendizado>
+  <Peso_Do_Alg_Prox_Da_Regra1>0.2</Peso_Do_Alg_Prox_Da_Regra1>
+  <Peso_Do_Alg_Prox_Da_Regra2>0.225</Peso_Do_Alg_Prox_Da_Regra2>
+  <Peso_Do_Alg_Prox_Da_Regra3>0.175</Peso_Do_Alg_Prox_Da_Regra3>
+  <Peso_Do_Alg_Prox_Da_Regra4>0.1</Peso_Do_Alg_Prox_Da_Regra4>
+  <Peso_Do_Alg_Prox_Da_Regra5>0.3</Peso_Do_Alg_Prox_Da_Regra5>
+  <Percentagem_Da_Taxa_De_Acerto>0.4</Percentagem_Da_Taxa_De_Acerto>
+  <Percentagem_Da_Media_Geral>0.4</Percentagem_Da_Media_Geral>
+  <Percentagem_Da_Probabilidade_De_Acerto>0.4</Percentagem_Da_Probabilidade_De_Acerto>
+</AIGameConfiguration>

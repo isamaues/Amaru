@@ -1,0 +1,16 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Misc\TempTest.cs">
+    <Files>
+      <File FileName="Assets\Scripts\Misc\TempTest.cs" Line="253" Column="2" />
+      <File FileName="Assets\Scripts\AI\Model\Word.cs" Line="4" Column="14" />
+      <File FileName="Assets\Scripts\AI\DifficultyIdentifier.cs" Line="254" Column="4" />
+      <File FileName="Assets\Scripts\AI\Model\DadosFuzzy.cs" Line="3" Column="14" />
+      <File FileName="Assets\Scripts\Misc\TaskManager.cs" Line="531" Column="15" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

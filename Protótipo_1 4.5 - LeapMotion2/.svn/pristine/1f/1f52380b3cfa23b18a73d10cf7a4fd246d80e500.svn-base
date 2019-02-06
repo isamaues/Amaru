@@ -1,0 +1,78 @@
+using UnityEngine;
+using System.Collections;
+
+public class Menu : MonoBehaviour
+{
+	
+	#region Fields
+	private string instructionText = "Instrucoes do jogo: \nSetas esquerda e direita ou clique do mouse para andar, " +
+		"seta para cima para pular";
+	
+	private int buttonWidth = 200;
+	private int buttonHeight = 50;
+	private Rect mainWindowRect;
+	public Texture2D menu_texture;
+	public Texture2D buttton_texture;
+	public Font game_font;
+	
+	void Start ()
+	{	
+		mainWindowRect = new Rect (Screen.width / 2f - buttonWidth / 2f, (Screen.height / 2f) - (buttonHeight + 10) * 2f, buttonWidth + buttonWidth/2f, buttonHeight*5f);
+	
+	}
+	
+	#endregion
+	
+	#region Functions
+	
+	void OnGUI ()
+	{
+		if (my_style == null) {
+			my_style = GUI.skin.button;
+			my_style.normal.background = buttton_texture;
+			my_style.hover.background = buttton_texture;
+			my_style.normal.textColor = Color.grey;
+			my_style.hover.textColor = new Color (.6f, .6f, 1f, 1f);
+			my_style.font = game_font;
+			my_style.active.textColor = Color.green;
+ 			my_style.active.background = buttton_texture;
+		}
+			
+		GUIStyle style_menu = GUI.skin.window;
+		
+		style_menu.normal.background = menu_texture;
+		style_menu.hover.background = menu_texture;
+		style_menu.active.background = menu_texture;
+		
+		mainWindowRect = GUI.Window (0, mainWindowRect, CreateMainWindow, "", style_menu);	
+	
+	}
+	
+	GUIStyle my_style;
+	
+	void CreateMainWindow (int windowId)
+	{
+		
+		if (GUI.Button (new Rect ((mainWindowRect.width - buttonWidth)/2, 20, buttonWidth, buttonHeight), "Começar Jogo", my_style)) {	
+			Application.LoadLevel ("StartGame");
+		}
+		
+		if (GUI.Button (new Rect ((mainWindowRect.width - buttonWidth)/2, 75, buttonWidth, buttonHeight), "Opcoes", my_style)) {	
+			Application.LoadLevel ("Opcoes");
+		}	
+		
+		if (GUI.Button (new Rect ((mainWindowRect.width - buttonWidth)/2, 130, buttonWidth, buttonHeight), "Creditos", my_style)) {	
+			Application.LoadLevel ("Creditos");
+		}	
+		
+		if (GUI.Button (new Rect ((mainWindowRect.width - buttonWidth)/2, 185, buttonWidth, buttonHeight), "Sair", my_style)) {	
+			Application.Quit ();
+		}	
+		
+	}
+		
+	
+	#endregion
+	
+	
+}

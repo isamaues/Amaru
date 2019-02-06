@@ -1,0 +1,17 @@
+using UnityEngine;
+using System.Collections;
+
+
+	public enum ScreenState
+	{
+		SplashOpening,
+		MainMenu,
+		Login,
+		NewGamer,		
+		GeneralOptions,
+		Staff,
+		PsychologistOptions,
+		EditPlayer,
+		GameOpening
+	}
+

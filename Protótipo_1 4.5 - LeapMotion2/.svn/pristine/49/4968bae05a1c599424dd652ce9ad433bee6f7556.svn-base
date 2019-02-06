@@ -1,0 +1,22 @@
+using UnityEngine;
+using System.Collections;
+
+// PlayerData é a classe que vai armazenar os objetos definidos que queremos salvar em XML
+public class PlayerData{
+
+	// Definindo uma instancia da estrutura de dados (struct)
+	public Dados _iPlayer; 
+	
+	// Construtor Padrão 
+	public PlayerData ()
+	{
+	} 
+ 
+	// Tudo que será armazenado no arquivo XML será definido aqui.
+	public struct Dados
+	{ 
+		public string name;
+		
+		
+	} 
+}

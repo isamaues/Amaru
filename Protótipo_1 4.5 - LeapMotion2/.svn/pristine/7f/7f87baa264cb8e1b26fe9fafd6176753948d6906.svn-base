@@ -1,0 +1,82 @@
+using UnityEngine;
+using System.Collections;
+
+//REVISION 126
+public class CannonMinigame : BaseMiniGame
+{
+	
+	public CannonMinigame() : base()
+	{
+	}
+	
+	public override void Update ()
+	{		
+		base.Update ();			
+		
+	}	
+	
+	
+	
+
+
+	#region implemented abstract members of BaseMiniGame
+	public override void LoadMiniGame ()
+	{
+		/*
+		textPrefab = Resources.Load ("Prefabs/TextPrefab") as GameObject;	
+		cubePrefab = Resources.Load ("Prefabs/CubePrefab") as GameObject;	
+		itensMidPoint = new Vector3 (Camera.main.transform.position.x, upFactor * 1.7f, 0);
+		*/
+	}
+
+	public override void AdjustCamera ()
+	{
+		throw new System.NotImplementedException ();
+	}
+
+	public override void CancelChoice ()
+	{
+		throw new System.NotImplementedException ();
+	}
+
+	public override void CreateCancelAcceptChoice ()
+	{
+		throw new System.NotImplementedException ();
+	}
+
+	public override void CreateBChoice ()
+	{
+		throw new System.NotImplementedException ();
+	}
+
+	public override void CreateCChoice ()
+	{
+		throw new System.NotImplementedException ();
+	}
+
+	public override void CreateDChoice ()
+	{
+		throw new System.NotImplementedException ();
+	}
+
+	public override void CreateEChoice ()
+	{
+		throw new System.NotImplementedException ();
+	}
+
+	public override void OrganizeChoices ()
+	{
+		throw new System.NotImplementedException ();
+	}
+
+	public override void EraseAll ()
+	{
+		throw new System.NotImplementedException ();
+	}
+
+	public override bool MiniGameResult ()
+	{
+		throw new System.NotImplementedException ();
+	}
+	#endregion
+}

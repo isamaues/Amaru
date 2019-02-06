@@ -1,0 +1,94 @@
+using UnityEngine;
+using System.Collections;
+using System.Globalization;
+
+public class MenuLabel 
+{
+	public string Label{get;set;}
+	public string Field{get;set;}
+	
+	private Rect labelRect;
+	private Rect fieldRect;
+	
+	private Vector2 position; 
+	private Vector2 stgLength;
+	private int fieldWidth = 150;
+	
+	public MenuLabel(string label, Vector2 position)
+	{
+		Label = label;
+		Field = string.Empty; 
+		this.position = position;
+	}
+	
+	public MenuLabel(string label, Vector2 position, int fieldWidth)
+	{
+		Label = label;
+		Field = string.Empty; 
+		this.position = position;
+		this.fieldWidth = fieldWidth;
+	}
+	
+	public MenuLabel(string label, Vector2 position, string fieldValue)
+	{
+		Label = label;
+		Field = fieldValue; 
+		this.position = position;
+	}
+	
+	public MenuLabel(string label, Vector2 position, double fieldValue)
+	{
+		Label = label;
+		Field = fieldValue.ToString(CultureInfo.InvariantCulture); 
+		
+		this.position = position;
+	}
+	
+	public MenuLabel(string label, Vector2 position, float fieldValue)
+	{
+		Label = label;
+		Field = fieldValue.ToString(CultureInfo.InvariantCulture); 
+		
+		this.position = position;
+	}
+	
+	public MenuLabel(string label, Vector2 position, double fieldValue, int fieldWidth)
+	{
+		Label = label;
+		Field = fieldValue.ToString(CultureInfo.InvariantCulture); 
+		
+		this.fieldWidth = fieldWidth;
+		this.position = position;
+	}
+	
+	public MenuLabel(string label, Vector2 position, float fieldValue, int fieldWidth)
+	{
+		Label = label;
+		Field = fieldValue.ToString(CultureInfo.InvariantCulture); 
+		
+		this.position = position;
+		this.fieldWidth = fieldWidth;
+	}
+	
+	public void OnGUI()
+	{
+		this.stgLength = BaseMenu.CalcStringLengthPixel(Label);
+		this.labelRect = new Rect(position.x, position.y, stgLength.x, stgLength.y);
+		this.fieldRect = new Rect(this.labelRect.x + this.labelRect.width + 10, this.labelRect.y,
+						this.fieldWidth, stgLength.y);
+		
+		GUI.Label(this.labelRect, Label);
+		Field = GUI.TextField(this.fieldRect, Field);			
+	}
+	
+	public void OnGUIPassword()
+	{
+		this.stgLength = BaseMenu.CalcStringLengthPixel(Label);
+		this.labelRect = new Rect(position.x, position.y, stgLength.x, stgLength.y);
+		this.fieldRect = new Rect(this.labelRect.x + this.labelRect.width + 10, this.labelRect.y,
+						this.fieldWidth, stgLength.y);
+		
+		GUI.Label(this.labelRect, Label);
+		Field = GUI.PasswordField(this.fieldRect, Field, '*');
+	}
+}

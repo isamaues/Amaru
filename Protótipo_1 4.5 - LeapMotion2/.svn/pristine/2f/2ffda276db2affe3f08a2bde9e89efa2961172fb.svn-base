@@ -1,0 +1,253 @@
+using UnityEngine;
+using System.Collections;
+
+public class SessionLogic : MonoBehaviour
+{
+
+	private ArrayList sonda = new ArrayList ();
+	private ArrayList learnList = new ArrayList ();
+	private int sondaCount = 0;
+	Config config = new Config ();
+	
+	public void StartLogic (ArrayList readWords, TaskManager tm, WordManager wm, string word_txt_path)// Inicia Logica de Geracao de Tarefas
+	{	       
+		try {			
+			
+			sonda.Clear ();
+			learnList.Clear ();
+			
+			//<------ Testar todas as palavras para calcular se aprendeu
+			MachineLearning ml = new MachineLearning (config);
+			foreach (Word rw in readWords) {  //Gera dados do aprendizado de cada palavra  
+				
+				//Select de Tarefas de leitura
+				ArrayList TasksOfRead = tm.GetTasksToRead (rw.Name); 			   
+				LearningInfo liRead = ml.GetLearningInfo (TasksOfRead, rw.MaxReadDif);
+				
+				//Atribuicao das variveis de GrauDeAprendizado e se ele Aprendeu ou nao a palavra
+				rw.LearningDegreeRead = (float)liRead.grauDeAprendizado;			
+				rw.LearnedRead = liRead.aprendizado;
+				
+				//Select de Tarefas de leitura
+				ArrayList TasksOfWrite = tm.GetTasksToWrite (rw.Name); 	
+			
+				LearningInfo liWrite = ml.GetLearningInfo (TasksOfWrite, rw.MaxWriteDif);
+				
+				//Atribuicao das variveis de GrauDeAprendizado e se ele Aprendeu ou nao a palavra
+				rw.LearningDegreeWrite = (float)liWrite.grauDeAprendizado;			
+				rw.LearnedWrite = liWrite.aprendizado;
+				
+				
+				if (rw.LearnedRead == 0 || rw.LearnedWrite == 0) {
+					//<------ Se não aprendeu colocar na lista de aprendizado
+					learnList.Add (rw);
+					
+				} else {
+					//<------ Se aprendeu colocar na lista de sonda
+					print ("aprendeu!");
+					sonda.Add (rw);
+				}
+			}	
+			
+			// Escreve os dados da lista de palavras no palavras.txt para guardar os dados do aprendizado de palavras
+			wm.WriteWord (word_txt_path);
+			
+			// Pegar as 3 primeiras palavras não-aprendidas e gerar 3 tarefas (uma para cada)
+			DadosTTFuzzy DataTTFuzzy = new DadosTTFuzzy ();
+			DadosFuzzyNumComp DataNCFuzzy = new DadosFuzzyNumComp ();
+			DadosFuzzyPalavras DataPFuzzy = new DadosFuzzyPalavras ();
+				
+			int countTask = 0;
+			for (int i = 0; i < learnList.Count; i++) {
+
+				if (sondaCount >= 4) {
+					// A cada 4 tarefas geradas se tiver sonda, chamar sonda com menor grau de aprendizado;
+					if (sonda.Count > 0) {
+						Word rw = GetSonda (sonda);
+						if (rw != null) {
+							GenerateTask (rw, readWords, wm, ml, tm, DataTTFuzzy, DataNCFuzzy, DataPFuzzy);
+						}
+					}
+					sondaCount = 0;
+				} else {
+					Word rw = learnList [i] as Word;
+					GenerateTask (rw, readWords, wm, ml, tm, DataTTFuzzy, DataNCFuzzy, DataPFuzzy);
+					countTask ++;
+					sondaCount ++;
+				}
+				if (countTask > 3) {
+					break;	
+				}
+			}
+						
+		} catch (System.Exception ex) {
+			Debug.LogError (ex.Message);
+			Debug.LogError (ex.StackTrace);
+		}
+	
+	}
+	
+	Word GetSonda (ArrayList sonda)
+	{
+		if (sonda.Count > 0) {
+			Word minDegWord = sonda [0] as Word;
+			for (int i = 1; i < sonda.Count; i++) {
+				Word word = sonda [i] as Word;
+				var difWord = (word.LearningDegreeRead + word.LearningDegreeWrite) / 2;
+				var difMinDegWord = (minDegWord.LearningDegreeRead + minDegWord.LearningDegreeWrite) / 2;
+				if (difWord < difMinDegWord) {
+					minDegWord = word;
+				}
+			}
+			
+			return minDegWord;
+		}
+		return null;
+		
+	}
+	
+	void GenerateTask (Word  rw, ArrayList readWords, WordManager wm, MachineLearning ml, TaskManager tm, DadosTTFuzzy DataTTFuzzy, DadosFuzzyNumComp DataNCFuzzy, DadosFuzzyPalavras DataPFuzzy)
+	{
+//		Word rw = learnList [i] as Word;
+				
+		ArrayList TaskOfModelo;
+		ArrayList TaskOfType;
+		ArrayList TaskOfNumComp;
+				
+		TaskOfModelo = tm.GetTasksByModel (rw.Name); 
+				
+		TaskOfType = tm.GetTasksByType (TaskOfModelo, "AB");
+		DataTTFuzzy.dadoHTT_AB = (float)ml.GetProbabilidade (TaskOfType, rw.MaxReadDif);
+		DataTTFuzzy.dadoTTxA_AB = (float)ml.GetTaxaAcerto (TaskOfType);
+								
+		TaskOfType = tm.GetTasksByType (TaskOfModelo, "AC");
+		DataTTFuzzy.dadoHTT_AC = (float)ml.GetProbabilidade (TaskOfType, rw.MaxReadDif);
+		DataTTFuzzy.dadoTTxA_AC = (float)ml.GetTaxaAcerto (TaskOfType);
+				
+		TaskOfType = tm.GetTasksByType (TaskOfModelo, "AE");
+		DataTTFuzzy.dadoHTT_AE = (float)ml.GetProbabilidade (TaskOfType, rw.MaxWriteDif);
+		DataTTFuzzy.dadoTTxA_AE = (float)ml.GetTaxaAcerto (TaskOfType);
+				
+		TaskOfType = tm.GetTasksByType (TaskOfModelo, "BC");
+		DataTTFuzzy.dadoHTT_BC = (float)ml.GetProbabilidade (TaskOfType, rw.MaxReadDif);
+		DataTTFuzzy.dadoTTxA_BC = (float)ml.GetTaxaAcerto (TaskOfType);
+				
+		TaskOfType = tm.GetTasksByType (TaskOfModelo, "BE");
+		DataTTFuzzy.dadoHTT_BE = (float)ml.GetProbabilidade (TaskOfType, rw.MaxWriteDif);
+		DataTTFuzzy.dadoTTxA_BE = (float)ml.GetTaxaAcerto (TaskOfType);
+				
+		TaskOfType = tm.GetTasksByType (TaskOfModelo, "CE");
+		DataTTFuzzy.dadoHTT_CE = (float)ml.GetProbabilidade (TaskOfType, rw.MaxWriteDif);
+		DataTTFuzzy.dadoTTxA_CE = (float)ml.GetTaxaAcerto (TaskOfType);
+
+		//DisplayTasksNamed (TaskOfModelo, readWords);// Mostra as tentativas no debug		
+				
+		TaskOfNumComp = tm.GetTasksByCompareCount (TaskOfModelo, 2);			
+		DataNCFuzzy.HNC_1 = (float)ml.GetProbabilidade (TaskOfNumComp, rw.MaxReadDif);
+		DataNCFuzzy.TNC_1 = (float)ml.GetTaxaAcerto (TaskOfNumComp);
+				
+		TaskOfNumComp = tm.GetTasksByCompareCount (TaskOfModelo, 3);
+		DataNCFuzzy.HNC_2 = (float)ml.GetProbabilidade (TaskOfNumComp, rw.MaxReadDif);
+		DataNCFuzzy.TNC_2 = (float)ml.GetTaxaAcerto (TaskOfNumComp);				
+				
+		TaskOfNumComp = tm.GetTasksByCompareCount (TaskOfModelo, 4);
+		DataNCFuzzy.HNC_3 = (float)ml.GetProbabilidade (TaskOfNumComp, rw.MaxReadDif);
+		DataNCFuzzy.TNC_3 = (float)ml.GetTaxaAcerto (TaskOfNumComp);
+
+		//--------------
+		foreach (Word item in readWords) {
+			var listOfIncorrectWords = new ArrayList ();
+					
+			if (!item.Name.Equals (rw.Name)) {
+						
+				listOfIncorrectWords = tm.GetTasksByChoices (TaskOfModelo, item.wordId);
+				DataPFuzzy.HPalavra [item.wordId - 1] = 
+							(float)ml.GetProbabilidade (listOfIncorrectWords, 
+								(rw.MaxReadDif + rw.MaxWriteDif) / 2);
+				DataPFuzzy.FPalavra [item.wordId - 1] = 
+							(float)ml.GetTaxaAcerto (listOfIncorrectWords);
+			}
+					
+		}			
+		//-------------
+		int taskType = TaFuzzy.EscolhaFuzzyTT (DataTTFuzzy);
+		int compareNumber = TaFuzzyNumComp.DecisaoNumComp (DataNCFuzzy);
+		ArrayList palavrasIncorretas = taFuzzyPalavras.DecisaoPalavras (rw.wordId, DataPFuzzy, compareNumber);
+		
+		string incorWords = "";
+		foreach (int ch in palavrasIncorretas) {
+			incorWords += " " + ch;
+		}
+		
+//		print (incorWords);
+				
+		Task novaTarefa = new Task ();
+		novaTarefa.CompareNumber = compareNumber;
+		novaTarefa.TaskType = taskType;
+		novaTarefa.Choices.AddRange (palavrasIncorretas);
+				
+		var taskName = tm.GetTaskTypeName (taskType);
+				
+				
+				
+		DifficultyIdentifier difId = new DifficultyIdentifier (ref readWords);
+				
+		if (!taskName.Contains ("E")) {
+			novaTarefa.Difficulty = difId.GerarDificuldadeLeitura ((short)rw.wordId, palavrasIncorretas, taskType, compareNumber);
+		} else {
+			novaTarefa.Difficulty = difId.GerarDificuldadeEscrita (wm.GetWords (), (short)rw.wordId, palavrasIncorretas, taskType, compareNumber);
+		}
+		
+		novaTarefa.Model = (short)rw.wordId;
+		novaTarefa.MiniGame = GetMiniGame ();
+		novaTarefa.Id = tm.GetTasks ().Count + 1;
+				
+		tm.AddTask (novaTarefa);
+	}
+	
+	public void DisplayTasksNamed (ArrayList ten, ArrayList readWords)
+	{    
+		Debug.Log ("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+       
+		foreach (Task i in ten) {				
+			
+			Debug.Log (
+				"ID: " + i.Id + " " + 
+				"Minigame: " + i.MiniGame + " " + 
+				"Tempo: " + i.Latency + " " + 
+				"Difi: " + i.Difficulty + " " +
+                "Acerto: " + i.Correct + " " + 
+				"Numcomp: " + i.CompareNumber + " " + 
+				"TT: " + i.TaskType + " " + 
+				"Modelo: " + GetWord (i.Model, readWords)				
+				);
+
+			for (int j = 0; j < i.Choices.Count; j++) {
+				Debug.Log ("Escolha" + (j + 1) + " :" + GetWord ((int)i.Choices [j], readWords));
+			}		    
+		}
+
+		Debug.Log ("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            
+	}
+	
+	public string GetWord (int id, ArrayList readWords)
+	{
+		foreach (Word w in readWords) {
+			if (w.wordId == id) {
+				return w.Name;
+			}			
+		}
+		return " --- ";
+	}
+	
+	public int GetMiniGame ()
+	{
+		
+		
+		// TODO Gerar minigames de acordo com a sessão.
+		return 1;
+		
+	}
+
+}

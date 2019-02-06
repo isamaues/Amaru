@@ -1,0 +1,125 @@
+using UnityEngine;
+using System.Collections;
+
+public class UrumaScript : MonoBehaviour
+{
+
+	public GameObject player;
+	public GameObject levelManager;
+	public Vector3 distanceFromPlayer;
+	
+	//
+	private Vector3 currentPos;
+	private Vector3 _intDistFromPlayer;
+	private LevelManager lm;
+	
+	// Use this for initialization
+	void Start ()
+	{
+		if (levelManager != null) {
+			lm = levelManager.GetComponent<LevelManager> ();
+		}
+		if (lm.modelBalloon != null) {
+			lm.modelBalloon.renderer.enabled = false;
+		}
+		
+		if (lm.modelImage != null) {
+			lm.modelImage.renderer.enabled = false;
+		}
+		
+		if (lm.modelText != null) {
+			lm.modelText.renderer.enabled = false;
+		}
+		
+	   
+	}
+	
+	private bool taskLoad = false;
+
+	// Update is called once per frame
+	void Update ()
+	{
+		if (!lm.RunningTask) {
+			
+			if (taskLoad) {
+				EraseAll ();
+				taskLoad = false;
+			}
+			
+			if (player.transform.rotation.eulerAngles.y > 180) {
+				_intDistFromPlayer = new Vector3 (-distanceFromPlayer.x, distanceFromPlayer.y, distanceFromPlayer.z);  
+				transform.localScale = new Vector3 (Mathf.Abs (transform.localScale.x), transform.localScale.y, transform.localScale.z);
+			} else {
+				_intDistFromPlayer = new Vector3 (distanceFromPlayer.x, distanceFromPlayer.y, distanceFromPlayer.z);  
+				transform.localScale = new Vector3 (-Mathf.Abs (transform.localScale.x), transform.localScale.y, transform.localScale.z);
+			}
+			
+		} else {
+			
+			if (!taskLoad) {
+				LoadTask ();
+				taskLoad = true;
+			}
+			
+		}
+		
+		MoveRobot ();
+		
+	}
+	
+	void LoadTask ()
+	{
+		Vector3 topRightScreenToWorldPos = Camera.main.ViewportToWorldPoint (new Vector3 (0f, 1f, 0f));
+		var urumaPos = new Vector3 (topRightScreenToWorldPos.x + transform.renderer.bounds.extents.x, topRightScreenToWorldPos.y - transform.renderer.bounds.size.y, distanceFromPlayer.z);
+		lm.ModelParent.transform.position = urumaPos + (Vector3.right * transform.renderer.bounds.size.x) + (Vector3.up * transform.renderer.bounds.extents.y);
+		
+	}
+	
+	void EraseAll ()
+	{
+		if (lm.modelBalloon != null) {
+			lm.modelBalloon.renderer.enabled = false;
+		}
+		
+		if (lm.modelImage != null) {
+			lm.modelImage.renderer.enabled = false;
+			lm.modelImage.renderer.material = new Material (Shader.Find ("Transparent/Diffuse"));
+			lm.modelImage.renderer.material.mainTexture = null;
+		}
+		
+		if (lm.modelText != null) {
+			lm.modelText.renderer.enabled = false;
+			lm.modelText.text = "";
+		}			
+	}
+	
+	public float amplitude = 1f;
+	public float velocity = 2f;
+	public float smoothRange = 0.05f;
+	private float posY;
+
+	void MoveRobot ()
+	{
+		Vector3 finalPosition; 
+		if (lm.RunningTask) {
+			Vector3 topRightScreenToWorldPos = Camera.main.ViewportToWorldPoint (new Vector3 (0f, 1f, 0f));
+			transform.localScale = new Vector3 (-Mathf.Abs (transform.localScale.x), transform.localScale.y, transform.localScale.z);
+			_intDistFromPlayer = new Vector3 (topRightScreenToWorldPos.x + transform.renderer.bounds.extents.x, topRightScreenToWorldPos.y - (lm.modelBalloon.renderer.bounds.size.y + transform.renderer.bounds.extents.y), distanceFromPlayer.z);
+			finalPosition = new Vector3 (_intDistFromPlayer.x, (_intDistFromPlayer.y) /*+ Mathf.PingPong (Time.time * velocity, amplitude)*/, _intDistFromPlayer.z);// - (distanceFromPlayer - player.transform.position);			
+		} else {
+			finalPosition = new Vector3 (_intDistFromPlayer.x + player.transform.position.x, (_intDistFromPlayer.y + player.transform.position.y) + Mathf.PingPong (Time.time * velocity, amplitude), _intDistFromPlayer.z + player.transform.position.z);// - (distanceFromPlayer - player.transform.position);			
+		}
+		transform.position = Vector3.Slerp (transform.position, finalPosition, smoothRange);
+	}
+	
+	void MoveRobotToPosition (Vector3 pos)
+	{
+		
+	}
+	
+	void OnMouseDown ()
+	{
+		lm.RepeatTask ();
+			
+	}
+}

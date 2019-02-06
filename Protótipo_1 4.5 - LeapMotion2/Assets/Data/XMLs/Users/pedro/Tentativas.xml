@@ -1,0 +1,340 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TasksList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<arrayList>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">14</anyType>
+				<anyType xsi:type="xsd:int">7</anyType>
+				<anyType xsi:type="xsd:int">9</anyType>
+			</Choices>
+			<Id>1</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>7.679286</Latency>
+			<Difficulty>0.78000002771615984</Difficulty>
+			<CompareNumber>4</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>4</TaskType>
+			<Model>13</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">14</anyType>
+				<anyType xsi:type="xsd:int">7</anyType>
+				<anyType xsi:type="xsd:int">9</anyType>
+			</Choices>
+			<Id>2</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>7.679286</Latency>
+			<Difficulty>0.78000002771615984</Difficulty>
+			<CompareNumber>4</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>1</TaskType>
+			<Model>13</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">7</anyType>
+				<anyType xsi:type="xsd:int">8</anyType>
+				<anyType xsi:type="xsd:int">1</anyType>
+			</Choices>
+			<Id>3</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>5.63497162</Latency>
+			<Difficulty>5125</Difficulty>
+			<CompareNumber>4</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>5</TaskType>
+			<Model>9</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">14</anyType>
+				<anyType xsi:type="xsd:int">7</anyType>
+				<anyType xsi:type="xsd:int">9</anyType>
+			</Choices>
+			<Id>4</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>7.679286</Latency>
+			<Difficulty>0.78000002771615984</Difficulty>
+			<CompareNumber>4</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>4</TaskType>
+			<Model>13</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">3</anyType>
+			</Choices>
+			<Id>5</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>6.951577</Latency>
+			<Difficulty>0.23750000298023224</Difficulty>
+			<CompareNumber>2</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>5</TaskType>
+			<Model>1</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">8</anyType>
+				<anyType xsi:type="xsd:int">4</anyType>
+			</Choices>
+			<Id>6</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>6.28243637</Latency>
+			<Difficulty>43125</Difficulty>
+			<CompareNumber>3</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>7</TaskType>
+			<Model>11</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">5</anyType>
+				<anyType xsi:type="xsd:int">4</anyType>
+				<anyType xsi:type="xsd:int">11</anyType>
+			</Choices>
+			<Id>7</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>5.065504</Latency>
+			<Difficulty>0.70000002284844709</Difficulty>
+			<CompareNumber>4</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>7</TaskType>
+			<Model>1</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">9</anyType>
+				<anyType xsi:type="xsd:int">4</anyType>
+			</Choices>
+			<Id>8</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>3.24436</Latency>
+			<Difficulty>0.27812500074505808</Difficulty>
+			<CompareNumber>3</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>8</TaskType>
+			<Model>11</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">3</anyType>
+			</Choices>
+			<Id>9</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>3.06928253</Latency>
+			<Difficulty>3625</Difficulty>
+			<CompareNumber>2</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>10</TaskType>
+			<Model>1</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">8</anyType>
+				<anyType xsi:type="xsd:int">11</anyType>
+			</Choices>
+			<Id>10</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>3.0912075</Latency>
+			<Difficulty>0.60571430745578947</Difficulty>
+			<CompareNumber>3</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>10</TaskType>
+			<Model>1</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">15</anyType>
+				<anyType xsi:type="xsd:int">1</anyType>
+				<anyType xsi:type="xsd:int">12</anyType>
+			</Choices>
+			<Id>11</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>4.16902161</Latency>
+			<Difficulty>0.329166666418314</Difficulty>
+			<CompareNumber>4</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>8</TaskType>
+			<Model>11</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">3</anyType>
+			</Choices>
+			<Id>12</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>3.34499741</Latency>
+			<Difficulty>0.23750000298023224</Difficulty>
+			<CompareNumber>2</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>8</TaskType>
+			<Model>1</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">14</anyType>
+				<anyType xsi:type="xsd:int">4</anyType>
+			</Choices>
+			<Id>13</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>5.633091</Latency>
+			<Difficulty>7557143</Difficulty>
+			<CompareNumber>3</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>7</TaskType>
+			<Model>11</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">15</anyType>
+				<anyType xsi:type="xsd:int">11</anyType>
+				<anyType xsi:type="xsd:int">9</anyType>
+			</Choices>
+			<Id>14</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>5.9970665</Latency>
+			<Difficulty>0.295833333209157</Difficulty>
+			<CompareNumber>4</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>1</TaskType>
+			<Model>13</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">8</anyType>
+			</Choices>
+			<Id>15</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>4.459961</Latency>
+			<Difficulty>0.56285716396002539</Difficulty>
+			<CompareNumber>2</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>5</TaskType>
+			<Model>1</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">15</anyType>
+				<anyType xsi:type="xsd:int">4</anyType>
+			</Choices>
+			<Id>16</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>2.72380829</Latency>
+			<Difficulty>0.28749999739229681</Difficulty>
+			<CompareNumber>3</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>4</TaskType>
+			<Model>9</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">10</anyType>
+				<anyType xsi:type="xsd:int">8</anyType>
+			</Choices>
+			<Id>17</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>3.82044983</Latency>
+			<Difficulty>0.29375000447034838</Difficulty>
+			<CompareNumber>3</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>10</TaskType>
+			<Model>13</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">7</anyType>
+				<anyType xsi:type="xsd:int">8</anyType>
+				<anyType xsi:type="xsd:int">13</anyType>
+			</Choices>
+			<Id>18</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>4.19475555</Latency>
+			<Difficulty>8205357</Difficulty>
+			<CompareNumber>4</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>2</TaskType>
+			<Model>11</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">8</anyType>
+			</Choices>
+			<Id>19</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>2.51968384</Latency>
+			<Difficulty>0.62285716574816474</Difficulty>
+			<CompareNumber>2</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>1</TaskType>
+			<Model>1</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">7</anyType>
+				<anyType xsi:type="xsd:int">4</anyType>
+			</Choices>
+			<Id>20</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>2.63362885</Latency>
+			<Difficulty>0.28750000298023226</Difficulty>
+			<CompareNumber>3</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>2</TaskType>
+			<Model>11</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">14</anyType>
+				<anyType xsi:type="xsd:int">5</anyType>
+				<anyType xsi:type="xsd:int">1</anyType>
+			</Choices>
+			<Id>21</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>3.608817</Latency>
+			<Difficulty>8157143</Difficulty>
+			<CompareNumber>4</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>5</TaskType>
+			<Model>13</Model>
+		</Task>
+		<Task>
+			<Choices>
+				<anyType xsi:type="xsd:int">3</anyType>
+				<anyType xsi:type="xsd:int">1</anyType>
+				<anyType xsi:type="xsd:int">9</anyType>
+			</Choices>
+			<Id>22</Id>
+			<DateTime>2000-01-01T00:00:00</DateTime>
+			<MiniGame>1</MiniGame>
+			<Latency>9.485004</Latency>
+			<Difficulty>0.70000002284844709</Difficulty>
+			<CompareNumber>4</CompareNumber>
+			<Correct>1</Correct>
+			<TaskType>4</TaskType>
+			<Model>10</Model>
+		</Task>
+	</arrayList>
+</TasksList>

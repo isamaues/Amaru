@@ -1,0 +1,87 @@
+using UnityEngine;
+using System.Collections;
+
+public class GameSession : MonoBehaviour
+{
+	
+	private float initTime;
+	//private bool sessionOver;
+	private Player player;
+	private int currentMiniGameID;
+	private int learnedWordsCount = 0;
+	//private int wrongWordsCount = 0;
+	public int levelCount = 4;
+	public int numMaxWords = 4;
+	
+	/*
+	 //Muita coisa pra mudar aqui
+	 public Texture2D tileTexture;
+	 public ArrayList bgTextures; //Texture2D
+	 public ArrayList bgSizes; //Vector2D
+	 * */
+	
+	// Use this for initialization
+	void Start ()
+	{
+		initTime = Time.time;
+		//sessionOver = false;
+	}
+	
+	// Update is called once per frame
+	void Update ()
+	{
+		//		Adicionar Player Depois
+		//
+		//		if(Player){ 
+		//		Implementar Player
+		//		}
+	
+		if (Time.time - initTime > 2600 || learnedWordsCount >= numMaxWords) {
+			//sessionOver = true;
+		} else {
+		
+			DoLevelManager (); //mudar ou não de fase
+
+			if (WordLearned) {
+				
+			}
+			
+		}
+		
+	}
+	
+	public int wrongLimit = 10;
+
+	public bool WordLearned{ get; set; }
+	//private bool hitWord = false;
+	
+	//Verifica se pode trocar de MiniGame
+	private bool VerifyMG ()
+	{
+		
+		return true;
+	}
+	
+	//private int currenteLevel = 0;
+	
+	private void DoLevelManager ()
+	{
+		//ESPERAR AS FASES FICAREM PRONTAS
+	}
+	
+	public void ChangeMiniGame (int newMiniGame)
+	{
+		currentMiniGameID = newMiniGame;
+		
+		//DO other stuff
+		
+	}
+	
+	public void ChangeWor (int newMiniGame)
+	{
+		currentMiniGameID = newMiniGame;
+		
+		//DO other stuff
+		
+	}
+}

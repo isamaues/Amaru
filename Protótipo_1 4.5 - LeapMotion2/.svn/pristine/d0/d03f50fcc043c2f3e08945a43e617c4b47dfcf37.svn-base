@@ -1,0 +1,78 @@
+using UnityEngine;
+using System.Collections;
+
+public class ZoomCamera : MonoBehaviour
+{
+	
+	public float target = 0f;
+	private float origin;
+	public float zoomSpeed = 1f;
+	public float acccuracy = 0.05f;
+	public float maxLim = 20f;
+	public float minLim = 2f;
+	private bool getClose = false;
+	private bool animatingCamera = false;
+	private float param;
+	
+	// Update is called once per frame
+	void Update ()
+	{
+		MoveCamera (param);
+	}
+	
+	void MoveCamera (float zoom)
+	{
+		if (animatingCamera) {
+			if (zoom <= maxLim && zoom >= minLim) {
+			
+				float size = Camera.mainCamera.orthographicSize;
+				if (getClose) {
+					float diff = size - zoom;
+					if (diff > acccuracy) {
+						var temp = zoomSpeed * Time.smoothDeltaTime;
+						Camera.mainCamera.orthographicSize -= temp;
+					} else {
+						Camera.mainCamera.orthographicSize = zoom;
+						animatingCamera = false;
+					}
+				} else {
+					float diff = zoom - size;
+					if (diff > acccuracy) {
+						var temp = zoomSpeed * Time.smoothDeltaTime;
+						Camera.mainCamera.orthographicSize += temp;
+					} else {
+						Camera.mainCamera.orthographicSize = zoom;
+						animatingCamera = false;
+					}
+				}
+			} else {
+				if (getClose)
+					Camera.mainCamera.orthographicSize = minLim;
+				else
+					Camera.mainCamera.orthographicSize = maxLim;
+			}
+		}
+		
+	}
+	
+	void OnTriggerEnter (Collider collider)
+	{
+		if (collider.tag == "Player") {
+			if (!animatingCamera)
+				origin = Camera.mainCamera.orthographicSize;
+			getClose = Camera.mainCamera.orthographicSize > target;
+			animatingCamera = true;
+			param = target;
+		}
+	}
+	
+	void OnTriggerExit (Collider collider)
+	{
+		if (collider.tag == "Player") {
+			getClose = Camera.mainCamera.orthographicSize > origin;
+			animatingCamera = true;
+			param = origin;
+		}
+		
+	}
+}

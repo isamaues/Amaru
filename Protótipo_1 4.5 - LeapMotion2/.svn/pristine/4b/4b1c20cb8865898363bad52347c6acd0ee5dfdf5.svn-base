@@ -1,0 +1,28 @@
+using UnityEngine;
+using System.Collections;
+
+public class Staff : Scene {
+	
+	private string staff;
+
+	public Staff(){
+		buttonsYOffset += 100;
+		buttonName = new string[1]{"Voltar"};
+		buttonListening = new bool[buttonName.Length];	
+		
+		staff = "Adalberto Pereira\n" +
+				"Gilberto Junior\n" +
+				"Pedro Afonso\n" +
+				"Hyago Pinheiro\n" +
+				"Ellton Sales";
+	}
+	
+	public override void OnGUI() {
+		base.OnGUI();
+		
+		GUI.TextArea(new Rect (100, buttonsYDefaultOffset, 200, 80), staff, 200);
+		
+		if(buttonListening[0])		
+			SceneScreenManager.currentScene = ScreenState.MainMenu;		
+	}
+}

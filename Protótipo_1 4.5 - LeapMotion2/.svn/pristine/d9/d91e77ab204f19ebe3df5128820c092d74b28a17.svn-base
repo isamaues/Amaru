@@ -1,0 +1,74 @@
+using UnityEngine;
+using System.Collections;
+
+public class HeadCollider : MonoBehaviour
+{
+
+	// Use this for initialization
+	void Start ()
+	{
+	
+	}
+	
+	// Update is called once per frame
+	void Update ()
+	{
+	
+	}
+	
+	void OnTriggerEnter (Collider collider)
+	{
+		VerifyCollision (collider);
+	}
+	
+	void OnTriggerStay (Collider collider)
+	{
+		VerifyCollision (collider);
+	}
+	
+	void VerifyCollision (Collider collider)
+	{
+		
+		
+		InCollision inCollision = collider.transform.GetComponent<InCollision> ();
+		if (inCollision != null) {
+			
+			PlayerAnimation playerAnimation = transform.parent.transform.GetComponent<PlayerAnimation> ();
+			if (playerAnimation != null) {
+				if (collider.transform.position.y > transform.position.y && playerAnimation.currentState == PlayerAnimation.State.Jump) {
+					inCollision.isUp = true;
+					inCollision.startCollision = true;
+				}
+			}
+		}
+		
+		if (collider.tag == "Tile") {
+			Tile tile = collider.transform.GetComponent<Tile> ();
+			
+			if (tile != null) {
+				if (tile.blockBottom) {
+					PlayerMovement playerMovement = transform.parent.transform.GetComponent<PlayerMovement> ();
+					if (playerMovement != null) {
+						if (playerMovement.MoveDirection.y > 0) {
+							playerMovement.MoveDirection.y = 0;
+						}
+					}
+				}
+			}
+		}
+				
+		if (collider.tag != "Player" && collider.tag != "Hidden" && collider.tag != "Tile" && collider.tag != "Texture"
+			) {
+			
+			PlayerMovement playerMovement = transform.parent.transform.GetComponent<PlayerMovement> ();
+			if (playerMovement != null) {
+				if (playerMovement.MoveDirection.y > 0) {
+					playerMovement.MoveDirection.y = 0;
+				}
+			}
+			
+			//if(collider.bounds.
+		
+		}
+	}
+}

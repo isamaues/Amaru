@@ -1,0 +1,31 @@
+using UnityEngine;
+using System.Collections;
+
+public class NewGamer : Scene {
+	private string playerName = "";
+
+	public NewGamer(){
+		buttonsYOffset += 50;	//o y dos botões desceram para permitir o nome do jogador
+		buttonName = new string[2]{"Criar Jogador", "Voltar"};
+		buttonListening = new bool[buttonName.Length];	
+	}
+	
+	public override void OnGUI() {
+		base.OnGUI();
+		
+		playerName = GUI.TextField(new Rect(Screen.width/2-100, buttonsYDefaultOffset, 200, 25), playerName, 35);
+		
+		//criar método save depois
+		if(buttonListening[0])
+		{
+			Debug.Log("Jogador " + playerName + " criado!");
+			playerName = "";
+		}
+		
+		if(buttonListening[1])
+		{
+			playerName = "";
+			SceneScreenManager.currentScene = ScreenState.MainMenu;
+		}
+	}
+}

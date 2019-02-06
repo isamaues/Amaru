@@ -1,0 +1,53 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Xml.Serialization;
+
+//[Serializable]
+public class Task
+{
+	
+	public int Id { get; set; }
+
+	public DateTime DateTime { get; set; } // Mais um atributo de tempo que guarda data e hora no momento da resposta do jogador
+	
+	public int MiniGame { get; set; }
+
+	public float Latency { get; set; }
+
+	public double Difficulty { get; set; }
+
+	public int CompareNumber { get; set; }
+
+	public byte Correct { get; set; }
+
+	public int TaskType { get; set; }
+
+	public short Model { get; set; }
+
+	public ArrayList Choices = new ArrayList ();
+	
+	public string PrintInfo (bool withNewLines)
+	{
+		string incorrectWords = "";
+		
+		foreach (int ch in Choices) {
+			incorrectWords += " " + ch;
+		}
+		
+		string dif = String.Format("{0:0.000}",Difficulty);
+	
+		return 	"Id: " + Id + ((withNewLines) ? ";\n" : ", ") +
+				"MiniGame: " + MiniGame + ((withNewLines) ? ";\n" : ", ") +
+				"Latency: " + Latency + ((withNewLines) ? ";\n" : ", ") +
+				"Difficulty: " + dif  + ((withNewLines) ? ";\n" : ", ") +
+				"CompareNumber: " + CompareNumber + ((withNewLines) ? ";\n" : ", ") +
+				"Correct: " + Correct + ((withNewLines) ? ";\n" : ", ") +
+				"TaskType: " + TaskType + ((withNewLines) ? ";\n" : ", ") +
+				"Model: " + Model + ((withNewLines) ? ";\n" : ", ") +
+				"Choices: {" + incorrectWords + "}";
+	}
+}
+

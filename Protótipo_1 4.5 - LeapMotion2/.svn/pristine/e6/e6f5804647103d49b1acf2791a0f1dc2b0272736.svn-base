@@ -1,0 +1,178 @@
+using UnityEngine;
+using System.Collections;
+
+public class ScenaryManager : MonoBehaviour
+{
+	
+	public Texture2D firstBG;
+	public Texture2D firstToSecondBG;
+	public Texture2D secondBG;
+	public Texture2D secondToThirdBG;
+	public Texture2D thirdBG;
+	public Texture2D thirdToFourthBG;
+	public Texture2D fourthBG;
+	public Texture2D firstObjects;
+	public Texture2D secondObjects;
+	public Texture2D thirdObjects;
+	public Texture2D fourthObjects;
+	public float zPos = 20f;
+	public float scaleFactor = 25.6f;
+	public Vector2 normalSize = new Vector2 (1024f, 768f);
+	public Vector2 bgInitialPosition = new Vector2 (15f, 10f);
+	private ArrayList _bgList = new ArrayList ();
+	private ArrayList _objsList = new ArrayList ();
+	private static GameObject tempBackGrounds;
+	
+	// Use this for initialization
+	void Start ()
+	{
+		//TODO generate BG
+		tempBackGrounds = new GameObject ();
+		tempBackGrounds.name = "Temp Backgrounds";
+		UpdateBGList (bgInitialPosition);
+		
+		//TODO generate objects randomly
+	
+		
+	}
+	
+	// Update is called once per frame
+	void Update ()
+	{
+		//TODO when bg ends, generate new bg
+		UpdateBGList (bgInitialPosition);
+
+		//TODO move BG (paralax);
+		MoveBackground ();
+		
+		//TODO move Objects;
+		MoveObjects ();
+	}
+	
+	// Gera novos backgrounds de acordo com: posição da câmera, campo de visão da câmera e tamanho da textura de background  
+	void UpdateBGList (Vector3 initPos)
+	{
+		if (_bgList.Count == 0) {
+			
+			GameObject bgTemp = createBgGameObject (secondBG, secondToThirdBG, false);
+			_bgList.Add (bgTemp);
+			bgTemp.transform.position = new Vector3 (Camera.main.transform.position.x, bgInitialPosition.y, zPos);
+			BackgroundScript bgs = bgTemp.AddComponent<BackgroundScript> ();
+			bgs.link = false;
+			
+			PutNewBG (bgTemp, false, firstBG, firstToSecondBG);
+			PutNewBG (bgTemp, true, thirdBG, secondToThirdBG);
+					
+		} else {
+//			var toDestroy = (_floorList [0] as GameObject);
+//			if (!CameraManager.IsOnCamera (toDestroy, true)) {
+//				 
+//				leftBorder.transform.position = (toDestroy).transform.position + (Vector3.right * (toDestroy).collider.bounds.extents.x);
+//
+//				GameObject temp = (GameObject)Instantiate (floorModel, (_floorList [_floorList.Count - 1] as GameObject).transform.position + new Vector3 ((_floorList [_floorList.Count - 1] as GameObject).collider.bounds.size.x, 0, 0), (_floorList [_floorList.Count - 1] as GameObject).transform.rotation);
+//				_floorList.Add (temp);
+//
+//				_floorList.Remove (toDestroy);
+//				if ((_floorList [0] as GameObject) != toDestroy) {
+//					Destroy (toDestroy);
+//				}
+//			} else {
+//
+//			}
+			
+			var edgeBG = (_bgList [0] as GameObject);
+			if (CameraManager.IsOnCamera (edgeBG, true)) {
+				PutNewBG (edgeBG, false, firstBG, firstToSecondBG);
+			} else if (_bgList.Count > 1) {
+				if (!CameraManager.IsOnCamera ((_bgList [1] as GameObject), true)) {
+					if ((_bgList [0] as GameObject) == edgeBG) {
+						_bgList.Remove (edgeBG);
+						Destroy (edgeBG);
+					}
+				}	
+			}
+			
+			edgeBG = (_bgList [_bgList.Count - 1] as GameObject);
+			if (CameraManager.IsOnCamera (edgeBG, true)) {
+				PutNewBG (edgeBG, true, thirdBG, secondToThirdBG);
+			} else if (_bgList.Count > 1) {
+				if (!CameraManager.IsOnCamera ((_bgList [_bgList.Count - 2] as GameObject), true)) {
+					if ((_bgList [_bgList.Count - 1] as GameObject) == edgeBG) {
+						_bgList.Remove (edgeBG);
+						Destroy (edgeBG);
+						
+					}
+				}	
+			}
+			
+		}
+		
+	}
+	
+	private void PutNewBG (GameObject bgTemp, bool toRight, Texture2D bgTexture, Texture2D linkTexture)
+	{
+		
+		float missingCount;
+		
+		if (toRight) {
+			missingCount = ((Camera.main.ViewportToWorldPoint (Vector3.one).x - bgTemp.renderer.bounds.max.x) / bgTemp.renderer.bounds.size.x) + 1f;
+		} else {
+			missingCount = ((bgTemp.renderer.bounds.min.x - Camera.main.ViewportToWorldPoint (Vector3.zero).x) / bgTemp.renderer.bounds.size.x) + 1f;
+		}
+		
+		GameObject newBG;
+		
+		for (int i = 0; i < missingCount; i++) {		
+
+			GameObject lastBG;
+			if (toRight) {
+				lastBG = (_bgList [_bgList.Count - 1] as GameObject);
+			} else {
+				lastBG = (_bgList [0] as GameObject);
+			}
+			
+			newBG = createBgGameObject (bgTexture, linkTexture, !lastBG.GetComponent<BackgroundScript> ().link);
+			
+			_bgList.Insert ((toRight) ? _bgList.Count : 0, newBG);
+			
+			var correctXPos = (newBG.renderer.bounds.size.x + lastBG.renderer.bounds.size.x) / 2;
+			
+			newBG.transform.position = lastBG.transform.position + ((toRight) ? Vector3.right : Vector3.left) * correctXPos;
+
+		}
+		
+	}
+	
+	void GenerateObjectsList (Vector3 initialPosition, Vector3 finalPosition)
+	{
+		
+	}
+	
+	void MoveBackground ()
+	{
+		
+		
+	}
+	
+	void MoveObjects ()
+	{
+		
+		
+	}
+	
+	private GameObject createBgGameObject (Texture2D bgTexture, Texture2D linkTexture, bool link)
+	{
+		var scale = new Vector2 ((link) ? linkTexture.width / scaleFactor : bgTexture.width / scaleFactor, bgTexture.height / scaleFactor);
+		
+		GameObject bgCube = GameObject.CreatePrimitive (PrimitiveType.Cube);
+		BackgroundScript bgs = bgCube.AddComponent<BackgroundScript> ();
+		bgs.link = link;
+		bgCube.transform.localScale = new Vector3 (scale.x, scale.y, 0.01f);
+		bgCube.renderer.material.mainTexture = (link) ? linkTexture : bgTexture;
+		bgCube.transform.Rotate (0f, 0f, 180f);
+		bgCube.transform.parent = tempBackGrounds.transform;
+		
+		return bgCube;
+	}
+	
+}

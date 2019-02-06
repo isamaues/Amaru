@@ -1,0 +1,97 @@
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+
+public class TestScenario : MonoBehaviour
+{
+	//atributos para a caixa da tela
+	private float horOffset = 10;
+	private float verOffset = 20;
+	private float boxWidth;
+	private float boxHeigth;
+	
+	//atributos para o efeito de trannsição de tela
+	private string currentModel = "Modelo";
+	public int buttonSize = 75;
+	public int space = 5;
+	public int qtdTarefas = 1;
+	public string task_txt_path = @"Assets\Scripts\BD\tentativas_teste\tasks.1TesteLGSPreenchido.txt";
+	public string word_txt_path = @"Assets\Scripts\BD\words.txt";
+	private TaskManager tm;
+	private WordManager wm ;
+	private ArrayList palavrasLidas;
+	private ArrayList tarefasLidas;
+	private Task tarefa;
+	private bool jogando;
+
+	void Start ()
+	{
+		boxWidth = Screen.width - 2 * horOffset;
+		boxHeigth = Screen.height - 2 * verOffset;		
+	
+		tm = transform.gameObject.AddComponent<TaskManager> ();
+		tm.ReadTask (task_txt_path);             					// Ler tentativas
+		tarefasLidas = tm.GetTasks ();
+		tm.DisplayTasks ();
+
+		wm = transform.gameObject.AddComponent<WordManager> ();
+		wm.ReadWord (word_txt_path);             					// Ler palavras do txt
+		palavrasLidas = wm.GetWords ();
+
+		
+	}
+	
+	bool[] escolhas;
+	
+	void OnGUI ()
+	{
+		GUI.Box (new Rect (horOffset, verOffset, boxWidth, boxHeigth), currentModel);
+		if (escolhas != null && escolhas.Length > 0) {
+			if (tarefa != null && tarefa.Choices != null) {
+				int currentPos = (Screen.width / 2) - (((tarefa.Choices.Count + 1) * (buttonSize + space)) / 2);
+				
+				escolhas = new bool[tarefa.Choices.Count + 1];
+				escolhas [0] = GUI.Button (new Rect (currentPos, 100, buttonSize, buttonSize), wm.GetWord (tarefa.Model));
+				
+				currentPos += buttonSize + space;
+				for (int i = 0; i < tarefa.Choices.Count; i++) {
+					
+					escolhas [i + 1] = GUI.Button (new Rect (currentPos, 100, buttonSize, buttonSize), wm.GetWord ((int)tarefa.Choices [i]));
+					currentPos += buttonSize + space;
+				}
+			}
+		}
+	}
+	
+	int indice = 0;
+
+	void Update ()
+	{
+		
+		if (!jogando && tarefasLidas != null && tarefasLidas.Count > 0) {
+			if (indice < tarefasLidas.Count) {
+				tarefa = (Task)tarefasLidas [indice];
+				jogando = true;
+				currentModel = wm.GetWord (tarefa.Model);
+			}
+		}
+		
+		if (escolhas != null) {
+			
+			foreach (bool botao in escolhas) {
+//				Debug.LogWarning (botao);
+				if (botao) {
+					
+					indice++;
+					jogando = false;
+					break;
+				}
+			}
+		} else {
+			escolhas = new bool[tarefa.Choices.Count + 1];
+		}
+		
+	}
+	
+	
+}

@@ -1,0 +1,315 @@
+using UnityEngine;
+using System.Collections;
+using System.IO;
+using System.Text;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+
+public class CreateGameXMLScritp : MonoBehaviour
+{
+	
+	//***************************************************//
+	// 	Gerador de XML's								 //
+	//***************************************************//
+	//	Cria e popula XML's contendo informações padrões //
+	//	para o jogo/jogador								 //
+	//													 //
+	//	NÃO DEVE entrar no build.						 //
+	//***************************************************//
+	
+
+	Rect _tasks, _words, _miniGames, _taskTypes;
+	Rect _loadTasks, _loadWords, _loadMiniGames, _loadTaskType;
+	string _FileLocation;
+ 
+	void Start ()
+	{ 
+		_tasks = new Rect (10, 80, 150, 20); 
+		_words = new Rect (10, 100, 150, 20); 
+		_miniGames = new Rect (10, 120, 150, 20);
+		_taskTypes = new Rect (10, 140, 150, 20);
+		
+		_loadTasks = new Rect (180, 80, 400, 20); 
+		_loadWords = new Rect (180, 100, 400, 20); 
+		_loadMiniGames = new Rect (180, 120, 400, 20);
+		_loadTaskType = new Rect (180, 140, 400, 20);
+		
+		_FileLocation = Application.dataPath + "\\defaultXMLs"; 
+		if(!Directory.Exists(_FileLocation)){
+			Directory.CreateDirectory(_FileLocation);	
+		}
+		
+		GenerateDatabase();
+	}
+ 
+	void Update ()
+	{
+	}
+ 
+	void OnGUI ()
+	{    
+		if (GUI.Button (_tasks, "Criar Tarefas")) { 
+			CreateTasks ();
+		} 
+		
+		if (GUI.Button (_words, "Criar Palavras")) { 
+			CreateWords ();
+		} 
+		
+		if (GUI.Button (_miniGames, "Criar MiniGames")) { 
+			CreateMiniGames ();
+		} 
+		
+		if (GUI.Button (_taskTypes, "Criar T. de Tarefas")) { 
+			CreateTiposDeTarefas ();
+		} 
+		
+		
+		if (GUI.Button (_loadTasks, "Carregar Tarefas")) { 
+			TarefasData td = XMLManager.LoadXML<TarefasData>(_FileLocation,"GeneratedTasks.xml");
+			
+			foreach (var task in td.info) {
+				
+					string choices = "";
+					for (int i = 0; i < task.Choices.Count; i++) {
+						choices += task.Choices[i] + " - ";
+					}
+				
+				    Debug.Log(	
+								task.Id + " - " + 
+								task.DateTime + " - " +
+								task.MiniGame + " - " + 
+								task.Latency + " - " + 
+								task.Difficulty + " - " +
+			                    task.Correct + " - " + 
+								task.CompareNumber + " - " + 
+								task.TaskType + " - " + 
+								task.Model + " - " +
+								choices);
+				
+//				<Choices />
+//			<Id>5</Id>
+//			<DateTime>0001-01-01T00:00:00</DateTime>
+//			<MiniGame>1</MiniGame>
+//			<Latency>0</Latency>
+//			<Difficulty>3125</Difficulty>
+//			<CompareNumber>2</CompareNumber>
+//			<Correct>0</Correct>
+//			<TaskType>3</TaskType>
+//			<Model>0</Model>
+
+			}
+		} 
+		
+		if (GUI.Button (_loadWords, "Carregar Palavras")) { 
+			CreateWords ();
+		} 
+		
+		if (GUI.Button (_loadMiniGames, "Carregar MiniGames")) { 
+			CreateMiniGames ();
+		} 
+		
+		if (GUI.Button (_loadTaskType, "Carregar T. de Tarefas")) { 
+			CreateTiposDeTarefas ();
+		} 
+	}
+	
+	public string task_txt_path = @"Assets\Scripts\BD\tasks.txt";
+	public string word_txt_path = @"Assets\Scripts\BD\words.txt";
+	public string mg_txt_path = @"Assets\Scripts\BD\mini_games.txt";
+	public string tt_txt_path = @"Assets\Scripts\BD\task_types.txt";
+	
+	void CreateTasks ()
+	{
+		TarefasData tData = new TarefasData ();
+		tData.info = tasks;
+ 		
+		XMLManager.CreateXML<TarefasData>(_FileLocation, "GeneratedTasks.xml", tData); 
+	}
+		
+	void CreateWords ()
+	{
+		PalavrasData palData = new PalavrasData ();
+		palData.info = words;
+ 		
+		XMLManager.CreateXML<PalavrasData>(_FileLocation, "GeneratedWords.xml", palData); 
+	}
+	
+	void  CreateTiposDeTarefas ()
+	{
+		TipoTarefasData ttData = new TipoTarefasData ();
+		ttData.info = taskTypes;
+ 		
+		XMLManager.CreateXML<TipoTarefasData> (_FileLocation, "GeneratedTaskTypes.xml", ttData); 
+	}
+	
+	void CreateMiniGames ()
+	{
+		MiniGameData mgData = new MiniGameData ();
+		mgData.info = miniGames;
+ 
+		
+		XMLManager.CreateXML<MiniGameData> (_FileLocation, "GeneratedMiniGames.xml", mgData); 
+	}
+	 
+	List<Word> words = new List<Word>();
+	List<Task> tasks = new List<Task>();
+	List<TaskType> taskTypes = new List<TaskType>();
+	List<MiniGame> miniGames = new List<MiniGame>();
+	
+	void GenerateDatabase ()
+	{
+		//ler o arquivo que associa cada palavra com seu index. Armazena na lista palavras.
+		//ler o arquivo que associa cada tipo de tentativa com seu index. Armazena na lista tipoTentativa.
+		//ler o arquivo que associa cada mini jogo com seu index. Armazena na lista miniJogo.
+		string line;
+		StreamReader srAux = null;
+		string[] parts = null;
+
+        try
+        {
+			srAux = new StreamReader (task_txt_path, Encoding.UTF8);
+			while ((line = srAux.ReadLine()) != null) {
+				
+				parts = line.Replace(",",".").Split ('/');
+				Task task = new Task ();
+				int indice = 0;
+						
+				task.Id = int.Parse (parts [indice++]); //ID
+						
+				try {
+					string format = "dd-MM-yyyy_HH:mm:ss";
+					task.DateTime = DateTime.ParseExact (parts [indice], format, null); //DATA
+				} catch (FormatException ex) {
+					Debug.LogError (ex.StackTrace.ToString () );
+				} finally {
+					indice++;	
+				}
+						
+				task.MiniGame = int.Parse (parts [indice++]); //MINIGAME
+				task.Latency = float.Parse (parts [indice++]);//LATENCIA
+				task.Difficulty = float.Parse (parts [indice++]);//DIFICULDDE
+				task.Correct = byte.Parse (parts [indice++]);//CORRECAO
+				task.CompareNumber = int.Parse (parts [indice++]);//NUM DE COMPARACOES
+				task.TaskType = int.Parse (parts [indice++]);//TIPO DE TAREFA
+				task.Model = short.Parse (parts [indice++]);//MODELO
+	
+				while (indice < parts.Length) { //OUTRAS ESCOLHAS
+					task.Choices.Add (int.Parse (parts [indice++]));
+	               //  Debug.Log(task.Id + " :: "+ int.Parse (parts [indice - 1]));
+				}
+				
+				Debug.Log(line);
+//				Debug.Log(  "Id: " + parts[0] + 
+//							"DateTime: " + parts[1] + 
+//							"MiniGame: " + parts[2] + 
+//							"Latency: " + parts[3] + 
+//							"Difficulty: " + parts[4]  + 
+//							"CompareNumber: " + parts[5] + 
+//							"Correct: " + parts[6] + 
+//							"TaskType: " + parts[7] + 
+//							"Model: " + parts[8] + 
+//							"Choices: {" + "}");
+				string st = "";
+				for (int i = 0; i < parts.Length; i++) {
+					st += parts[i]+"/";
+				}
+				Debug.Log(st);
+				Debug.Log(task.PrintInfo(false));
+				Debug.Log("---------------------");
+	
+				tasks.Add (task);
+			}
+				
+				
+			srAux = new StreamReader (word_txt_path, Encoding.UTF8);
+			while ((line = srAux.ReadLine()) != null) {
+				parts = line.Split ('/');
+				Word word = new Word ();
+				string[] silabs = parts [2].Split ('-');
+	
+				word.wordId = int.Parse (parts [0]);
+				word.Name = parts [1];
+	
+				for (int s = 0; s < silabs.Length; s++) {
+					word.Syllables.Add (silabs [s]);
+				}
+	
+				word.SyllablesNumber = short.Parse (parts [3]);
+				word.MaxReadDif = float.Parse (parts [4], CultureInfo.CurrentUICulture);
+				word.LearningDegreeRead = float.Parse (parts [5], CultureInfo.CurrentUICulture);
+				word.LearnedRead = short.Parse (parts [6]);
+				word.MaxWriteDif = float.Parse (parts [7], CultureInfo.CurrentUICulture);
+				word.LearningDegreeWrite = float.Parse (parts [8], CultureInfo.CurrentUICulture);
+				word.LearnedWrite = short.Parse (parts [9]);
+				words.Add (word);
+			}
+	
+			srAux = null;
+			line = null;
+			parts = null;
+	
+			srAux = new StreamReader (tt_txt_path, Encoding.UTF8);
+			while ((line = srAux.ReadLine()) != null) {
+				parts = line.Split ('/');
+				TaskType taskType = new TaskType (); 
+				taskType.Id = int.Parse (parts [0]);
+				taskType.Name = parts [1];
+				taskTypes.Add (taskType);
+			}
+	
+			srAux = null;
+			line = null;
+			parts = null;
+	
+			srAux = new StreamReader (mg_txt_path, Encoding.UTF8);
+			while ((line = srAux.ReadLine()) != null) {
+				parts = line.Split ('/');
+				MiniGame miniGame = new MiniGame ();
+				miniGame.Id = int.Parse (parts [0]);
+				miniGame.Name = parts [1];
+				miniGames.Add (miniGame);
+			}
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError("::" + ex.Message.ToString());
+            Debug.LogError("::" + ex.StackTrace.ToString());
+            Debug.Log("Erro ao ler o bd das palavras, tipoTentativa ou miniJogos.");
+        }
+        finally
+        {
+            if (srAux != null)
+                srAux.Close();
+        }
+
+	}
+	
+	
+	
+	
+}
+
+public class TarefasData
+{ 
+	public List<Task> info;
+}
+
+public class PalavrasData
+{ 
+	public List<Word>  info;
+
+}
+
+public class TipoTarefasData
+{ 
+	public List<TaskType>  info;
+	
+}
+
+public class MiniGameData
+{ 
+	public List<MiniGame>  info;
+	
+}

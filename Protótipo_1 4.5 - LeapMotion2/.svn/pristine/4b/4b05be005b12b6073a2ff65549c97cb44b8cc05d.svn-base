@@ -1,0 +1,123 @@
+using UnityEngine;
+using System.Collections;
+using System.Text;
+using System.Globalization;
+using System.Collections.Generic;
+using System.IO;
+using System;
+	
+public class Config {
+	
+	//Dados Gerais do Jogo 
+	
+	public string participante;
+	public string responsavel;
+    public int id_Da_Ultima_Tarefa_Do_Pre_Teste;
+	
+	#region Dados Referentes da Dificuldade das Tarefas
+
+    //Dificuldade Leitura
+
+    public bool utilizar_Algoritmo_de_Proximidade;
+
+    public float peso_Alfa_Leitura;
+    public float peso_Beta_Leitura;
+    public float peso_Gama_Leitura;
+
+    //Dificuldade Escrita
+
+    public float peso_Alfa_Escrita;
+    public float peso_Beta_Escrita;
+    public float peso_Gama_Escrita;
+    public float peso_Sigma_Escrita;
+	
+	//Numero de escolhas/comparacoes de uma tarefa	
+	public int numero_de_Escolhas_em_uma_Tarefa;
+	
+	#endregion
+
+    //Dados Referentes a Máquina de Aprendizado
+    public float alfa_Maquina_de_Aprendizado;
+    public int numero_De_Interacoes_da_Maquina_de_Aprendizado;
+	
+	#region Pesos referentes ao algoritmo de proximidade
+	public double Peso_Do_Alg_Prox_Da_Regra1;
+	public double Peso_Do_Alg_Prox_Da_Regra2;
+	public double Peso_Do_Alg_Prox_Da_Regra3;
+	public double Peso_Do_Alg_Prox_Da_Regra4;
+	public double Peso_Do_Alg_Prox_Da_Regra5;
+	#endregion
+ 
+    //Atributos referentes a leitura do TXT
+    public const string path = @"Assets\Scripts\BD\config.txt";
+    private Dictionary<string, object> atributosTxt = new Dictionary<string, object>();
+
+	// Use this for initialization
+	public Config() {
+		PegarDadosDeConfigDoTxt();	
+	}	
+	
+	void PegarDadosDeConfigDoTxt()
+	{
+		String line;
+        if (File.Exists(path))
+        {
+			 StreamReader sr = null;
+            try
+            {
+                sr = new StreamReader(path, Encoding.UTF8);
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if (line.Equals("")) continue;
+
+
+                    line = line.TrimEnd(',', ';', '.', ' ');
+                    String[] lineSep = line.Split('=');
+
+                    int init = lineSep[1].IndexOf('"') + 1;
+
+                    atributosTxt[lineSep[0].Trim()] = lineSep[1].Substring(init, lineSep[1].Length - 1 - init);
+                }
+                
+            }
+            catch (System.Exception)
+            {
+                Debug.Log("Erro ao ler txt de Configuracao");
+            }
+			
+			
+			participante = (String)atributosTxt["participante"];
+            responsavel = (String)atributosTxt["responsavel"];
+			
+            id_Da_Ultima_Tarefa_Do_Pre_Teste = Convert.ToInt16(atributosTxt["id_Da_Ultima_Tarefa_Do_Pre_Teste"]);
+
+            utilizar_Algoritmo_de_Proximidade = Convert.ToBoolean(atributosTxt["utilizar_Algoritmo_de_Proximidade"]);
+
+            peso_Alfa_Leitura = Convert.ToSingle(atributosTxt["peso_Alfa_Leitura"], CultureInfo.InvariantCulture);
+            peso_Beta_Leitura = Convert.ToSingle(atributosTxt["peso_Alfa_Leitura"], CultureInfo.InvariantCulture);
+            peso_Gama_Leitura = Convert.ToSingle(atributosTxt["peso_Gama_Leitura"], CultureInfo.InvariantCulture);
+
+            peso_Alfa_Escrita = Convert.ToSingle(atributosTxt["peso_Alfa_Escrita"], CultureInfo.InvariantCulture);
+            peso_Beta_Escrita = Convert.ToSingle(atributosTxt["peso_Beta_Escrita"], CultureInfo.InvariantCulture);
+            peso_Gama_Escrita = Convert.ToSingle(atributosTxt["peso_Gama_Escrita"], CultureInfo.InvariantCulture);
+            peso_Sigma_Escrita = Convert.ToSingle(atributosTxt["peso_Sigma_Escrita"], CultureInfo.InvariantCulture);
+			
+			numero_de_Escolhas_em_uma_Tarefa = Convert.ToInt16(atributosTxt["numero_de_Escolhas_em_uma_Tarefa"]);
+
+
+            alfa_Maquina_de_Aprendizado = Convert.ToSingle(atributosTxt["alfa_Maquina_de_Aprendizado"], CultureInfo.InvariantCulture);
+            numero_De_Interacoes_da_Maquina_de_Aprendizado = Convert.ToInt16(atributosTxt["numero_De_Interacoes_da_Maquina_de_Aprendizado"], CultureInfo.InvariantCulture);
+			
+			
+			Peso_Do_Alg_Prox_Da_Regra1 = Convert.ToSingle(atributosTxt["Peso_Do_Alg_Prox_Da_Regra1"], CultureInfo.InvariantCulture);
+			Peso_Do_Alg_Prox_Da_Regra2 = Convert.ToSingle(atributosTxt["Peso_Do_Alg_Prox_Da_Regra2"], CultureInfo.InvariantCulture);
+			Peso_Do_Alg_Prox_Da_Regra3 = Convert.ToSingle(atributosTxt["Peso_Do_Alg_Prox_Da_Regra3"], CultureInfo.InvariantCulture);
+			Peso_Do_Alg_Prox_Da_Regra4 = Convert.ToSingle(atributosTxt["Peso_Do_Alg_Prox_Da_Regra4"], CultureInfo.InvariantCulture);
+			Peso_Do_Alg_Prox_Da_Regra5 = Convert.ToSingle(atributosTxt["Peso_Do_Alg_Prox_Da_Regra5"], CultureInfo.InvariantCulture);
+			
+		}
+		
+		
+	}
+	
+}

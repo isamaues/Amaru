@@ -1,0 +1,39 @@
+using UnityEngine;
+using System.Collections;
+
+public class Menu : MonoBehaviour {
+
+	#region Fields
+	private string InstructionText = "Instrucoes do jogo: \nSetas esquerda e direita ou clique do mouse para andar, " +
+		"seta para cima para pular";
+	
+	private int buttonWhidth = 200;
+	private int buttonHeight = 50;
+	
+	#endregion
+	
+	#region Functions
+	
+	void OnGUI()
+	{
+		GUI.Label(new Rect(10, 10, 300, 200), InstructionText);
+		if(GUI.Button(new Rect (Screen.width /2 - buttonWhidth /2,
+			Screen.height /2 - buttonHeight/2, buttonWhidth ,buttonHeight), "Comecar Jogo"))
+		{	
+			Application.LoadLevel("Login");
+		}
+		GUI.Button(new Rect (Screen.width /2 - buttonWhidth /2,
+			Screen.height / 2 + buttonHeight , buttonWhidth ,buttonHeight), "Opcoes");
+		
+		GUI.Button(new Rect (Screen.width /2 - buttonWhidth /2,
+			Screen.height / 2 + buttonHeight*2 , buttonWhidth ,buttonHeight), "Creditos");
+		
+		GUI.Button(new Rect (Screen.width /2 - buttonWhidth /2,
+			Screen.height / 2 + buttonHeight*3 , buttonWhidth ,buttonHeight), "Sair");
+		
+	}
+	
+	#endregion
+	
+	
+}

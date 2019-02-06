@@ -1,0 +1,80 @@
+using UnityEngine;
+using System.Collections;
+
+public class TempTest : MonoBehaviour
+{
+
+	
+	
+	ArrayList ListadePalavras = new ArrayList () ;//= Lista com todas as palavras do Jogo.
+	ArrayList ListaDeSonda = new ArrayList ();// = Lista de palavras que o aluno já aprendeu.
+	ArrayList ListaASerEnsinada = new ArrayList ();// = Lista de todas as palavras que o aluno não aprendeu.
+	ArrayList ListaAuxiliarDePalavrasASeremEnsinadas = new ArrayList ();// = É uma lista auxiliar de palavras a serem ensinadas  contendo um número restritos de palavras. A geração de tarefas e verificação do aprendizado será executado para as palavras dessa lista.
+	int PalavrasAprendidas = 0;// = contador para identificar quantas palavras foram “aprendidas” nesta sessão.
+
+  /*  
+	/// <summary>
+	/// A logica e sessão começa depois que foi executado o pré-teste
+	/// </summary>
+	
+	void LogicaDeSessao ()
+	{
+
+//   	Verificar cada palavra em ListaDePalavras
+		if (VerificarPalavraAprendida ()) {
+//          Se aprendeu 	
+//			incluir em ListaDeSonda
+			IncluirEmSonda ();
+		} else {
+//			Se não, 
+//          incluir em ListaASerEnsinada
+			IncluiEmListaDeAprendizagem ();
+//    	fim Se
+//      fim do Verificar
+		}
+		
+//Gerar ListaAuxiliarDePalavrasASeremEnsinadas contendo 3 palavras da regra1 da ListaASerEnsinada
+		GerarListaAuxiliarDePalavrasASeremEnsinadas ();
+//Excluir as 3 palavras da regra1 da ListaASerEnsinada
+		LimparDaListaASeremEnsinadas (3);
+//Iniciar contador PalavrasAprendidas igual a 0
+		PalavrasAprendidas = 0;
+//  Enquanto ListaASerEnsinada for diferente de  Vazio
+		while (ListaASerEnsinada.Count == 0) {
+		
+//        Se PalavrasAprendidas igual 4       
+			if(PalavrasAprendidas == 4){
+//                   Salva no Base de Dados e finaliza o sessão, e aluno retorna a jogar outro dia.
+				FinalizarSessao();
+//        fim Se
+			}
+//        Se tempo dercorrido for maior que 40 minutos
+			if(ContadorTempo() > 40f){
+//                   Salva no Base de Dados e finaliza o sessão, e aluno retorna a jogar outro dia.
+				
+//        fim Se
+			}
+//        Gerar tarefas para cada palavra da ListaAuxiliarDePalavrasASeremEnsinadas
+//        Executar as tarefas da ListaAuxiliarDePalavrasASeremEnsinadas no jogo
+//        Verificar aprendizado de cada palavra da ListaAuxiliarDePalavrasASeremEnsinadas
+//                 Se aprendeu
+//                              incluir palavra aprendida em ListaDeSonda
+//                              excluir palavra aprendida de ListaAuxiliarDePalavrasASeremEnsinadas
+//                              incluir em ListaAuxiliarDePalavrasASeremEnsinadas a palavra da regra1 ListaASerEnsinada
+//                              remover de ListaASerEnsinada a palavra incluída na linha acima
+//                              incrementar 1 a PalavrasAprendidas
+//                  fim Se
+//        fim do Verificar
+//        Se ListaDeSonda diferente de vazio
+//                        gerar uma tarefa respeitando a regra2 para palavras na ListaDeSonda 
+//                        executa a tarefa gerada acima no jogo
+//        fim Se
+//    fim do Enquanto
+		}
+//Fim (Game Over)
+	}
+
+	*/
+
+	
+}

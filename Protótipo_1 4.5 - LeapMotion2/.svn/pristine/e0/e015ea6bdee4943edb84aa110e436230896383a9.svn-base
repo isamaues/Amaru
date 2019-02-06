@@ -1,0 +1,39 @@
+using UnityEngine;
+using System.Collections;
+
+public class CubeManipule : MonoBehaviour
+{
+	
+	// Use this for initialization
+	void Start ()
+	{
+	}
+	
+	// Update is called once per frame
+	void Update ()
+	{
+	
+	}
+	
+	public static GameObject CreateCube (Texture textura, GameObject obj, Vector3 initPos)
+	{
+		GameObject inst = Instantiate (obj, initPos, Quaternion.identity) as GameObject;
+		
+		inst.transform.position = initPos;
+		inst.transform.Rotate (new Vector3 (0, 0, 180f));
+		inst.renderer.material.mainTexture = textura;
+		//inst.name = textura.name;
+		return obj;
+	}
+	
+	public static GameObject CreateCube (Texture textura, GameObject obj)
+	{
+		return CreateCube (textura, obj, new Vector3 (0f, 0f, 0f));
+	}
+	
+	public static GameObject CreateCube (Texture textura)
+	{
+		return CreateCube (textura, GameObject.CreatePrimitive (PrimitiveType.Cube), new Vector3 (0f, 0f, 0f));
+	}
+	
+}

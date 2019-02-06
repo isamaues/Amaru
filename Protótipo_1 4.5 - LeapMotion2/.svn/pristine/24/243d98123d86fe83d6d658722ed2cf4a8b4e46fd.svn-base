@@ -1,0 +1,16 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\NOVO\LevelManager.cs">
+    <Files>
+      <File FileName="Assets\Scripts\NOVO\LevelManager.cs" Line="559" Column="47" />
+      <File FileName="Assets\Scripts\Leitura\tentativas.txt" Line="7" Column="23" />
+      <File FileName="Assets\Scripts\Leitura\tipoTentativasBD.txt" Line="6" Column="1" />
+      <File FileName="Assets\Scripts\AI\Model\Task.cs" Line="43" Column="14" />
+      <File FileName="Assets\Scripts\AI\WordManager.cs" Line="17" Column="23" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

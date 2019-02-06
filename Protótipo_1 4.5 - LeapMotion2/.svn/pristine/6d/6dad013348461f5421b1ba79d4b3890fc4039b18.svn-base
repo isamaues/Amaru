@@ -1,0 +1,44 @@
+using UnityEngine;
+using System.Collections;
+
+public class InCollision : MonoBehaviour
+{
+	
+	public bool startCollision = false;
+	public float velVariationInColision;
+	public float heightLimit;
+	public bool isUp = true;
+	public float initialPosition;
+	public LevelManager levelManager;
+	
+	
+	// Use this for initialization
+	void Start ()
+	{
+		initialPosition = transform.position.y;
+	}
+	
+	// Update is called once per frame
+	void Update ()
+	{
+		if (startCollision) {
+
+			if (isUp) {
+				
+				transform.position += (new Vector3 (0, velVariationInColision * Time.deltaTime, 0));
+				if ((transform.position.y - initialPosition) > heightLimit) {
+					isUp = false;
+					if (levelManager)
+						levelManager.SendMessage (gameObject);
+				}
+			} else {
+				transform.position += (new Vector3 (0, -velVariationInColision * Time.deltaTime, 0));
+				if ((transform.position.y - initialPosition) <= 0) {
+					isUp = true;
+					startCollision = false;
+				}
+			}
+		}
+		
+	}
+}

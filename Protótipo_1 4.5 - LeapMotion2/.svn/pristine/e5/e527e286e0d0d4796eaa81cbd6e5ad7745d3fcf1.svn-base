@@ -1,0 +1,174 @@
+using UnityEngine;
+using System.Collections.Generic;
+using System.Collections;
+
+public class MinigameSetup : MonoBehaviour
+{	
+	private static ArrayList audioList = new ArrayList ();
+	private static ArrayList textureList = new ArrayList ();
+	
+	private SessionLogic sessionLogic;
+	//private DifficultyIdentifier di;
+	//private GameSession session; 	CLASSE APAGADA (VERSSÃO 164)
+	//private SessionLogic2 sl;
+	//private TaskManager tm;		ESSA CLASSE DE VER APAGADA QUANDO FOR POSSIVEL
+	//private WordManager wm;
+	private static BaseMiniGame currentMiniGame;
+	
+	public float taskSpace;
+	
+	public static bool RunningTask { get; set; }
+	public static float lastTaskHorizontalPos = 0f;
+	public static float minimumTaskTime = 1.5f;
+	
+	
+	
+	void Awake ()
+	{
+		//------------------------------------------------------------------------------------------------
+		//carrega todas as variáveis de uma vez. Essa linha é só pra testes.
+		//Quando um player é criado ou carregado no menu inicial, o próprimo menu trata de settar o player.
+		//Apagar depois essa linha
+		UserManager.GetInstance ().SetCurrentUser ("pedro");
+		//------------------------------------------------------------------------------------------------
+	}
+
+	void Start ()
+	{		
+		this.sessionLogic = new SessionLogic();
+		lastTaskHorizontalPos = Camera.main.transform.position.x;
+		RunningTask = false;
+		
+		LoadResources ();		
+		Session.StartTime = Time.time;
+	}
+	
+	void Update ()
+	{
+		if (RunningTask) {
+			currentMiniGame.Update ();
+		} else if (Camera.main.transform.position.x - lastTaskHorizontalPos >= taskSpace) {
+			lastTaskHorizontalPos = Camera.main.transform.position.x + taskSpace;
+			RunningTask = true;
+			CreateMinigame ();			
+		}
+	}
+	
+	private void LoadResources ()
+	{
+		foreach (Word w in UserManager.CurrentWordList.arrayList) {
+			textureList.Add (Resources.Load ("Images/" + w.Name)  as Texture2D);
+			audioList.Add (Resources.Load ("Sounds/" + w.Name) as AudioClip);
+		}  
+	}
+	
+	private void CreateMinigame ()
+	{
+		if(UserManager.IsPreTestFinished())
+		{
+			sessionLogic.UpdateSession(); 
+			
+			TasksList newTasks = sessionLogic.GerarTarefas();
+			
+			foreach (Task nt in newTasks.arrayList) {
+				UserManager.CurrentTasksList.arrayList.Add(nt);
+			}
+			
+			//salva o xml das tentativas
+			XMLManager.CreateXML<TasksList> (UserManager.CurrentPath, "Tentativas.xml", UserManager.CurrentTasksList);			
+		}
+		
+		switch (UserManager.GetCurrentMiniGameName ()) 
+		{
+				
+			case "Cube":
+				Debug.Log ("Minigame do Cubo Criado!");
+				currentMiniGame = new CubeMiniGame ();					
+				break;
+					
+			case "Cannon":
+				Debug.Log ("Minigame do Canhao NAO Criado!");
+				break;
+			
+			default:
+				currentMiniGame = new CubeMiniGame ();
+				break;
+		}
+		
+	}
+		
+	public static void DoNextTask ()
+	{
+		UserManager.CurrentUser.id_Da_Ultima_Tarefa++;
+		//Descomentar quando estiver valendo
+		//salva o novo id no XML (configurações)
+		//UserManager.GetInstance().UpdateCurrentUserXML();
+	}
+                
+		
+	
+	#region Gets Meths
+	public static Texture2D GetTextureById (int id)
+	{
+		foreach (Word w in UserManager.CurrentWordList.arrayList) {
+			if (w.WordId == id) {
+				foreach (Texture2D t in textureList) {
+					if (t.name.Equals (w.Name))
+						return t;					
+				}
+				break;
+			}			
+		}
+		
+		return null;
+	}
+
+	public static Texture2D GetTextureByName (string name)
+	{
+		foreach (Texture2D t in textureList) {
+			if (t.name.Equals (name))
+				return t;					
+		}
+		
+		return null;
+	}
+	
+	public static AudioClip GetAudioById (int id)
+	{
+		foreach (Word w in UserManager.CurrentWordList.arrayList) {
+			if (w.WordId == id) {
+				foreach (AudioClip a in audioList) {
+					if (a.name.Equals (w.Name))
+						return a;					
+				}
+				break;
+			}			
+		}
+		
+		return null;
+	}
+
+	public static AudioClip GetAudioByName (string name)
+	{
+		foreach (AudioClip a in audioList) {
+			if (a.name.Equals (name))
+				return a;					
+		}
+		
+		return null;
+	}
+	
+	public static Word GetWordById (int id)
+	{
+		foreach (Word w in UserManager.CurrentWordList.arrayList) {
+			if (w.WordId == id) {
+				return w;
+			}			
+		}
+		
+		return null;
+	}
+	#endregion
+	
+	
+}

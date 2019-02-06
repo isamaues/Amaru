@@ -1,0 +1,82 @@
+using UnityEngine; 
+using System.Collections; 
+using System.Xml; 
+using System.Xml.Serialization; 
+using System.IO; 
+using System.Text;
+
+public class XMLManager
+{
+
+	#region Métodos para ler/gravar arquivo XML
+	
+	/* The following metods came from the referenced URL */ 
+	public static string UTF8ByteArrayToString (byte[] characters)
+	{      
+		UTF8Encoding encoding = new UTF8Encoding (); 
+		string constructedString = encoding.GetString (characters); 
+		return (constructedString); 
+	}
+ 
+	public static byte[] StringToUTF8ByteArray (string pXmlString)
+	{ 
+		UTF8Encoding encoding = new UTF8Encoding (); 
+		byte[] byteArray = encoding.GetBytes (pXmlString); 
+		return byteArray; 
+	} 
+ 
+	// Here we serialize our UserData object of myData 
+	public static string SerializeObject<T> (object pObject)
+	{ 
+		string XmlizedString = null; 
+		MemoryStream memoryStream = new MemoryStream (); 
+		XmlSerializer xs = new XmlSerializer (typeof(T)); 
+		XmlTextWriter xmlTextWriter = new XmlTextWriter (memoryStream, Encoding.UTF8); 
+		xs.Serialize (xmlTextWriter, pObject); 
+		memoryStream = (MemoryStream)xmlTextWriter.BaseStream; 
+		XmlizedString = UTF8ByteArrayToString (memoryStream.ToArray ()); 
+		return XmlizedString; 
+	}
+	
+	// Here we deserialize it back into its original form 
+	public static T DeserializeObject<T> (string pXmlizedString)
+	{ 
+		XmlSerializer xs = new XmlSerializer (typeof(T)); 
+		MemoryStream memoryStream = new MemoryStream (StringToUTF8ByteArray (pXmlizedString)); 
+		XmlTextWriter xmlTextWriter = new XmlTextWriter (memoryStream, Encoding.UTF8); 
+		return (T)xs.Deserialize (memoryStream); 
+	} 
+ 
+	// Finally our save and load methods for the file itself 
+	public static void CreateXML<T> (string fileLocation, string fileName, T data)
+	{ 
+		string to_write = XMLManager.SerializeObject<T> (data); 
+		StreamWriter writer; 
+		FileInfo t = new FileInfo (fileLocation + "\\" + fileName); 
+		if (!t.Exists) { 
+			writer = t.CreateText (); 
+		} else { 
+			t.Delete (); 
+			writer = t.CreateText (); 
+		} 
+		writer.Write (to_write); 
+		writer.Close (); 
+		Debug.Log ("File written."); 
+		Debug.Log (to_write); 	
+	}
+ 
+	public static T LoadXML<T> (string fileLocation, string fileName)
+	{ 
+		StreamReader r = File.OpenText (fileLocation + "\\" + fileName); 
+		string _info = r.ReadToEnd (); 
+		r.Close (); 
+		
+		Debug.Log ("File Read");
+		Debug.Log (_info);
+		return DeserializeObject<T> (_info); 
+		
+	} 
+	
+	#endregion
+	
+}

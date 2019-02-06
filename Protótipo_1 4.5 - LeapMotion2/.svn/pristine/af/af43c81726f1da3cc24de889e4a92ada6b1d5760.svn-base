@@ -1,0 +1,143 @@
+using UnityEngine;
+using System.Collections;
+
+public class PlayerAnimation : MonoBehaviour
+{
+	
+	private CharacterController controller;
+	public bool inMovement;
+	
+	public enum State
+	{
+		Walk,
+		Idle,
+		Jump,
+		Fall,
+		Land
+	}
+	
+	public State currentState;
+	private bool _paused = false;
+
+	public bool PauseMovement {
+		get {
+			return _paused;
+		}
+		set {
+			_paused = value;
+			int clipCount = animation.GetClipCount ();
+			foreach (AnimationState clip in animation) {
+				clip.speed = (_paused) ? 0f : 1f;
+			}
+		}
+	}
+	// Use this for initialization
+	void Start ()
+	{
+		controller = transform.GetComponent<CharacterController> ();
+		animation.Stop ();		
+	}
+	
+	// Update is called once per frame
+	void Update ()
+	{
+		if (!_paused) {
+			
+			DetermineCurrentState ();
+		
+			PlayAnimation ();
+	
+		}
+		
+	}
+	
+	void DetermineCurrentState ()
+	{
+		if (!controller.isGrounded) {
+			if (currentState != State.Fall &&
+				currentState != State.Jump && 
+				currentState != State.Land) {
+				Fall ();
+			}
+		}
+	}
+	
+	void PlayAnimation ()
+	{
+		
+		switch (currentState) {
+			
+		case State.Idle:
+			Idle ();
+			break;
+		case State.Walk:
+			Walk ();
+			break;
+		case State.Fall:
+			Fall ();
+			break;
+		case State.Jump:
+			Jump ();	
+			break;
+		case State.Land:
+			Land ();
+			break;
+		}
+	}
+	
+	public void Idle ()
+	{
+		animation.CrossFade ("Idle");
+	}
+	
+	public void Walk ()
+	{
+		animation.CrossFade ("Walk");
+		animation ["Walk"].speed = 1.5f;
+	}
+	
+	public void Fall ()
+	{
+		if (controller.isGrounded) {
+			
+			if (inMovement) {
+				currentState = State.Walk;
+				animation.CrossFade ("Walk");
+			} else {
+				currentState = State.Idle;
+				animation.CrossFade ("Idle");	
+			}
+		}
+
+	}
+	
+	public void Jump ()
+	{
+		
+		if (controller.isGrounded) {
+		
+			if (inMovement) {
+				animation.CrossFade ("Walk");
+				currentState = State.Walk;
+			} else {
+				animation.CrossFade ("Idle");	
+				currentState = State.Idle;
+				
+			}
+		} else if (!animation.IsPlaying ("Jump")) {
+			
+			currentState = State.Fall;
+			animation.CrossFade ("Fall");
+						
+		}
+
+	}
+	
+	public void Land ()
+	{
+		if (!animation.IsPlaying ("Land")) {
+			animation.CrossFade ("Idle");
+			currentState = State.Idle;
+		}
+	}
+}

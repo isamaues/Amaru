@@ -1,0 +1,39 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\AI\SessionLogic.cs">
+    <Files>
+      <File FileName="Assets\Scripts\AI\SessionLogic.cs" Line="24" Column="21" />
+      <File FileName="Assets\Scripts\Misc\TaskManager.cs" Line="351" Column="22" />
+      <File FileName="Assets\Scripts\Managers\UserManager.cs" Line="113" Column="1" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="Assembly-CSharp" expanded="True">
+            <Node name="Assets" expanded="True">
+              <Node name="Data" expanded="True">
+                <Node name="XMLs" expanded="True" />
+              </Node>
+              <Node name="Scripts" expanded="True">
+                <Node name="AI" expanded="True">
+                  <Node name="SessionLogic.cs" selected="True" />
+                </Node>
+                <Node name="Level" expanded="True" />
+                <Node name="Managers" expanded="True" />
+                <Node name="Menus" expanded="True">
+                  <Node name="GameMenus" expanded="True" />
+                </Node>
+                <Node name="Misc" expanded="True" />
+                <Node name="XML" expanded="True" />
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

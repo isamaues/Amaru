@@ -1,0 +1,642 @@
+using System.Collections;
+
+public class TaFuzzy
+{
+	
+	public int ValorPertineciaTT;
+	
+	//valores min max das funcoes da fuzzificacao
+	
+	//static float baixoMax = 33f, baixoMin=0f, medioMax=69f, medioMin=30f, altoMax=100f, altoMin=66f;
+	
+	public static int tipoTarefaEscolhido=0;
+	
+	// por enquanto todas as fuzzyficacoes sao iguais
+	
+	// fuzzyficacao, funcoes para achar o grau de pertinencia de acordo com o valor recebido da Machine Learning, relacionado ao Historico do tipo de tarefa.
+	public static float fuzzyficacaoPertinenciaHTT (float valorML)
+	{
+		
+		float pertinecia=0;
+		if (valorML <= 16.5f){
+			pertinecia=1;
+		}else if (valorML > 16.5f && valorML <= 33f){
+			pertinecia=(-1f)*((valorML/16.5f)-2);
+		}else if (valorML > 49.5f && valorML < 69f){
+			pertinecia =(-1f)*((valorML/19.5f)-3.538461f);
+		}else if (valorML > 30f && valorML <= 49.5f){
+			pertinecia =(((valorML/19.5f)-2.538461f)+1f);
+		}else if (valorML > 66f && valorML <= 85.5f){
+			pertinecia =(((valorML/19.5f)-4.384615f)+1f);
+		}else if (valorML > 85.5f){
+			pertinecia =1;
+		}
+		
+		return pertinecia;
+	}
+	
+	
+	// fuzzyficacao funcoes para achar o grau de pertinencia de acordo com o valor recebido da Machine Learning, relacionado a taxa de acerto do tipo de tarefa.
+	public static float fuzzyficacaoPertinenciaTTxA (float tipo)
+	{
+		
+		float pertinecia=0;
+		if (tipo <= 16.5f){
+			pertinecia=1;
+		}else if (tipo > 16.5f && tipo <= 33f){
+			pertinecia=(-1f)*((tipo/16.5f)-2);
+		}else if (tipo > 49.5f && tipo < 69f){
+			pertinecia =(-1f)*((tipo/19.5f)-3.538461f);
+		}else if (tipo > 30f && tipo <= 49.5f){
+			pertinecia =(((tipo/19.5f)-2.538461f)+1f);
+		}else if (tipo > 66f && tipo <= 85.5f){
+			pertinecia =(((tipo/19.5f)-4.384615f)+1f);
+		}else if (tipo > 85.5f){
+			pertinecia =1;
+		}
+		
+		return pertinecia;
+	}
+	
+	
+	// retorna ao grau de pertinencia da ativacao, nao utilizado por enquanto.
+	public static float pertinenciaInferenciaTT (float valor)
+	{
+		float pertinecia=0;
+		if (valor <= 16.5f){
+			pertinecia=1;
+		}else if (valor > 16.5f && valor <= 33f){
+			pertinecia=(-1f)*((valor/16.5f)-2);
+		}else if (valor > 49.5f && valor < 69f){
+			pertinecia =(-1f)*((valor/19.5f)-3.538461f);
+		}else if (valor > 30f && valor <= 49.5f){
+			pertinecia =(((valor/19.5f)-2.538461f)+1f);
+		}else if (valor > 66f && valor <= 85.5f){
+			pertinecia =(((valor/19.5f)-4.384615f)+1f);
+		}else if (valor > 85.5f){
+			pertinecia =1;
+		}
+		
+		return pertinecia;
+	}
+	
+	
+	// Tipo de Tarefa por Acerto TTxA. Define se: 1- Baixo, 2- Medio, 3- Alto.
+	public static int fuzzyficacaoTTxA (float valor)
+	{
+		int t = 0;
+		
+		if (valor <= 33f) { 
+			t = 1;
+		} else if (valor >33f && valor <= 66f) {
+			t = 2;
+		} else if (valor > 66f) { 
+			t = 3;
+		}
+		
+		return t;
+	}
+	
+	// HTT Historico tipo de tarefa. Define se: 1- Baixo, 2- Médio 3- Alto
+	public static int fuzzyficacaoHTT (float tipo)
+	{
+		int t = 0;
+		
+		if (tipo <= 0.33f) { 
+			t = 1;
+		} else if (tipo > 0.33f && tipo <= 0.66f) {
+			t = 2;
+		} else if (tipo > 0.66f) { 
+			t = 3;
+		}
+		
+		return t;
+	}
+	
+	//Retorna a necessidade de aparecer por tal tipo de tarefa. essa funcao e' executada para cada tipo de tarefa individualmente
+	//  1- Baixo, 2- Médio 3- Alto
+	public static int inferenciaTT (float HTT, float TTxA)
+	{
+		int fHTT, fTTxA, resultado=0;
+		fHTT = fuzzyficacaoHTT (HTT);// RECEBE 1, 2 ou 3 (baixo, medio, alto)
+		fTTxA = fuzzyficacaoTTxA (TTxA); // RECEBE 1, 2 ou 3 (baixo, medio, alto)
+		
+		if (fHTT == 1 && fTTxA == 1) { // SE HTT_AE = Baixo E AxTT_AE = Baixo ENTÃO TT_AE = Baixo
+			resultado = 1;
+		} else if (fHTT == 1 && fTTxA == 2) { 
+			resultado = 1;
+		} else if (fHTT == 1 && fTTxA == 3) { 
+			resultado = 2;
+		} else if (fHTT == 2 && fTTxA == 1) { 
+			resultado = 2;
+		} else if (fHTT == 2 && fTTxA == 2) { 
+			resultado = 2;
+		} else if (fHTT == 2 && fTTxA == 3) { 
+			resultado = 3;
+		} else if (fHTT == 3 && fTTxA == 1) { 
+			resultado = 2;	
+		} else if (fHTT == 3 && fTTxA == 2) {
+			resultado = 3;
+		} else if (fHTT == 3 && fTTxA == 3) { 
+			resultado = 1;
+		}
+		
+		return resultado;
+	}
+	
+//	public static int inferencia (float HTT, float TTxA)
+//	{
+//		int fHTT, fTTxA, resultado=0;
+//		fHTT = fuzzyficacaoHTT (HTT);// RECEBE 1, 2 ou 3 (baixo, medio, alto)
+//		fTTxA = fuzzyficacaoTTxA (TTxA); // RECEBE 1, 2 ou 3 (baixo, medio, alto)
+//		
+//		if (fHTT == 1 && fTTxA == 1) { // SE HTT_AE = Baixo E AxTT_AE = Baixo ENTÃO TT_AE = Baixo
+//			resultado = 1;
+//		} else if (fHTT == 1 && fTTxA == 2) { 
+//			resultado = 1;
+//		} else if (fHTT == 1 && fTTxA == 3) { 
+//			resultado = 2;
+//		} else if (fHTT == 2 && fTTxA == 1) { 
+//			resultado = 2;
+//		} else if (fHTT == 2 && fTTxA == 2) { 
+//			resultado = 2;
+//		} else if (fHTT == 2 && fTTxA == 3) { 
+//			resultado = 3;
+//		} else if (fHTT == 3 && fTTxA == 1) { 
+//			resultado = 2;	
+//		} else if (fHTT == 3 && fTTxA == 2) {
+//			resultado = 3;
+//		} else if (fHTT == 3 && fTTxA == 3) { 
+//			resultado = 1;
+//		}
+//		
+//		return resultado;
+//	}
+	
+	public static int inferenciaEspecial (float HTT, float TTxA)
+	{
+		int fHTT, fTTxA, resultado=0;
+		fHTT = fuzzyficacaoHTT (HTT);// RECEBE 1, 2 ou 3 (baixo, medio, alto)
+		fTTxA = fuzzyficacaoTTxA (TTxA); // RECEBE 1, 2 ou 3 (baixo, medio, alto)
+		
+		if (fHTT == 1 && fTTxA == 1) { // SE HTT_AE = Baixo E AxTT_AE = Baixo ENTÃO TT_AE = Baixo
+			resultado = 1;
+		
+		} else if (fHTT == 1 && fTTxA == 2) { 
+			resultado = 1;
+		} else if (fHTT == 1 && fTTxA == 3) { 
+			resultado = 1;
+		} else if (fHTT == 2 && fTTxA == 1) { 
+			resultado = 1;
+		} else if (fHTT == 2 && fTTxA == 2) { 
+			resultado = 1;
+		} else if (fHTT == 2 && fTTxA == 3) { 
+			resultado = 2;
+		} else if (fHTT == 3 && fTTxA == 1) { 
+			resultado = 2;	
+		} else if (fHTT == 3 && fTTxA == 2) {
+			resultado = 3;
+		} else if (fHTT == 3 && fTTxA == 3) { 
+			resultado = 2;
+		}
+		
+		return resultado;
+	}
+	
+	//retorna a pertinecia maior do valor linguistico ativado para definir a pertinecia da ativacao 
+	public static float pertinenciaInferenciaMax(float valor1, float valor2){
+		float pertinencia=0;	
+		if(valor1>valor2) {
+			pertinencia =fuzzyficacaoPertinenciaHTT(valor1);
+		}else if(valor1<=valor2) {
+			pertinencia =fuzzyficacaoPertinenciaTTxA(valor2);
+		}
+		
+		return pertinencia;
+	}
+
+	//retorna a pertinecia media do valor linguistico ativado para definir a pertinecia da ativacao 
+	public static float pertinenciaInferenciaMedia(float valor1, float valor2){
+		float pertinencia=0;	
+		
+		pertinencia=(valor1+valor2)/2;
+		
+		return pertinencia;
+	}
+	
+
+	// caulcula área deo trazpezi, necessario para calculo da centroide.
+	public static float areaTrapezio(float B, float b, float h){
+		float Area = 0;
+		
+		Area = ((B+b)*h)/2;
+		
+		return Area;
+	}
+	
+
+	// nao utilizado. necessario para achar a centroide.
+	public static float abcissa(float min, float max){
+		
+		float ab=0;
+		
+		ab= (min - max)+min;
+		
+		return ab;
+		
+	}
+	
+	
+	// acha a area de cada trapesio ativado e acha a centroide do conjunto de trapesios, porém nao utilizado
+	// fazer os devidos ajustes caso seja utilizado posteriormente
+	public static float CentroidDefuzzificada(ArrayList max, ArrayList min, ArrayList valor){
+		float Centro=0;				
+		float divisor=0;
+		ArrayList Areas = new ArrayList();
+		
+		
+//		foreach(int i in valor.Count) {
+//			contador++;
+//		}
+		
+		
+	  
+		//achamento das areas de acordo com as pertinecias
+		for(int i=0;i<valor.Count;i++){
+
+			if(fuzzyficacaoHTT((float)valor[i]) == 3){
+				Areas.Add((float)areaTrapezio(((float)min[i]+(float)max[i]),(((float)min[i]+(float)max[i])-((float)min[i]+(float)valor[i])),(float)valor[i])); //valor 
+				
+			}else if(fuzzyficacaoHTT((float)valor[i]) == 1){
+				Areas.Add((float)areaTrapezio(((float)min[i]+(float)max[i]),(((float)min[i]+(float)max[i])-((float)valor[i]+(float)max[i])),(float)valor[i])); //valor 
+				
+			}else if((int)fuzzyficacaoHTT((float)valor[i]) == 2){
+				Areas.Add((float)areaTrapezio(((float)min[i]+(float)max[i]),0f,(float)valor[i])); //valor 
+				
+			}
+			
+		}
+		
+		for(int i=0;i<valor.Count; i++){
+			Centro+=(float)Areas[i]*abcissa((float)min[i],(float)max[i]);
+			divisor+=(float)Areas[i];
+		}
+		
+		Centro=Centro/divisor;
+		
+		return Centro;
+		
+	}
+	
+	//teste de um aluno
+	// retorna ao tipo de tarefa adequada para o aluno de determinada palavra examinada.
+	public static int EscolhaFuzzyTT(dadosTTFuzzy dados){
+			
+		float contadorTest=0;
+
+		
+		float aluno1HTT_AE = dados.dadoHTT_AE;
+		float aluno1HTT_AB = dados.dadoHTT_AB;
+		float aluno1HTT_AC = dados.dadoHTT_AC;
+		float aluno1HTT_BE = dados.dadoHTT_BE;
+		float aluno1HTT_CE = dados.dadoHTT_CE;
+		
+		float aluno1TTxA_AE = dados.dadoTTxA_AE;
+		float aluno1TTxA_AB = dados.dadoTTxA_AB;
+		float aluno1TTxA_AC = dados.dadoTTxA_AC;
+		float aluno1TTxA_BE = dados.dadoTTxA_BE;
+		float aluno1TTxA_CE = dados.dadoTTxA_CE;
+		
+		
+		//1- AE, 2-AB, 3-AC, 4-BE, 5- CE
+		int tipoDaTarefaEscolhido = 0;
+		
+		
+
+		
+		int ativadorAE=0,ativadorAB=0, ativadorAC=0, ativadorBE=0, ativadorSAE1 = 0, ativadorSAE2 = 0, ativadorSAC1 = 0, ativadorSAC2 = 0; //ativadorSAC3 = 0;
+		int ativadorCE=0;
+		
+		
+		//TIPO AE
+		if(inferenciaTT(aluno1HTT_AE, aluno1TTxA_AE)==3){
+			
+			contadorTest=(float)pertinenciaInferenciaMedia(aluno1HTT_AE,aluno1TTxA_AE);
+			tipoDaTarefaEscolhido=1;
+			ativadorAE=3;
+		}else if(inferenciaTT(aluno1HTT_AE, aluno1TTxA_AE)==2){
+			
+			contadorTest=(float)pertinenciaInferenciaMedia(aluno1HTT_AE,aluno1TTxA_AE);
+			tipoDaTarefaEscolhido=1;
+			ativadorAE=2;
+		}else if(inferenciaTT(aluno1HTT_AE, aluno1TTxA_AE)==1){
+			
+			contadorTest=(float)pertinenciaInferenciaMedia(aluno1HTT_AE,aluno1TTxA_AE);
+			tipoDaTarefaEscolhido=1;
+			ativadorAE=1;
+		}
+		
+		
+		//TIPO AB
+		if(inferenciaTT(aluno1HTT_AB, aluno1TTxA_AB)==3 && ativadorAE == 3){
+			
+			if((float)pertinenciaInferenciaMedia(aluno1HTT_AB,aluno1TTxA_AB)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(aluno1HTT_AB,aluno1TTxA_AB);
+				tipoDaTarefaEscolhido=2;
+				ativadorAB=3;
+			}
+		}else if(inferenciaTT(aluno1HTT_AB, aluno1TTxA_AB)==3 && ativadorAE<3){
+			contadorTest=(float)pertinenciaInferenciaMedia(aluno1HTT_AB,aluno1TTxA_AB);
+			tipoDaTarefaEscolhido=2;
+			ativadorAB=3;
+		}else if(inferenciaTT(aluno1HTT_AB, aluno1TTxA_AB)==2 && ativadorAE==2){
+			
+			if((float)pertinenciaInferenciaMedia(aluno1HTT_AB,aluno1TTxA_AB)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(aluno1HTT_AB,aluno1TTxA_AB);
+				tipoDaTarefaEscolhido=2;
+				ativadorAB=2;
+			}
+		}else if(inferenciaTT(aluno1HTT_AB, aluno1TTxA_AB)==2 && ativadorAE==1){
+			contadorTest=(float)pertinenciaInferenciaMedia(aluno1HTT_AB,aluno1TTxA_AB);
+			tipoDaTarefaEscolhido=2;
+			ativadorAB=2;
+			
+		}else if(inferenciaTT(aluno1HTT_AB, aluno1TTxA_AB)==1 && ativadorAE == 1){
+			
+			if((float)pertinenciaInferenciaMedia(aluno1HTT_AB,aluno1TTxA_AB)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(aluno1HTT_AB,aluno1TTxA_AB);
+				tipoDaTarefaEscolhido=2;
+				ativadorAB=1;
+			}
+		}
+		
+		
+		// TIPO AC
+		if(inferenciaTT(aluno1HTT_AC, aluno1TTxA_AC)==3 && ativadorAE == 3 || ativadorAB ==3){
+			
+			if((float)pertinenciaInferenciaMedia(aluno1HTT_AC,aluno1TTxA_AC)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(aluno1HTT_AC,aluno1TTxA_AC);
+				tipoDaTarefaEscolhido=3;
+				ativadorAC=3;
+			}
+		}else if(inferenciaTT(aluno1HTT_AC, aluno1TTxA_AC)==3 && ativadorAE < 3 && ativadorAB < 3){
+			contadorTest=(float)pertinenciaInferenciaMedia(aluno1HTT_AC,aluno1TTxA_AC);
+			tipoDaTarefaEscolhido=3;
+			ativadorAC=3;
+			
+		}else if(inferenciaTT(aluno1HTT_AC, aluno1TTxA_AC)==2 && ativadorAE == 2 || ativadorAB == 2){
+			
+			if((float)pertinenciaInferenciaMedia(aluno1HTT_AC,aluno1TTxA_AC)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(aluno1HTT_AC,aluno1TTxA_AC);
+				tipoDaTarefaEscolhido=3;
+				ativadorAC=2;
+			}
+		}else if(inferenciaTT(aluno1HTT_AC, aluno1TTxA_AC)==2 && ativadorAE < 2 && ativadorAB < 2){
+			contadorTest=(float)pertinenciaInferenciaMedia(aluno1HTT_AC,aluno1TTxA_AC);
+			tipoDaTarefaEscolhido=3;
+			ativadorAC=2;
+		}else if(inferenciaTT(aluno1HTT_AC, aluno1TTxA_AC)==1 && ativadorAB==1 && ativadorAE ==1 ){
+			
+			if((float)pertinenciaInferenciaMedia(aluno1HTT_AC,aluno1TTxA_AC)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(aluno1HTT_AC,aluno1TTxA_AC);
+				tipoDaTarefaEscolhido=3;
+				ativadorAC=1;
+				
+			}
+		}
+		
+		//tipo BE
+		if(inferenciaTT(dados.dadoHTT_BE,dados.dadoTTxA_BE)==3 && ativadorAE==3 || ativadorAB==3 || ativadorAC ==3){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_BE,dados.dadoTTxA_BE)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_BE,dados.dadoTTxA_BE);
+				tipoDaTarefaEscolhido=4;
+				ativadorBE=3;
+			}
+		}else if(inferenciaTT(dados.dadoHTT_BE,dados.dadoTTxA_BE)==3 && ativadorAE<3 && ativadorAB<3 && ativadorAC <3){
+			contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_BE,dados.dadoTTxA_BE);
+			tipoDaTarefaEscolhido=4;
+			ativadorBE=3;
+			
+		}else if(inferenciaTT(dados.dadoHTT_BE,dados.dadoTTxA_BE)==2 && ativadorAE==2 || ativadorAB==2 || ativadorAC ==2){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_BE,dados.dadoTTxA_BE)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_BE,dados.dadoTTxA_BE);
+				tipoDaTarefaEscolhido=4;
+				ativadorBE=2;
+			}
+		}
+		else if(inferenciaTT(dados.dadoHTT_BE,dados.dadoTTxA_BE)==2 && ativadorAE==1 && ativadorAB==1 && ativadorAC ==1){
+			contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_BE,dados.dadoTTxA_BE);
+			tipoDaTarefaEscolhido=4;
+			ativadorBE=2;
+			
+		}else if(inferenciaTT(dados.dadoHTT_BE,dados.dadoTTxA_BE)==1 && ativadorAE==1 && ativadorAB==1 && ativadorAC ==1){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_BE,dados.dadoTTxA_BE)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_BE,dados.dadoTTxA_BE);
+				tipoDaTarefaEscolhido=4;
+				ativadorBE=1;
+			}
+		}
+		
+		//tipo CE xD
+		if(inferenciaTT(dados.dadoHTT_CE,dados.dadoTTxA_CE)==3 && ativadorAE==3 || ativadorAB==3 || ativadorAC ==3 || ativadorBE == 3){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_CE,dados.dadoTTxA_CE)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_CE,dados.dadoTTxA_CE);
+				tipoDaTarefaEscolhido=5;
+				ativadorCE=3;
+			}
+		}else if(inferenciaTT(dados.dadoHTT_CE,dados.dadoTTxA_CE)==3 && ativadorAE<3 && ativadorAB<3 && ativadorAC <3 && ativadorBE <3){
+			contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_CE,dados.dadoTTxA_CE);
+			tipoDaTarefaEscolhido=5;
+			ativadorCE=3;
+			
+		}else if(inferenciaTT(dados.dadoHTT_CE,dados.dadoTTxA_CE)==2 && ativadorAE==2 || ativadorAB==2 || ativadorAC ==2  || ativadorBE == 2){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_CE,dados.dadoTTxA_CE)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_CE,dados.dadoTTxA_CE);
+				tipoDaTarefaEscolhido=5;
+				ativadorCE=2;
+			}
+		}
+		else if(inferenciaTT(dados.dadoHTT_CE,dados.dadoTTxA_CE)==2 && ativadorAE==1 && ativadorAB==1 && ativadorAC ==1 && ativadorBE ==1){
+			contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_CE,dados.dadoTTxA_CE);
+			tipoDaTarefaEscolhido=5;
+			ativadorCE=2;
+			
+		}else if(inferenciaTT(dados.dadoHTT_CE,dados.dadoTTxA_CE)==1 && ativadorAE==1 && ativadorAB==1 && ativadorAC ==1 && ativadorBE ==1){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_CE,dados.dadoTTxA_CE)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_CE,dados.dadoTTxA_CE);
+				tipoDaTarefaEscolhido=5;
+				ativadorCE=1;
+			}
+		}
+		
+		//1- AE, 2-AB, 3-AC, 4-BE, 5- CE
+		//tipo AC – AE = AE xD 
+		if(inferenciaEspecial(dados.dadoHTT_AC,dados.dadoTTxA_AE)==3 && ativadorAE==3 || ativadorAB==3 || ativadorAC ==3 || ativadorBE == 3 || ativadorCE == 3 ){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_AC,dados.dadoTTxA_AE)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_AC,dados.dadoTTxA_AE);
+				tipoDaTarefaEscolhido=1;
+				ativadorSAE1=3;
+			}
+		}else if(inferenciaEspecial(dados.dadoHTT_AC,dados.dadoTTxA_AE)==3 && ativadorAE<3 && ativadorAB<3 && ativadorAC <3 && ativadorBE <3 &&  ativadorCE < 3){
+			contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_AC,dados.dadoTTxA_AE);
+			tipoDaTarefaEscolhido=1;
+			ativadorSAE1=3;
+			
+		}else if(inferenciaEspecial(dados.dadoHTT_AC,dados.dadoTTxA_AE)==2 && ativadorAE==2 || ativadorAB==2 || ativadorAC ==2  || ativadorBE == 2  || ativadorCE == 2){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_AC,dados.dadoTTxA_AE)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_AC,dados.dadoTTxA_AE);
+				tipoDaTarefaEscolhido=1;
+				ativadorSAE1=2;
+			}
+		}
+		else if(inferenciaEspecial(dados.dadoHTT_AC,dados.dadoTTxA_AE)==2 && ativadorAE==1 && ativadorAB==1 && ativadorAC ==1 && ativadorBE ==1 && ativadorCE == 1){
+			contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_AC,dados.dadoTTxA_AE);
+			tipoDaTarefaEscolhido=1;
+			ativadorSAE1=2;
+			
+		}else if(inferenciaEspecial(dados.dadoHTT_AC,dados.dadoTTxA_AE)==1 && ativadorAE==1 && ativadorAB==1 && ativadorAC ==1 && ativadorBE ==1 && ativadorCE == 1){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_AC,dados.dadoTTxA_AE)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_AC,dados.dadoTTxA_AE);
+				tipoDaTarefaEscolhido=1;
+				ativadorSAE1=1;
+			}
+		}
+		
+		//tipo BC – AE = AE xD 
+		if(inferenciaEspecial(dados.dadoHTT_BC,dados.dadoTTxA_AE)==3 && ativadorAE==3 || ativadorAB==3 || ativadorAC ==3 || ativadorBE == 3 || ativadorCE == 3 || ativadorSAE1 == 3 ){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_BC,dados.dadoTTxA_AE)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_BC,dados.dadoTTxA_AE);
+				tipoDaTarefaEscolhido=1;
+				ativadorSAE2=3;
+			}
+		}else if(inferenciaEspecial(dados.dadoHTT_BC,dados.dadoTTxA_AE)==3 && ativadorAE<3 && ativadorAB<3 && ativadorAC <3 && ativadorBE <3 &&  ativadorCE < 3 && ativadorSAE1 < 3){
+			contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_BC,dados.dadoTTxA_AE);
+			tipoDaTarefaEscolhido=1;
+			ativadorSAE2=3;
+			
+		}else if(inferenciaEspecial(dados.dadoHTT_BC,dados.dadoTTxA_AE)==2 && ativadorAE==2 || ativadorAB==2 || ativadorAC ==2  || ativadorBE == 2  || ativadorCE == 2 || ativadorSAE1 == 2){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_AC,dados.dadoTTxA_AE)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_BC,dados.dadoTTxA_AE);
+				tipoDaTarefaEscolhido=1;
+				ativadorSAE2=2;
+			}
+		}
+		else if(inferenciaEspecial(dados.dadoHTT_BC,dados.dadoTTxA_AE)==2 && ativadorAE==1 && ativadorAB==1 && ativadorAC ==1 && ativadorBE ==1 && ativadorCE == 1 && ativadorSAE1 == 1){
+			contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_BC,dados.dadoTTxA_AE);
+			tipoDaTarefaEscolhido=1;
+			ativadorSAE2=2;
+			
+		}else if(inferenciaEspecial(dados.dadoHTT_BC,dados.dadoTTxA_AE)==1 && ativadorAE==1 && ativadorAB==1 && ativadorAC ==1 && ativadorBE ==1 && ativadorCE == 1 && ativadorSAE1 == 1){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_BC,dados.dadoTTxA_AE)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_BC,dados.dadoTTxA_AE);
+				tipoDaTarefaEscolhido=1;
+				ativadorSAE2=1;
+			}
+		}
+		
+		//tipo EC – AC = AC xD 
+		if(inferenciaEspecial(dados.dadoHTT_EC,dados.dadoTTxA_AC)==3 && ativadorAE==3 || ativadorAB==3 || ativadorAC ==3 || ativadorBE == 3 || ativadorCE == 3 || ativadorSAE1 ==3 || ativadorSAE2 == 3 ){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_EC,dados.dadoTTxA_AC)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_EC,dados.dadoTTxA_AC);
+				tipoDaTarefaEscolhido=3;
+				ativadorSAC1=3;
+			}
+		}else if(inferenciaEspecial(dados.dadoHTT_EC,dados.dadoTTxA_AC)==3 && ativadorAE<3 && ativadorAB<3 && ativadorAC <3 && ativadorBE <3 &&  ativadorCE < 3 && ativadorSAE1 <3 && ativadorSAE2 <3 ){
+			contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_EC,dados.dadoTTxA_AC);
+			tipoDaTarefaEscolhido=3;
+			ativadorSAC1=3;
+			
+		}else if(inferenciaEspecial(dados.dadoHTT_EC,dados.dadoTTxA_AC)==2 && ativadorAE==2 || ativadorAB==2 || ativadorAC ==2  || ativadorBE == 2  || ativadorCE == 2 || ativadorSAE1 ==3 || ativadorSAE2 ==2){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_EC,dados.dadoTTxA_AC)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_EC,dados.dadoTTxA_AC);
+				tipoDaTarefaEscolhido=3;
+				ativadorSAC1=2;
+			}
+		}
+		else if(inferenciaEspecial(dados.dadoHTT_EC,dados.dadoTTxA_AC)==2 && ativadorAE==1 && ativadorAB==1 && ativadorAC ==1 && ativadorBE ==1 && ativadorCE == 1 && ativadorSAE1 == 1 && ativadorSAE2 ==1 ){
+			contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_EC,dados.dadoTTxA_AC);
+			tipoDaTarefaEscolhido=3;
+			ativadorSAC1=2;
+			
+		}else if(inferenciaEspecial(dados.dadoHTT_EC,dados.dadoTTxA_AC)==1 && ativadorAE==1 && ativadorAB==1 && ativadorAC ==1 && ativadorBE ==1 && ativadorCE == 1 && ativadorSAE1 == 1 && ativadorSAE2 ==1){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_EC,dados.dadoTTxA_AC)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_EC,dados.dadoTTxA_AC);
+				tipoDaTarefaEscolhido=3;
+				ativadorSAC1=1;
+			}
+		}
+		
+		
+		//tipo EC – AE = AC xD 
+		
+		if(inferenciaEspecial(dados.dadoHTT_EC,dados.dadoTTxA_AE)==3 && ativadorAE==3 || ativadorAB==3 || ativadorAC ==3 || ativadorBE == 3 || ativadorCE == 3 || ativadorSAE1 == 3 || ativadorSAE2 == 3 || ativadorSAC1 == 3){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_EC,dados.dadoTTxA_AE)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_EC,dados.dadoTTxA_AE);
+				tipoDaTarefaEscolhido=3;
+				ativadorSAC2=3;
+			}
+		}else if(inferenciaEspecial(dados.dadoHTT_EC,dados.dadoTTxA_AE)==3 && ativadorAE<3 && ativadorAB<3 && ativadorAC <3 && ativadorBE <3 &&  ativadorCE < 3 && ativadorSAE1 < 3 && ativadorSAE2 < 3 && ativadorSAC1 < 3){
+			contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_EC,dados.dadoTTxA_AE);
+			tipoDaTarefaEscolhido=3;
+			ativadorSAC2=3;
+			
+		}else if(inferenciaEspecial(dados.dadoHTT_EC,dados.dadoTTxA_AE)==2 && ativadorAE==2 || ativadorAB==2 || ativadorAC ==2  || ativadorBE == 2  || ativadorCE == 2 || ativadorSAE1 == 2 || ativadorSAE2 == 2 || ativadorSAC1 == 2){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_EC,dados.dadoTTxA_AE)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_EC,dados.dadoTTxA_AE);
+				tipoDaTarefaEscolhido=3;
+				ativadorSAC2=2;
+			}
+		}
+		else if(inferenciaEspecial(dados.dadoHTT_EC,dados.dadoTTxA_AE)==2 && ativadorAE==1 && ativadorAB==1 && ativadorAC ==1 && ativadorBE ==1 && ativadorCE == 1 && ativadorSAE1 == 1 && ativadorSAE2 == 1 && ativadorSAC1 == 1){
+			contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_EC,dados.dadoTTxA_AE);
+			tipoDaTarefaEscolhido=3;
+			ativadorSAC2=2;
+			
+		}else if(inferenciaEspecial(dados.dadoHTT_EC,dados.dadoTTxA_AE)==1 && ativadorAE==1 && ativadorAB==1 && ativadorAC ==1 && ativadorBE ==1 && ativadorCE == 1 && ativadorSAE1 == 1 && ativadorSAE2 == 1 && ativadorSAC1 == 1){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_EC,dados.dadoTTxA_AE)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_EC,dados.dadoTTxA_AE);
+				tipoDaTarefaEscolhido=3;
+				ativadorSAC2=1;
+			}
+		}		
+		
+		//tipo AC – AE = AC xD 
+		
+		if(inferenciaEspecial(dados.dadoHTT_AC,dados.dadoTTxA_AE)==3 && ativadorAE==3 || ativadorAB==3 || ativadorAC ==3 || ativadorBE == 3 || ativadorCE == 3 || ativadorSAE1 == 3 || ativadorSAE2 == 3 || ativadorSAC1 ==3 || ativadorSAC2 == 3){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_AC,dados.dadoTTxA_AE)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_AC,dados.dadoTTxA_AE);
+				tipoDaTarefaEscolhido=3;
+				//ativadorSAC2=3;
+			}
+		}else if(inferenciaEspecial(dados.dadoHTT_AC,dados.dadoTTxA_AE)==3 && ativadorAE<3 && ativadorAB<3 && ativadorAC <3 && ativadorBE <3 &&  ativadorCE < 3 && ativadorSAE1 < 3 && ativadorSAE2 < 3 && ativadorSAC1 < 3 && ativadorSAC2 < 3){
+			contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_AC,dados.dadoTTxA_AE);
+			tipoDaTarefaEscolhido=3;
+			//ativadorSAC2=3;
+			
+		}else if(inferenciaEspecial(dados.dadoHTT_AC,dados.dadoTTxA_AE)==2 && ativadorAE==2 || ativadorAB==2 || ativadorAC ==2  || ativadorBE == 2  || ativadorCE == 2 || ativadorSAE1 == 2 || ativadorSAE2 == 2 || ativadorSAC1 == 2 || ativadorSAC2 == 2){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_AC,dados.dadoTTxA_AE)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_AC,dados.dadoTTxA_AE);
+				tipoDaTarefaEscolhido=3;
+				//ativadorSAC2=2;
+			}
+		}
+		else if(inferenciaEspecial(dados.dadoHTT_AC,dados.dadoTTxA_AE)==2 && ativadorAE==1 && ativadorAB==1 && ativadorAC ==1 && ativadorBE ==1 && ativadorCE == 1  && ativadorSAE1 == 1 && ativadorSAE2 == 1 && ativadorSAC1 == 1 && ativadorSAC2 == 1){
+			contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_AC,dados.dadoTTxA_AE);
+			tipoDaTarefaEscolhido=3;
+			//ativadorSAC2=2;
+			
+		}else if(inferenciaEspecial(dados.dadoHTT_AC,dados.dadoTTxA_AE)==1 && ativadorAE==1 && ativadorAB==1 && ativadorAC ==1 && ativadorBE ==1 && ativadorCE == 1 && ativadorSAE1 == 1 && ativadorSAE2 == 1 && ativadorSAC1 == 1 && ativadorSAC2 == 1){
+			if((float)pertinenciaInferenciaMedia(dados.dadoHTT_AC,dados.dadoTTxA_AE)>contadorTest){
+				contadorTest=(float)pertinenciaInferenciaMedia(dados.dadoHTT_AC,dados.dadoTTxA_AE);
+				tipoDaTarefaEscolhido=3;
+				//ativadorSAC2=1;
+			}
+		}
+		
+		return tipoDaTarefaEscolhido;
+		
+	}
+	
+	
+	
+}

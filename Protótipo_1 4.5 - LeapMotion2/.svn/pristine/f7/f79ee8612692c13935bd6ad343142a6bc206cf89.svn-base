@@ -1,0 +1,19 @@
+using UnityEngine;
+using System.Collections;
+
+public class MenuIcoButtons {
+	
+	private Texture2D iconTexture;
+	private Rect buttonRect;
+	
+	public MenuIcoButtons (Texture2D icoTexture, Rect buttonRect) 
+	{
+		this.iconTexture = icoTexture;
+		this.buttonRect = buttonRect;	
+	}
+	
+	public bool OnGUI () 
+	{
+		return GUI.Button (this.buttonRect,this.iconTexture);
+	}
+}

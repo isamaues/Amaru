@@ -1,0 +1,34 @@
+using UnityEngine;
+using System.Collections;
+
+public abstract class Scene {
+	
+	//atributos dos botões
+	protected uint buttonWidth 		=150;
+	protected uint buttonHeight		=25;
+	protected uint buttonSeparation	=30;	
+	protected uint buttonsXOffset;
+	protected uint buttonsYOffset;
+	protected const uint buttonsYDefaultOffset = 70;
+	protected string[] buttonName;
+	protected bool[] buttonListening;
+	
+	public Scene()
+	{
+		buttonsXOffset = (uint)(Screen.width/2-buttonWidth/2);
+		buttonsYOffset = buttonsYDefaultOffset;
+	}
+	
+	//desenha os botões de forma abstrata, ou seja, 
+	//cada classe filha irá desenhar a quantidade de botões que ela possui
+	public virtual void OnGUI()
+	{
+		for (int i = 0; i < buttonName.Length; i++) {
+			buttonListening[i] = GUI.Button(new Rect(buttonsXOffset, buttonsYOffset+i*buttonSeparation, 
+				buttonWidth, buttonHeight), buttonName[i]);
+			
+			/*if(buttonListening[i])
+				SceneScreenManager.showBlankScreen = true;*/
+		}
+	}
+}

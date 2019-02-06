@@ -1,0 +1,17 @@
+using UnityEngine;
+using System.Collections;
+
+public enum TipoDado
+{
+	TIPO_TAREFA,
+	PALAVRA,
+	NUM_COMP
+}
+
+public class FuzzyData 
+{
+	public TipoDado Tipo  {get; set;} //tipo do dado que será inserido
+	public string Identificador {get; set;} //= "AB"
+	public float TaxaAcerto {get; set;}  //Taxa de Acerto	       >>	dadoTTxA_XX
+	public float ProbAcerto {get; set;}  //Probabilidade de Acerto       >> 	dadoHTT_XX
+}

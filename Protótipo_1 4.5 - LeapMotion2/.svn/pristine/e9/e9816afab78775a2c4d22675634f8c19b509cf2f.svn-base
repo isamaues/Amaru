@@ -1,0 +1,27 @@
+using UnityEngine;
+using System.Collections;
+
+public class InitialStory : MonoBehaviour {
+
+	#region Fields
+	private string InstructionText = "Executar animacao de Estoria";
+	
+	#endregion
+	
+	#region Functions
+	
+	void OnGUI()
+	{
+		GUI.Label(new Rect(10, 10, 300, 200), InstructionText);
+		
+		
+		if(Input.anyKeyDown)
+		{	
+			Application.LoadLevel("scene_level_000");
+		}
+		
+		
+	}
+	#endregion
+		
+}

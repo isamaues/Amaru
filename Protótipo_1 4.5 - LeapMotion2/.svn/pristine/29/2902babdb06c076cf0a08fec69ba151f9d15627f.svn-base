@@ -1,0 +1,132 @@
+using UnityEngine;
+using System.Collections;
+using System;
+
+public class BackgroundManager : MonoBehaviour 
+{
+	public Texture2D[] backgrounds;
+	public float zPos = 20f;
+	public float scaleFactor = 25.6f;
+	public Vector2 bgInitialPosition = new Vector2 (15f, 10f);
+	
+	private ArrayList _bgList = new ArrayList ();
+	private ArrayList _objsList = new ArrayList ();
+	private static GameObject tempBackGrounds;
+
+	void Start () 
+	{
+		if(backgrounds.Length==0)
+			throw new Exception("Lista de Backgrounds vazia");		
+			
+		tempBackGrounds = new GameObject ();
+		tempBackGrounds.name = "Temp Backgrounds";
+		
+		audio.volume = GameSetup.Volume;		
+		Screen.SetResolution ((int)GameSetup.GameScreenSize.x, (int)GameSetup.GameScreenSize.y, Screen.fullScreen);
+	}
+	
+	void Update () 
+	{
+		UpdateBGList (bgInitialPosition);
+	}
+	
+	
+	// Gera novos backgrounds de acordo com: posição da câmera, campo de visão da câmera e tamanho da textura de background  
+	private void UpdateBGList (Vector3 initPos)
+	{
+		if (_bgList.Count == 0) 
+		{
+			GameObject bgTemp = CreateBgGameObject (backgrounds[0]);
+						
+			
+			_bgList.Add (bgTemp);
+			bgTemp.transform.position = new Vector3 (Camera.main.transform.position.x, bgInitialPosition.y, zPos);
+			
+			PutNewBG (bgTemp, false);
+			PutNewBG (bgTemp, true);
+					
+		} 
+		else 
+		{
+			var edgeBG = (_bgList [0] as GameObject);
+			if (Camera2DTracker.IsOnCamera (edgeBG, true)) 
+				PutNewBG (edgeBG, false);
+			
+			else if (_bgList.Count > 1) 
+			{
+				if (!Camera2DTracker.IsOnCamera ((_bgList [1] as GameObject), true)) 
+				{
+					if ((_bgList [0] as GameObject) == edgeBG) 
+					{
+						_bgList.Remove (edgeBG);
+						Destroy (edgeBG);
+					}
+				}	
+			}
+			
+			edgeBG = (_bgList [_bgList.Count - 1] as GameObject);
+			if (Camera2DTracker.IsOnCamera (edgeBG, true)) 
+				PutNewBG (edgeBG, true);
+			
+			else if (_bgList.Count > 1) 
+			{
+				if (!Camera2DTracker.IsOnCamera ((_bgList [_bgList.Count - 2] as GameObject), true)) 
+				{
+					if ((_bgList [_bgList.Count - 1] as GameObject) == edgeBG) 
+					{
+						_bgList.Remove (edgeBG);
+						Destroy (edgeBG);
+						
+					}
+				}	
+			}
+		}
+		
+	}
+	
+	
+	private GameObject CreateBgGameObject (Texture2D bgTexture)
+	{
+		var scale = new Vector2 (bgTexture.width / scaleFactor, bgTexture.height / scaleFactor);
+		
+		GameObject bgCube = GameObject.CreatePrimitive (PrimitiveType.Cube);
+		bgCube.transform.localScale = new Vector3 (scale.x, scale.y, 0.01f);
+		bgCube.renderer.material = new Material (Shader.Find ("Transparent/Diffuse"));
+		bgCube.renderer.material.mainTexture = bgTexture;
+		bgCube.transform.Rotate (0f, 0f, 180f);
+		bgCube.transform.parent = tempBackGrounds.transform;
+		
+		return bgCube;
+	}
+	
+	private void PutNewBG (GameObject bgTemp, bool toRight)
+	{
+		float missingCount;
+		
+		if (toRight) 
+			missingCount = ((Camera.main.ViewportToWorldPoint (Vector3.one).x - bgTemp.renderer.bounds.max.x) / bgTemp.renderer.bounds.size.x) + 1f;
+		else
+			missingCount = ((bgTemp.renderer.bounds.min.x - Camera.main.ViewportToWorldPoint (Vector3.zero).x) / bgTemp.renderer.bounds.size.x) + 1f;
+		
+		
+		GameObject newBG;
+		
+		for (int i = 0; i < missingCount; i++) 
+		{		
+			GameObject lastBG;
+			if (toRight) 
+				lastBG = (_bgList [_bgList.Count - 1] as GameObject);
+			else
+				lastBG = (_bgList [0] as GameObject);
+			
+			
+			newBG = CreateBgGameObject (backgrounds[UnityEngine.Random.Range(0, backgrounds.Length)]);
+			
+			_bgList.Insert ((toRight) ? _bgList.Count : 0, newBG);
+			
+			var correctXPos = (newBG.renderer.bounds.size.x + lastBG.renderer.bounds.size.x) / 2;
+			
+			newBG.transform.position = lastBG.transform.position + ((toRight) ? Vector3.right : Vector3.left) * correctXPos;
+		}
+	}
+}

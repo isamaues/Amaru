@@ -1,0 +1,450 @@
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Globalization;
+using System;
+
+
+public class NewGamer : BaseMenu 
+{
+	private ErroScreen erroScreen;
+	
+	private MenuLabel[] labels1;
+	private MenuLabel[] labels2;
+	
+	private Vector2 labelPosition;
+	private Rect dataBoxPosition;
+	private Rect dataViewRect;
+	
+	private bool loginScreen;
+	
+	private AIGameConfiguration configTobeCreate;
+
+	public NewGamer()
+	{		
+		configTobeCreate = new AIGameConfiguration ();
+		configTobeCreate = AIGameConfiguration.PegarDadosXMLDefault();
+		this.loginScreen = true;
+		
+		this.erroScreen = new ErroScreen(100, 26);
+		
+		this.buttonName = new string[2]{"Criar Jogador", "Voltar"};
+		this.buttonPressed = new bool[buttonName.Length];	
+		
+		this.buttonsInicialVerticalPosition = (uint)(HalfScreenHeight * 1.6f);
+		
+		this.BackgroundImage = Resources.Load("Textures/Menus/BackGrounds/menu_novo_jogador") as Texture2D;
+		
+		this.labelPosition = new Vector2(10, 80);
+		this.dataBoxPosition = new Rect(this.labelPosition.x, this.labelPosition.y,
+										Screen.width - this.labelPosition.x,
+										Screen.height - this.labelPosition.y - 150);
+		this.dataViewRect = new Rect(this.labelPosition.x, this.labelPosition.y,
+									 this.dataBoxPosition.width + 600,
+									 this.dataBoxPosition.height + 300);
+		
+		
+		this.labels1 = new MenuLabel[5];		
+		this.labels1[0] = new MenuLabel("login", new Vector2(100, 130));
+		this.labels1[1] = new MenuLabel("nome", new Vector2(100, 180));
+		this.labels1[2] = new MenuLabel("responsavel", new Vector2(100, 230));
+		this.labels1[3] = new MenuLabel("senha", new Vector2(100, 280));
+		this.labels1[4] = new MenuLabel("repetir senha", new Vector2(100, 320));
+		
+		this.labels2 = new MenuLabel[13];
+		this.labels2[0] = new MenuLabel("Quantidade de escolhas da tarefa", new Vector2(10, 30), configTobeCreate.numero_de_Escolhas_em_uma_Tarefa, 50);
+		this.labels2[1] = new MenuLabel("Quantidade de tarefas a serem geradas", new Vector2(10, 80), configTobeCreate.numero_De_Tarefas_A_Serem_Geradas, 50);
+		this.labels2[2] = new MenuLabel("Quantidade iteracoes da maquina aprendizado", new Vector2(10, 130), configTobeCreate.numero_De_Interacoes_da_Maquina_de_Aprendizado, 100);
+		this.labels2[3] = new MenuLabel("alfa escrita", new Vector2(10, 180), configTobeCreate.peso_Alfa_Escrita);
+		this.labels2[4] = new MenuLabel("alfa leitura", new Vector2(10, 230), configTobeCreate.peso_Alfa_Leitura);
+		this.labels2[5] = new MenuLabel("beta escrita", new Vector2(10, 280), configTobeCreate.peso_Beta_Escrita);
+		this.labels2[6] = new MenuLabel("beta leitura", new Vector2(10, 330), configTobeCreate.peso_Beta_Leitura);
+		this.labels2[7] = new MenuLabel("gama escrita", new Vector2(10, 380), configTobeCreate.peso_Gama_Escrita);
+		this.labels2[8] = new MenuLabel("gama leitura", new Vector2(10, 430), configTobeCreate.peso_Gama_Leitura);
+		this.labels2[9] = new MenuLabel("sigma escrita", new Vector2(10, 480), configTobeCreate.peso_Sigma_Escrita);
+		this.labels2[10] = new MenuLabel("taxa de acerto", new Vector2(10, 530), configTobeCreate.Percentagem_Da_Taxa_De_Acerto);
+		this.labels2[11] = new MenuLabel("probabilidade de acerto", new Vector2(10, 580), configTobeCreate.Percentagem_Da_Probabilidade_De_Acerto);
+		this.labels2[12] = new MenuLabel("taxa da media geral", new Vector2(10, 630), configTobeCreate.Percentagem_Da_Media_Geral);
+	}
+	
+	public override void OnGUI() 
+	{		
+		base.OnGUI();		
+		GUI.Label (new Rect (HalfScreenWidth * 0.5f, 10, Screen.width, 100), "Criar Novo Jogador");
+		
+		
+		if(this.loginScreen)
+		{		
+			labels1[0].OnGUI();
+			labels1[1].OnGUI();
+			labels1[2].OnGUI();
+			labels1[3].OnGUIPassword();
+			labels1[4].OnGUIPassword();	
+		}
+		else
+		{		
+			this.labelPosition = GUI.BeginScrollView(this.dataBoxPosition, this.labelPosition, 
+													 this.dataViewRect);
+			GUI.BeginGroup (this.dataViewRect);
+			
+			for (int i = 0; i < this.labels2.Length; i++) 
+			{
+				this.labels2[i].OnGUI();
+			}
+			
+			GUI.EndGroup ();
+			GUI.EndScrollView ();
+		}
+		
+		
+		if(buttonPressed[0])
+		{
+			if (ValidateUser ()) 
+			{
+				MainMenuManager.GoToGame();
+			}			
+		}
+		
+		this.erroScreen.OnGUI();
+		
+		if(buttonPressed[1])
+		{
+			MainMenuManager.GoTo(MenuState.MainMenu);
+		}
+		
+		if(this.loginScreen)
+		{
+			if(GUI.Button(new Rect(20, this.buttonsInicialVerticalPosition, this.buttonWidth, this.buttonHeight), "Dados de AI"))
+				this.loginScreen = false;
+		}
+		else
+		{
+			if(GUI.Button(new Rect(10, this.buttonsInicialVerticalPosition, this.buttonWidth, this.buttonHeight), "Dados de Login"))
+				this.loginScreen = true;
+		}
+		
+			
+	}
+	
+	private bool ValidateUser ()
+	{
+		//string fileLocation = Application.dataPath + "\\Data";
+		uint wrongData = 0;
+		//aa		
+		
+		for (int i = 0; i < this.labels1.Length; i++) 
+		{
+			if(this.labels1[i].Field.Equals (""))
+			{
+				wrongData = 3;
+				this.erroScreen.ErrorText = "Dados em Branco";
+				return false;
+			}			
+		}
+		
+		for (int i = 0; i < this.labels2.Length; i++) 
+		{
+			if(this.labels2[i].Field.Equals (""))
+			{
+				wrongData = 3;
+				this.erroScreen.ErrorText = "Dados em Branco";
+				return false;
+			}			
+		}
+		
+		if (!this.labels1[3].Field.Equals (this.labels1[4].Field)) 
+		{
+			wrongData = 2;
+			this.erroScreen.ErrorText = "Senhas Diferentes";
+			return false;
+		}		
+		
+		
+		string newDirectory = Paths.USER_PATH + this.labels1[0].Field;	
+		
+		
+		
+		try 
+		{
+			configTobeCreate.login = this.labels1[0].Field;
+			configTobeCreate.participante = this.labels1[1].Field;
+			configTobeCreate.responsavel = this.labels1[2].Field;
+			configTobeCreate.senha = this.labels1[3].Field;
+			configTobeCreate.numero_de_Escolhas_em_uma_Tarefa = int.Parse(this.labels2[0].Field);
+			configTobeCreate.numero_De_Tarefas_A_Serem_Geradas = int.Parse(this.labels2[1].Field);
+			configTobeCreate.numero_De_Interacoes_da_Maquina_de_Aprendizado = int.Parse(this.labels2[2].Field);
+			configTobeCreate.peso_Alfa_Escrita = float.Parse(this.labels2[3].Field);
+			configTobeCreate.peso_Alfa_Leitura = float.Parse(this.labels2[4].Field);
+			configTobeCreate.peso_Beta_Escrita = float.Parse(this.labels2[5].Field);
+			configTobeCreate.peso_Beta_Leitura = float.Parse(this.labels2[6].Field);
+			configTobeCreate.peso_Gama_Escrita = float.Parse(this.labels2[7].Field);
+			configTobeCreate.peso_Gama_Leitura = float.Parse(this.labels2[8].Field);
+			configTobeCreate.peso_Sigma_Escrita = float.Parse(this.labels2[9].Field);
+			configTobeCreate.Percentagem_Da_Taxa_De_Acerto = double.Parse(this.labels2[10].Field);
+			configTobeCreate.Percentagem_Da_Probabilidade_De_Acerto = double.Parse(this.labels2[11].Field);
+			configTobeCreate.Percentagem_Da_Media_Geral = double.Parse(this.labels2[12].Field);
+			
+		} catch (System.Exception ex) 
+		{			
+			this.erroScreen.ErrorText = "Verifique o formulário de AI.";
+			Debug.LogError(ex);
+			return false;			
+		}
+		
+		//verifica se o diretorio com o nome do usuario existe 
+		if (!System.IO.Directory.Exists (newDirectory)) 
+		{
+			System.IO.Directory.CreateDirectory(newDirectory);
+		}
+		else
+		{
+			wrongData = 1;
+			this.erroScreen.ErrorText = "Login ja Existente";
+			return false;
+		}
+		
+	
+		XMLManager.CreateXML<AIGameConfiguration> (newDirectory, "Configuracoes.xml", configTobeCreate); 
+				
+		
+		WordList wl = GenerateWordsByDefaultXML(newDirectory); //cria o XML Palavras com valores padrões estraidos de \Data\TXTs\PadraoPalavras.txt
+		TasksTypesList ttl = GenerateTasksTypesDefaultXML(newDirectory);		
+		TasksList tl = GenerateTasksDefaultXML(newDirectory);		
+		
+		UserManager.GetInstance().SetCurrentUser(configTobeCreate, newDirectory, wl, ttl, tl);
+		EditPlayer.LoadNewPlayer(newDirectory);		
+		
+		
+		if (wrongData == 1) 
+			this.labels1[0].Field = "";
+		else 
+		{
+			this.labels1[3].Field = "";
+			this.labels1[4].Field = "";
+		}
+		
+		return true;
+	}
+
+	public TasksList GenerateTasksDefaultTXT (string newDirectory)
+	{
+		string line;
+        if (!File.Exists(Paths.DEFAULT_TASK_TXT))
+        {
+			Debug.Log("Problemas no caminho dado.");
+			return null;
+		}
+		
+		Task t;
+		TasksList tl = new TasksList();
+		
+		StreamReader sr = null;
+        try
+        {
+	        sr = new StreamReader(Paths.DEFAULT_TASK_TXT, System.Text.Encoding.UTF7);
+	        while ((line = sr.ReadLine()) != null)
+	        {
+				t = new Task();
+				string[] parts = line.Split('/');
+				
+				t.Id = int.Parse(parts[0]);
+					
+				string format = "dd-MM-yyyy_HH:mm:ss";
+				t.DateTime = DateTime.ParseExact(parts[1], format, null); //DATA
+					
+                t.MiniGame = int.Parse(parts[2]); //MINIGAME
+                t.Latency = float.Parse(parts[3], CultureInfo.CurrentUICulture);//LATENCIA
+                t.Difficulty = float.Parse(parts[4], CultureInfo.CurrentUICulture);//DIFICULDDE
+                t.Correct = byte.Parse(parts[5]);//CORRECAO
+                t.CompareNumber = int.Parse(parts[6]);//NUM DE COMPARACOES
+                t.TaskType = int.Parse(parts[7]);//TIPO DE TAREFA
+                t.Model = short.Parse(parts[8]);//MODELO
+				
+				int i = 9;
+                while (i < parts.Length) //OUTRAS ESCOLHAS
+                {
+                    t.Choices.Add(int.Parse(parts[i]));
+					i++;
+                }
+				
+				tl.arrayList.Add(t);
+			}
+		}
+		catch (UnityException ex)
+        {
+            Debug.Log("Erro no GenerateTasksDefaultTXT!");
+            Debug.Log(ex.StackTrace);
+        }
+
+        finally
+        {
+            if (sr != null)
+            {
+                sr.Close();
+            }
+        }
+		
+		
+		XMLManager.CreateXML<TasksList> (newDirectory, "Tentativas.xml", tl); 
+		return tl;
+	}
+	
+	public TasksList GenerateTasksDefaultXML (string newDirectory)
+	{
+		TasksList tl;
+		tl = XMLManager.LoadXML<TasksList>(Paths.DATA_XMLs_FOLDER_PATH + "GeneratedTasks.xml");		
+		
+		XMLManager.CreateXML<TasksList> (newDirectory, "Tentativas.xml", tl); 
+		return tl;
+	}
+
+	public TasksTypesList GenerateTasksTypesDefaultTXT (string newDirectory)
+	{
+		string line;
+        if (!File.Exists(Paths.DEFAULT_TASK_TYPES_TXT))
+        {
+			Debug.Log("Problemas no caminho dado.");
+			return null;
+		}
+		
+		TasksTypesList tt = new TasksTypesList();
+		TaskType t;
+		
+        StreamReader sr = null;
+        try
+        {
+	        sr = new StreamReader(Paths.DEFAULT_TASK_TYPES_TXT, System.Text.Encoding.UTF7);
+	        while ((line = sr.ReadLine()) != null)
+	        {
+	        	t = new TaskType();
+	            string[] parts = line.Split('/');
+				t.Id = int.Parse(parts[0]);
+				t.Name = parts[1];
+				
+				tt.arrayList.Add(t);
+	          }
+			
+			
+			XMLManager.CreateXML<TasksTypesList> (newDirectory, "TipoTentativas.xml", tt); 
+			
+        }
+        catch (UnityException ex)
+        {
+            Debug.Log("Erro no GenerateTasksTypesDefaultTXT!");
+            Debug.Log(ex.StackTrace);
+        }
+
+        finally
+        {
+            if (sr != null)
+            {
+                sr.Close();
+            }
+        }
+		return tt;
+	}
+	
+	public TasksTypesList GenerateTasksTypesDefaultXML (string newDirectory)
+	{
+		TasksTypesList ttl;
+		ttl = XMLManager.LoadXML<TasksTypesList>(Paths.DATA_XMLs_FOLDER_PATH + "GeneratedTaskTypes.xml");			
+			
+		XMLManager.CreateXML<TasksTypesList> (newDirectory, "TipoTentativas.xml", ttl); 
+        
+		return ttl;
+	}	
+	
+	
+	public WordList GenerateWordsByDefaultTXT(string newDirectory)
+	{
+		string line;
+        if (!File.Exists(Paths.DEFAULT_WORD_TXT))
+        {
+			Debug.Log("Problemas no caminho dado.");
+			return null;
+		}
+		
+		WordList wl = new WordList();
+		Word word;
+		
+        StreamReader sr = null;
+        try
+        {
+	        sr = new StreamReader(Paths.DEFAULT_WORD_TXT, System.Text.Encoding.UTF7);
+	        while ((line = sr.ReadLine()) != null)
+	        {
+	        	word = new Word();
+	            string[] parts = line.Split('/');
+	            string[] silabs = parts[2].Split('-');
+	
+	            word.WordId = int.Parse(parts[0]);
+	            word.Name = parts[1];
+	
+	
+	            for (int s = 0; s < silabs.Length; s++)
+	            	word.Syllables.Add(silabs[s]);
+	
+                word.SyllablesNumber = short.Parse(parts[3]);
+                word.MaxReadDif = float.Parse(parts[4], CultureInfo.CurrentUICulture);
+                word.LearningDegreeRead = float.Parse(parts[5], CultureInfo.CurrentUICulture);
+                word.LearnedRead = short.Parse(parts[6]);
+                word.MaxWriteDif = float.Parse(parts[7], CultureInfo.CurrentUICulture);
+                word.LearningDegreeWrite = float.Parse(parts[8], CultureInfo.CurrentUICulture);
+                word.LearnedWrite = short.Parse(parts[9]);	
+			
+				wl.arrayList.Add(word);
+	          }
+			
+			
+			XMLManager.CreateXML<WordList> (newDirectory, "Palavras.xml", wl); 
+			
+        }
+        catch (UnityException ex)
+        {
+            Debug.Log("Erro no GenerateWordsByDefaultTXT!");
+            Debug.Log(ex.StackTrace);
+        }
+
+        finally
+        {
+            if (sr != null)
+            {
+                sr.Close();
+            }
+        }   
+		
+		return wl;
+	}
+	
+	public WordList GenerateWordsByDefaultXML(string newDirectory)
+	{
+		WordList wl;
+		wl = XMLManager.LoadXML<WordList>(Paths.DATA_XMLs_FOLDER_PATH + "GeneratedWords.xml");		
+			
+		XMLManager.CreateXML<WordList> (newDirectory, "Palavras.xml", wl); 
+		
+		return wl;
+	}
+}
+
+public class WordList
+{
+	public List<Word> arrayList = new List<Word>();
+}
+
+public class TasksList
+{
+	public List<Task> arrayList = new List<Task>();
+}
+
+public class TasksTypesList
+{
+	public List<TaskType> arrayList = new List<TaskType>();
+}
+
+public class MinigameList
+{
+	public List<MiniGame> arrayList = new List<MiniGame>();
+}
+

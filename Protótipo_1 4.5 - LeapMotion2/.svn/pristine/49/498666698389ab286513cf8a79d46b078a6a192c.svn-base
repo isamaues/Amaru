@@ -1,0 +1,35 @@
+using UnityEngine;
+using System.Collections;
+
+public class Cloud : MonoBehaviour
+{
+	public float speed = 7f;
+	public Vector3 cloudDirection;
+	private Vector3 startPos;
+	// Use this for initialization
+	void Start ()
+	{
+		startPos = transform.position;
+	}
+	
+	// Update is called once per frame
+	void Update ()
+	{
+		transform.position += cloudDirection * (speed * Time.deltaTime);
+	}
+
+	void OnBecameInvisible ()
+	{
+		if (Camera.main) {
+			Vector3 viewPos = Camera.main.WorldToScreenPoint (startPos);
+			if (viewPos.x + transform.collider.bounds.extents.x < 0f || viewPos.x - transform.collider.bounds.extents.x > Camera.main.pixelWidth || viewPos.y - transform.collider.bounds.extents.y < 0f || viewPos.y + transform.collider.bounds.extents.y > Camera.main.pixelHeight) {
+				Reset ();
+			}
+		}
+	}
+
+	void Reset ()
+	{
+		transform.position = startPos;
+	}	
+}

@@ -1,0 +1,593 @@
+using UnityEngine;
+using System.Collections;
+
+public class StartTask : MonoBehaviour
+{
+	
+	//Caminho para o arquivo de tarefas
+	public string task_txt_path = @"Assets\Scripts\Leitura\tentativas.txt";
+	public string word_txt_path = @"Assets\Scripts\Leitura\palavras.txt";
+	public float velocity;
+	public float amplitude;
+	public bool smoothMovement = false;
+	public float smoothRange = 1f;
+	public Vector3 itensMidPoint;
+	public float spaceBetweenItens;
+	public GameObject cubePrefab;
+	public GameObject modelImage;
+	public TextMesh modelText;
+
+	
+	//Privates
+	private int currentTaskIndex = 0;
+	private Texture2D[] textureArray = new Texture2D[17];
+	private AudioClip[] audioArray = new AudioClip[17];
+
+	private int compLength;
+	private TaskManager2 tm;
+	private WordManager wm;
+	private DifficultyIdentifier di;
+	private ArrayList readTasks;
+	private ArrayList readWords;
+	private ArrayList LearningWord;
+	private bool playing;
+	private float yPos = 0;
+	
+	void Start ()
+	{
+		//------
+		tm = transform.gameObject.AddComponent<TaskManager2> ();     
+		tm.ReadTask (task_txt_path);             					// Ler tentativas
+		readTasks = tm.GetTasks (); 								
+		
+		wm = transform.gameObject.AddComponent<WordManager> ();   
+		wm.ReadWord (word_txt_path);             					// Ler palavras do txt
+		readWords = wm.GetWords (); 
+		
+		DifficultyIdentifier difId = new DifficultyIdentifier (); // Instância Classe que vai calcular dificuldades de tarefas
+		
+		difId.ProcessarDifEmLote (ref readTasks, ref readWords); // Calcula e preenche as dificuldades das tentativas na lista de tentativas.
+	
+		// Preencher os valores das Dificuldades Maximas....
+		
+		//difId.ProcessarDifficultyMaxima(ref readWords);
+				
+		//------	
+		
+		playing = false;
+		
+		yPos = transform.position.y;
+		
+
+	}
+	
+	private bool gameLoaded = false;
+	
+	// Update is called once per frame
+	void Update ()
+	{
+		
+        
+		if (!gameLoaded) {
+			int count = 0;
+			foreach (string s in tm.GetWords().Keys) {
+				textureArray [count] = Resources.Load ("Images/" + s) as Texture2D;
+				audioArray [count] = Resources.Load ("Sounds/" + s) as AudioClip;
+			
+				count++;
+			}
+			gameLoaded = true;
+		}
+
+		if (amplitude != 0) {
+			Vector3 finalPosition = new Vector3 (transform.position.x, yPos + Mathf.PingPong (Time.time * velocity, amplitude), transform.position.z);
+			
+			if (smoothMovement) {
+				finalPosition = Vector3.Slerp (transform.position, finalPosition, smoothRange);	
+			}
+		
+			
+			transform.position = finalPosition;
+		}
+		
+		if (Input.GetKeyDown (KeyCode.Alpha1)) {
+			
+			if (!playing) {
+				if (readTasks.Count > 0 && cubePrefab != null) {
+					CreateCubeTask (currentTaskIndex);  //inicia o jogo usando o contador index da tarefa a partir do zero
+					playing = true;
+				}
+			}
+		}
+		
+		if (Input.GetKeyDown (KeyCode.Alpha0)) {
+			//tm.WriteTask (task_txt_path); //  escreve(atualiza) TODAS as tarefas executadas no txt pressionando o botão 0 do teclado
+			currentTaskIndex += 10;
+			print (currentTaskIndex);
+		}
+		if (Input.GetKeyDown (KeyCode.Alpha9)) {
+			//wm.WriteWord (word_txt_path); // escreve(atualiza) TODAS as palavras executadas no txt pressionando o botão 9 do teclado
+			ChamarIA nomeqqr = transform.gameObject.AddComponent<ChamarIA> ();
+			
+		}
+			
+	}
+	
+	/*ATENCAO!!!!!! NAO ESQUECER!
+	 * fazer gambiarra pra android escrever no proprio editor de texto persistencia dos dados, ou quase isso.
+	 * 
+	 * PEDRO
+	 * */
+	
+	
+	private static ArrayList comparisonList = new ArrayList ();
+	private float latencyTime = 0f;
+	
+	private void CreateCubeTask (int taskId)
+	{
+		Task currentTask = readTasks [taskId] as Task;
+		
+		EraseAll (); //"Limpa" a tela (modelos, imagens, textos)
+		
+		switch (tm.GetTaskTypeName (currentTask.TaskType)) {
+			
+		case "AB":
+			CreateAModel (currentTask);
+			CreateBChoice (currentTask);
+			//print ("AB");
+			break;
+		case "AC":
+			CreateAModel (currentTask);
+			CreateCChoice (currentTask);
+			//print ("AC");
+			break;
+		case "BC":
+			CreateBModel (currentTask);
+			CreateCChoice (currentTask);
+			//print ("BC");
+			break;
+		case "CB":
+			CreateCModel (currentTask);
+			CreateBChoice (currentTask);
+			//print ("CB");
+			break;
+		default:
+			CreateAModel (currentTask);
+			CreateBChoice (currentTask);
+			//print ("Default");
+			break;
+		
+		}
+				
+		OrganizeCubes (comparisonList, itensMidPoint, spaceBetweenItens);
+		
+		latencyTime = Time.time;
+	}
+	
+	public void EraseAll ()
+	{
+		foreach (GameObject item in comparisonList) {
+			Destroy (item);
+		}	
+		comparisonList = new ArrayList ();
+			
+		modelImage.renderer.material = new Material (Shader.Find ("Transparent/Diffuse"));
+		modelImage.renderer.material.mainTexture = null;
+		modelText.text = "";
+	}
+	
+	public void CreateAModel (Task currentTask)
+	{
+		var clip = audioArray [currentTask.Model - 1];
+		if (clip != null) {
+			AudioSource.PlayClipAtPoint ((AudioClip)clip, Camera.main.transform.position);
+		} else {
+			print ("AUDIO NOT FOUND");	
+		}	
+	}
+	
+	public void CreateBModel (Task currentTask)
+	{
+		//modelImage.renderer.enabled = true;
+		
+		modelImage.renderer.material = new Material (Shader.Find ("Transparent/Diffuse"));
+		modelImage.renderer.material.mainTexture = textureArray [currentTask.Model - 1];
+	}
+	
+	public void CreateCModel (Task currentTask)
+	{
+		//modelText.renderer.enabled = true;
+		modelText.text = textureArray [currentTask.Model - 1].name;
+		modelText.renderer.material.color = Color.black;
+		//print ("Opas: " + textureArray [currentTask.Model - 1].name);
+	}
+	
+	public void CreateBChoice (Task currentTask)
+	{
+		comparisonList.Add (CreateCube (textureArray [currentTask.Model - 1], Vector3.zero, cubePrefab));
+		
+		for (int i = 0; i < currentTask.Choices.Count; i++) {
+			Texture2D texture = textureArray [(int)currentTask.Choices [i] - 1];
+			int randomIndex = Random.Range (0, comparisonList.Count + 1); 
+			comparisonList.Insert (randomIndex, CreateCube (texture, Vector3.zero, cubePrefab));
+		}
+	
+	}
+	
+	public void CreateCChoice (Task currentTask)
+	{
+		
+		comparisonList.Add (CreateText (textureArray [currentTask.Model - 1].name, Vector3.zero, cubePrefab));
+		
+		for (int i = 0; i < currentTask.Choices.Count; i++) {
+			
+			string str = textureArray [(int)currentTask.Choices [i] - 1].name;
+			int randomIndex = Random.Range (0, comparisonList.Count + 1); 
+			comparisonList.Insert (randomIndex, CreateText (str, Vector3.zero, cubePrefab));
+			
+		}
+	
+	}
+	
+	public void SendMessage (GameObject gameObject)
+	{
+		
+		
+		Task task = readTasks [currentTaskIndex] as Task;
+		
+		var child = gameObject.transform.FindChild (audioArray [task.Model - 1].name + "Text");
+		
+		bool correct = false;
+		if (child != null) {
+			correct = true;
+		} else if (gameObject.renderer.material.mainTexture != null) {  //verifica se o cubo acertado eh o certo ou nao e aumenta o index da tarefa
+			if (gameObject.renderer.material.mainTexture.name.Equals (audioArray [task.Model - 1].name)) {
+				correct = true;
+			} else {
+				correct = false;
+			}
+		} else {
+			correct = false;
+		}
+		
+		UpdateTask (correct); //atualiza a tarefa e coloca se acertou ou nao e verifica o tempo que demoura pra fazer a tarefa
+		
+		
+		//print(readTasks.Count);
+		if (currentTaskIndex < readTasks.Count - 1) {
+			currentTaskIndex++;  //aumenta o index da tarefa
+		} else {
+//			print ("");
+//			print ("REINICIANDO");
+//			print ("");
+//			currentTaskIndex = 0;	//faz reiniciar a tarefa do 0, alterar pra aqui chamar a IA.
+			
+			
+			LogicOfSession (); //LOGICA DE GERAÇÃO DE SESSÃO
+								
+		}
+		
+		CreateCubeTask (currentTaskIndex);
+	}
+			
+	private void LogicOfSession ()// Inicia Logica de Geracao de Tarefas
+	{	       
+		try {			
+		
+			//Inicio do processo de Aprendizado de Máquina
+			MachineLearning ml = new MachineLearning ();
+			foreach (Word rw in readWords) {  //Gera dados do aprendizado de cada palavra  
+				
+				//Select de Tarefas de leitura
+				ArrayList TasksOfRead = tm.GetTasksToRead (rw.Name); 			   
+				LearningInfo li = ml.GetLearningInfo (TasksOfRead, rw.MaxReadDif);
+				
+				//Atribuicao das variveis de GrauDeAprendizado e se ele Aprendeu ou nao a palavra
+				rw.LearningDegreeRead = (float)li.grauDeAprendizado;			
+				rw.LearnedRead = li.aprendizado;
+				
+				//Select de Tarefas de Escrita
+				//ArrayList TasksOfWrite = tm.GetTasksToWrite (rw.Name); 
+				//li = ml.GetLearningInfo (TasksOfWrite, rw.MaxWriteDif);
+				
+				//Atribuicao das variveis de GrauDeAprendizado e se ele Aprendeu ou nao a palavra
+				//rw.LearningDegreeWrite = (float)li.grauDeAprendizado;			
+				//rw.LearnedWrite = li.aprendizado;
+			}	
+			  
+			wm.WriteWord (word_txt_path); //Escreve os dados da lista de palavras no palavras.txt para guardar os dados do aprendizado de palavras //Task aqui!!!
+				
+			//Teste FuZZY	   	
+			dadosTTFuzzy DataTTFuzzy = new dadosTTFuzzy ();
+			dadosFuzzyNumComp DataNCFuzzy = new dadosFuzzyNumComp ();
+			dadosFuzzyPalavras DataPFuzzy = new dadosFuzzyPalavras ();
+				
+			foreach (Word rw in readWords) {
+				
+				ArrayList TaskOfModelo;
+				ArrayList TaskOfType;
+				ArrayList TaskOfNumComp;
+				
+				TaskOfModelo = tm.GetTasksByModel (rw.Name); 
+				
+				TaskOfType = tm.GetTasksByType (TaskOfModelo, "AB");
+				DataTTFuzzy.dadoHTT_AB = (float)ml.GetProbabilidade (TaskOfType, rw.MaxReadDif);
+				DataTTFuzzy.dadoTTxA_AB = (float)ml.GetTaxaAcerto (TaskOfType);
+								
+				TaskOfType = tm.GetTasksByType (TaskOfModelo, "AC");
+				DataTTFuzzy.dadoHTT_AC = (float)ml.GetProbabilidade (TaskOfType, rw.MaxReadDif);
+				DataTTFuzzy.dadoTTxA_AC = (float)ml.GetTaxaAcerto (TaskOfType);
+				
+				TaskOfType = tm.GetTasksByType (TaskOfModelo, "AE");
+				DataTTFuzzy.dadoHTT_AE = (float)ml.GetProbabilidade (TaskOfType, rw.MaxWriteDif);
+				DataTTFuzzy.dadoTTxA_AE = (float)ml.GetTaxaAcerto (TaskOfType);
+				
+				TaskOfType = tm.GetTasksByType (TaskOfModelo, "BC");
+				DataTTFuzzy.dadoHTT_BC = (float)ml.GetProbabilidade (TaskOfType, rw.MaxReadDif);
+				DataTTFuzzy.dadoTTxA_BC = (float)ml.GetTaxaAcerto (TaskOfType);
+				
+				TaskOfType = tm.GetTasksByType (TaskOfModelo, "BE");
+				DataTTFuzzy.dadoHTT_BE = (float)ml.GetProbabilidade (TaskOfType, rw.MaxWriteDif);
+				DataTTFuzzy.dadoTTxA_BE = (float)ml.GetTaxaAcerto (TaskOfType);
+				
+				TaskOfType = tm.GetTasksByType (TaskOfModelo, "CE");
+				DataTTFuzzy.dadoHTT_CE = (float)ml.GetProbabilidade (TaskOfType, rw.MaxWriteDif);
+				DataTTFuzzy.dadoTTxA_CE = (float)ml.GetTaxaAcerto (TaskOfType);
+
+                DisplayTasksNamed(TaskOfModelo);// Mostra as tentativas no debug		
+				
+				TaskOfNumComp = tm.GetTasksByCompareCount (TaskOfModelo, 2);			
+				DataNCFuzzy.HNC_1 = (float)ml.GetProbabilidade (TaskOfNumComp, rw.MaxReadDif );
+				DataNCFuzzy.TNC_1 = (float)ml.GetTaxaAcerto (TaskOfNumComp);
+				
+				TaskOfNumComp = tm.GetTasksByCompareCount (TaskOfModelo, 3);
+				DataNCFuzzy.HNC_2 = (float)ml.GetProbabilidade (TaskOfNumComp, rw.MaxReadDif );
+				DataNCFuzzy.TNC_2 = (float)ml.GetTaxaAcerto (TaskOfNumComp);				
+				
+				TaskOfNumComp = tm.GetTasksByCompareCount (TaskOfModelo, 4);
+				DataNCFuzzy.HNC_3 = (float)ml.GetProbabilidade (TaskOfNumComp, rw.MaxReadDif );
+				DataNCFuzzy.TNC_3 = (float)ml.GetTaxaAcerto (TaskOfNumComp);
+
+				//--------------
+				
+				foreach (Word item in readWords) {
+					var listOfIncorrectWords = new ArrayList ();
+					
+					if (!item.Name.Equals (rw.Name)) {
+						
+						listOfIncorrectWords = tm.GetTasksByChoices (TaskOfModelo, item.wordId);
+						DataPFuzzy.HPalavra [item.wordId - 1] = (float)ml.GetProbabilidade (listOfIncorrectWords, (rw.MaxReadDif + rw.MaxWriteDif) / 2);
+						DataPFuzzy.FPalavra [item.wordId - 1] = (float)ml.GetTaxaAcerto (listOfIncorrectWords);
+					}
+					
+				}			
+				//-------------
+				int a = TaFuzzy.EscolhaFuzzyTT (DataTTFuzzy);
+				int b = TaFuzzyNumComp.DecisaoNumComp (DataNCFuzzy);
+				ArrayList palavrasIncorretas = new ArrayList ();
+				
+				for (int i = 0; i < b; i++) {
+//					palavrasIncorretas.Add (taFuzzyPalavras.DecisaoPalavras (DataPFuzzy, b));
+				}
+				
+				Debug.Log ("Tipo de tarefa gerada: " + a + "::" + b);
+				
+				if (palavrasIncorretas.Count > 0) {
+					Debug.Log ("Tipo de tarefa gerada: " + a + "::" + b + "::" + palavrasIncorretas [0]);
+				}
+				//-------------
+				break;
+			}
+
+			#region  Aqui Comeca a Geracao de Tarefas
+			
+			//Exemplo de Funcionamento https://docs.google.com/document/d/1qAF9ZYExQmKrfZgizuztW0wrb23avHyoaYfIw5EBgtk/edit		
+			
+			#endregion
+			
+				
+			//logica de geracao decidir qual palavra modelo pra criar a nova tarefa. 
+			//precisa saber se a palavra foi aprendida.
+			//GILBERTO: metodo nome da probabilidades e taxas de acerto de todas as caracteriscas
+			//double GetProbabilidade(List<Task> listaDeTentativas) (organizar com esse metodo GetTasksByModel)
+			//double GetTaxaAcerto(List<Task> listaDeTentativas)
+		
+			//GILBERTO: metodo pra decidir se ja aprendeu
+			//byte GetAprendizado(List<Task> listaDeTentativas) //  retorna 1 ou 0
+	     
+			//ADALBERTO: criar aqui a IA chamar ML depois fuzzy
+			//ADALBERTO: gravar a tafera nova no TXT
+			//ADALBERTO: chamar novamente pra executar a tarefa no jogo, (que metodo precisa)
+						
+		} catch (System.Exception ex) {
+			Debug.LogError (ex.Message);
+			Debug.LogError (ex.StackTrace);
+		}
+	
+	}
+	
+	private void UpdateTask (bool correct)
+	{
+		((Task)readTasks [currentTaskIndex]).Latency = Time.time - latencyTime;
+		((Task)readTasks [currentTaskIndex]).Correct = (byte)(correct ? 1 : 0);
+	}
+	
+	private GameObject CreateText (string name, Vector3 pos, GameObject source)
+	{
+		source.renderer.enabled = false;
+		
+		GameObject inst = Instantiate (source, pos, Quaternion.identity) as GameObject;
+		//inst.transform.Rotate (new Vector3 (0, 0, 180f));
+		inst.name = name;
+		inst.renderer.material.mainTexture = Resources.Load ("border") as Texture2D;
+		
+		
+		TextMesh gText = Instantiate (modelText) as TextMesh;
+		gText.text = name;
+		gText.name = name + "Text";
+		gText.transform.parent = inst.transform;
+		gText.renderer.material.color = Color.blue;
+		
+		Bounds textBounds = gText.renderer.bounds;
+	
+		gText.transform.localPosition = new Vector3 (pos.x - textBounds.extents.x / 4, pos.y + textBounds.extents.y / 4, pos.z);
+		
+		
+		
+		InCollision inCollision = inst.GetComponent<InCollision> ();
+		if (inCollision != null) {
+			// REFEITO inCollision.levelManager = this;	
+		}
+		
+		return inst;
+	}
+	
+	private GameObject CreateCube (Texture2D texture, Vector3 pos, GameObject source)
+	{
+		source.renderer.enabled = true;
+		
+		GameObject inst = Instantiate (source, pos, Quaternion.identity) as GameObject;
+		inst.renderer.material = new Material (Shader.Find ("Transparent/Diffuse"));
+		
+		inst.renderer.material.mainTexture = texture;
+		
+		inst.transform.Rotate (new Vector3 (0, 0, 180f));
+		if (texture.name != null) {
+			inst.name = texture.name;
+		} else {
+			print ("null");	
+		}
+		
+		InCollision inCollision = inst.GetComponent<InCollision> ();
+		if (inCollision != null) {
+			//REFEITO inCollision.levelManager = this;	
+		}
+		
+		return inst;
+	}
+	
+	private void OrganizeCubes (ArrayList objList, Vector3 center, float spaceBettwen)
+	{
+		if (cubePrefab != null) {
+			float xCurrent = center.x - (((objList.Count * cubePrefab.transform.localScale.x) + (spaceBettwen * (objList.Count - 1))) / 2);
+			foreach (GameObject item in objList) {
+				item.transform.position = new Vector3 (xCurrent, center.y, center.z);
+				xCurrent += cubePrefab.transform.localScale.x + spaceBettwen;
+			}
+		}
+	}
+	
+	private ArrayList ShuffleList (ArrayList source)
+	{
+		ArrayList randomList = new ArrayList ();
+		ArrayList inputList = new ArrayList ();
+		inputList.AddRange (source.GetRange (0, source.Count));
+		
+		int randomIndex = 0;
+		int count = 50;
+		while (inputList.Count > 0 && count < 50) {
+			randomIndex = Random.Range (0, inputList.Count); //Choose a random object in the list
+			randomList.Add (inputList [randomIndex]); //add it to the new, random list
+			inputList.RemoveAt (randomIndex); //remove to avoid duplicates
+			count++;
+		}
+
+		return randomList; //return the new random list
+	}
+
+//	public void DisplayIndexs (ArrayList index)
+//	{
+//		foreach (int i in index)
+//			print (i + " ");
+//           
+//	}
+	
+//	public void DisplayTasks (ArrayList ten)
+//	{    
+//		print ("\nId-MiniJogo-Latencia-Dificuldade-Acerto-NumeroDeComparações-TipoTentativa-Modelo-Escolha1-Escolha2...\n");
+//         
+//		foreach (Task i in ten) {
+//			print (
+//				i.Id + " " + 
+//				i.MiniGame + " " + 
+//				i.Latency + " " + 
+//				i.Difficulty + " " +
+//                i.Correct + " " + 
+//				i.CompareNumber + " " + 
+//				i.TaskType + " " + 
+//				i.Model
+//				);
+//
+//			for (int j = 0; j < i.Choices.Count; j++) {
+//				print (" " + i.Choices [j]);
+//			}
+//			print ("\n");
+//		}
+//
+//		//print ("\nId-MiniJogo-Latencia-Dificuldade-Acerto-NumeroDeComparações-TipoTentativa-Modelo-Escolha1-Escolha2...\n");
+//            
+//	}
+	
+	public void DisplayTasks (ArrayList ten)
+	{    
+		Debug.Log("\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+       
+		foreach (Task i in ten) {			
+			
+			Debug.Log (
+				"ID: " + i.Id + " " + 
+				"Minigame: " + i.MiniGame + " " + 
+				"Tempo: " + i.Latency + " " + 
+				"Difi: " + i.Difficulty + " " +
+                "Acerto: " + i.Correct + " " + 
+				"Numcomp: " + i.CompareNumber + " " + 
+				"TT: " + i.TaskType + " " + 
+				"Modelo: " + i.Model				
+				);
+
+			for (int j = 0; j < i.Choices.Count; j++) {
+				Debug.Log("Escolha"+(j+1)+ " :" + i.Choices[j]);
+		    }		    
+		}
+
+		Debug.Log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            
+	}
+	
+	public void DisplayTasksNamed (ArrayList ten)
+	{    
+		Debug.Log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+       
+		foreach (Task i in ten) {				
+			
+			Debug.Log (
+				"ID: " + i.Id + " " + 
+				"Minigame: " + i.MiniGame + " " + 
+				"Tempo: " + i.Latency + " " + 
+				"Difi: " + i.Difficulty + " " +
+                "Acerto: " + i.Correct + " " + 
+				"Numcomp: " + i.CompareNumber + " " + 
+				"TT: " + i.TaskType + " " + 
+				"Modelo: " +  getWord(i.Model)				
+				);
+
+			for (int j = 0; j < i.Choices.Count; j++) {
+				Debug.Log("Escolha"+(j+1)+ " :" + getWord((int)i.Choices[j]));
+		    }		    
+		}
+
+		Debug.Log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            
+	}
+	
+	public string getWord (int id)
+	{
+		foreach (Word w in readWords) {
+			if (w.wordId==id) {
+				return w.Name;
+			}			
+		}
+		return " --- ";
+	}
+
+}

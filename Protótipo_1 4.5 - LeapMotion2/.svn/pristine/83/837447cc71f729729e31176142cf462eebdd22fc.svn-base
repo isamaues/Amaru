@@ -1,0 +1,203 @@
+using UnityEngine;
+using System.Collections;
+
+//REVISION 126
+public class UserManager
+{
+ 
+	private static UserManager userManager = null;
+	public static AIGameConfiguration CurrentUser{get; private set;}
+	public static string CurrentPath{get; private set;}
+	public static WordList CurrentWordList{get; private set;}
+	public static TasksTypesList CurrentTaskTypesList{get; private set;}
+	public static TasksList CurrentTasksList{get; set;}
+	public static MinigameList CurrentMinigames{get; private set;}
+ 
+	public static UserManager GetInstance ()
+	{
+		if (userManager == null) {
+			userManager = new UserManager ();
+		}
+ 
+		return userManager;
+	} 
+	
+ 
+	/// <summary>
+	/// Sets the current user. Deve ser usada quando se criar um novo player.
+	/// </summary>
+	/// <param name='currentUser'>
+	/// Current user.
+	/// </param>
+	/// <param name='currentPath'>
+	/// Current path.
+	/// </param>
+	/// <param name='currentWordList'>
+	/// Current word list.
+	/// </param>
+	/// <param name='currentTasksTypesList'>
+	/// Current tasks types list.
+	/// </param>
+	/// <param name='currentTasksList'>
+	/// Current tasks list.
+	/// </param>
+	public void SetCurrentUser (AIGameConfiguration currentUser, string currentPath, WordList currentWordList,
+								TasksTypesList currentTasksTypesList, TasksList currentTasksList)
+	{
+		CurrentUser = currentUser;
+		CurrentPath = currentPath;
+		CurrentWordList = currentWordList;
+		CurrentTaskTypesList = currentTasksTypesList;
+		CurrentTasksList = currentTasksList;
+		CurrentMinigames = XMLManager.LoadXML<MinigameList>(Paths.DATA_XMLs_FOLDER_PATH, "GeneratedMiniGames.xml");
+	}
+	
+	/// <summary>
+	/// Sets the current user. Deve ser usado na hora de se carregar um player.
+	/// </summary>
+	/// <param name='PlayerLogin'>
+	/// Player login.
+	/// </param>
+	public void SetCurrentUser (string PlayerLogin)
+	{
+		CurrentPath = Paths.USER_PATH + PlayerLogin;		
+		
+		CurrentUser = XMLManager.LoadXML<AIGameConfiguration>(CurrentPath, "Configuracoes.xml");
+		CurrentWordList = XMLManager.LoadXML<WordList>(CurrentPath, "Palavras.xml");
+		CurrentTaskTypesList = XMLManager.LoadXML<TasksTypesList>(CurrentPath, "TipoTentativas.xml");
+		CurrentTasksList = XMLManager.LoadXML<TasksList>(CurrentPath, "Tentativas.xml");
+		CurrentMinigames = XMLManager.LoadXML<MinigameList>(Paths.DATA_XMLs_FOLDER_PATH, "GeneratedMiniGames.xml");
+	}
+	
+	#region XML Meths
+	
+	public void UpdateTaskListXML()
+	{		
+		XMLManager.CreateXML<TasksList> (CurrentPath, "Tentativas.xml", CurrentTasksList); 
+	}
+	
+	public void UpdateWordListXML()
+	{
+		XMLManager.CreateXML<WordList> (CurrentPath, "Palavras.xml", CurrentWordList); 
+	}
+	
+	public void UpdateCurrentUserXML()
+	{
+		XMLManager.CreateXML<AIGameConfiguration>(CurrentPath, "Configuracoes.xml", CurrentUser);
+	}
+	
+	#endregion
+	
+	#region Tasks Meths
+	
+	public static Task GetTaskById(int id)
+	{
+		foreach (Task t in CurrentTasksList.arrayList) 
+		{
+			if(t.Id == id)
+				return t;
+		}
+		
+		return null;
+	}
+	
+	public static ArrayList GetTasksByModel(string model)
+    {
+		ArrayList selectedTasks = new ArrayList();
+
+        foreach (Task task in CurrentTasksList.arrayList)
+        {
+			Debug.Log("Modelo do Task: " + CurrentWordList.arrayList[task.Model]);
+            if (CurrentWordList.arrayList[task.Model].Equals(model))
+            {
+                selectedTasks.Add(task);
+            }
+        }
+
+        return selectedTasks;
+    }
+	
+	#endregion
+	
+	#region Minigames Meths
+	
+	public static string GetCurrentMiniGameName()
+	{
+		foreach (MiniGame mg in CurrentMinigames.arrayList) 
+		{
+			if(mg.Id == CurrentTasksList.arrayList[CurrentUser.id_Da_Ultima_Tarefa].MiniGame)
+				return mg.Name;
+			
+		}
+		//caso não ache, tenta um último recurso
+		return CurrentMinigames.arrayList[CurrentTasksList.arrayList[CurrentUser.id_Da_Ultima_Tarefa].MiniGame-1].Name;
+	}
+	
+	public static bool IsPreTestFinished()
+	{
+		return CurrentUser.id_Da_Ultima_Tarefa > CurrentTasksList.arrayList.Count;
+	}
+	
+	#endregion
+	
+	#region Words Meths
+	
+	/// <summary>
+	/// Gets the learned words (Writing and Reading words)
+	/// </summary>
+	public static ArrayList GetLearnedWords()
+	{
+		ArrayList wordList = new ArrayList();
+		
+		foreach(Word w in CurrentWordList.arrayList)
+		{
+			if(w.LearnedWrite.Equals(1) && w.LearnedRead.Equals(1))
+				wordList.Add(w);
+		}
+		
+		return wordList;
+	}
+	
+	public static ArrayList GetLearnedWritingWords()
+	{
+		ArrayList wordList = new ArrayList();
+		
+		foreach(Word w in CurrentWordList.arrayList)
+		{
+			if(w.LearnedWrite.Equals(1))
+				wordList.Add(w);
+		}
+		
+		return wordList;
+	}	
+	
+	public static ArrayList GetLearnedReadingWords()
+	{
+		ArrayList wordList = new ArrayList();
+		
+		foreach(Word w in CurrentWordList.arrayList)
+		{
+			if(w.LearnedRead.Equals(1))
+				wordList.Add(w);
+		}
+		
+		return wordList;
+	}	
+	
+	public static ArrayList GetNonLearnedWords()
+	{
+		ArrayList wordList = new ArrayList();
+		
+		foreach(Word w in CurrentWordList.arrayList)
+		{
+			if(w.LearnedWrite.Equals(0) || w.LearnedRead.Equals(0))
+				wordList.Add(w);
+		}
+		
+		return wordList;
+	}
+	
+	#endregion
+	
+	
+}

@@ -1,0 +1,24 @@
+using UnityEngine;
+using System.Collections;
+
+public class InitTask : MonoBehaviour {
+
+
+
+    void OnTriggerEnter(Collider collider)
+    {
+        if (collider.tag == "Player")
+        {
+           
+        }
+    }
+
+    void OnTriggerExit(Collider collider)
+    {
+        if (collider.tag == "Player")
+        {
+          
+        }
+
+    }
+}

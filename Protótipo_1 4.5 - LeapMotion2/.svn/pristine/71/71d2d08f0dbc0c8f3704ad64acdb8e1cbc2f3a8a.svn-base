@@ -1,0 +1,898 @@
+using UnityEngine;
+using System.Collections;
+
+public class LevelManager : MonoBehaviour
+{
+
+	// Public Variables
+	public bool showOnGUI = false;
+	public float minDistance = 1f;
+	public float spaceBetweenItens;
+	public float upFactor = 4f;
+	public GameObject cubePrefab;
+	public GameObject floorModel;
+	public GameObject leftBorder;
+	public GameObject modelImage;
+	public GameObject modelBalloon;
+	public GameObject player;
+	public GameObject zoomZone;
+	public int preMadeFloor = 7;
+	public string task_txt_path = @"Assets\Scripts\BD\tasks.txt";
+	public string word_txt_path = @"Assets\Scripts\BD\words.txt";
+	public TextMesh modelText;
+	public Vector3 itensMidPoint = Vector3.zero;
+	public Vector2 normalCubeScale = new Vector2 (1f, 1.1f);
+	public Vector2 syllableCubeScale = new Vector2 (0.5f, 0.55f);
+	
+	//
+	private AudioClip[] _audioArray = new AudioClip[17];
+	private Texture2D[] _textureArray = new Texture2D[17];
+	private ArrayList _floorList = new ArrayList ();
+	private ArrayList _readTasks = new ArrayList ();
+	private ArrayList _readWords = new ArrayList ();
+	private string _writeAux = "";
+	private bool _canEraseAll = false;
+	private bool _isAnimatingChoice = false;
+	private bool _runningtask = false;
+	private float _latencyTime = 0f;
+	private float _startDestroyTaskTime = 0f;
+	private GameObject _modelParent;
+	private GameObject _selectedObject = null;
+	private GameObject _tempGO = null;
+	private GameObject _tempBorder = null;
+	private int _currentTaskIndex = 0;
+	private int _writeCount = 0;
+	private Vector3 _selectedPosition = Vector3.zero;
+	
+	//
+	private DifficultyIdentifier di;
+	private GameSession session;
+	private SessionLogic sl;
+	private TaskManager tm;
+	private WordManager wm;
+	
+	//
+	private static ArrayList comparisonList = new ArrayList ();
+	
+	//
+	public bool RunningTask {
+		get {
+			return _runningtask;
+		}
+		set {
+			_runningtask = value;
+		}
+	}
+	
+	public GameObject ModelParent {
+		get {
+			return _modelParent;
+		}
+		set {
+			_modelParent = value;
+		}
+	}
+	
+	void Awake ()
+	{
+		/*	if (modelBalloon != null) {
+			modelBalloon.renderer.enabled = false;
+		}
+		
+		if (modelImage != null) {
+			modelImage.renderer.enabled = false;
+		}
+		
+		if (modelText != null) {
+			modelText.renderer.enabled = false;
+		}*/
+		_modelParent = new GameObject ();
+		_modelParent.name = "Model Parent";
+		
+		modelBalloon.transform.parent = _modelParent.transform;
+		modelImage.transform.parent = _modelParent.transform;
+		modelText.transform.parent = _modelParent.transform;
+		
+		DefineSession ();
+
+		UpdateLevel ();
+
+		LoadGame ();
+
+		if (zoomZone != null) {
+			zoomZone = Instantiate (zoomZone) as GameObject;
+
+			zoomZone.collider.isTrigger = false;
+
+			zoomZone.transform.position = (_floorList [_floorList.Count - 1] as GameObject).transform.position;
+
+			ZoomCamera zc = zoomZone.GetComponent<ZoomCamera> ();
+
+			zc.target = Camera.mainCamera.orthographicSize;
+
+			zoomZone.collider.isTrigger = true;
+
+		}
+		
+		_tempGO = GameObject.CreatePrimitive (PrimitiveType.Sphere);
+		_tempGO.renderer.enabled = false;
+		
+		sl = this.gameObject.AddComponent<SessionLogic> ();
+	}
+
+	// Update is called once per frame
+	void Update ()
+	{
+		// Remover
+		player.GetComponent<PlayerMovement> ().PauseMovement = Input.GetKey (KeyCode.P);
+		player.GetComponent<PlayerAnimation> ().PauseMovement = Input.GetKey (KeyCode.P);
+		//
+		
+		UpdateLevel ();
+		
+		//IMPORTANTE (LEIA) Se estiver executando uma tarefa
+		if (_runningtask) {
+			
+			//IMPORTANTE (LEIA) (1) 	Pegar escolha
+			//IMPORTANTE (LEIA) 		Parar Movimentação
+			if (_isAnimatingChoice) {
+				
+				//IMPORTANTE (LEIA) 		Animar escolha (esperar acabar)
+				AnimateChoice ();	
+						
+				//IMPORTANTE (LEIA) 		Parar Movimentação
+				player.GetComponent<PlayerMovement> ().PauseMovement = true;
+				player.GetComponent<PlayerAnimation> ().PauseMovement = true;
+			} else {
+				
+				//IMPORTANTE (LEIA) 		Continuar movimentaçao 
+				player.GetComponent<PlayerMovement> ().PauseMovement = false;
+				player.GetComponent<PlayerAnimation> ().PauseMovement = false;
+				
+				//IMPORTANTE (LEIA) Verficar se escolha é multipla
+				if (_selectedObject != null) {
+					
+					VerifyChoice ();
+					
+				} else if (_canEraseAll) {
+	
+					//IMPORTANTE (LEIA) Apagar tudo (EraseALL)
+					EraseCompareList (2f);
+						
+					
+					//IMPORTANTE (LEIA) Update até o tempo estimado passar 
+					if (Time.time - _startDestroyTaskTime > 2f) {
+						
+						//IMPORTANTE (LEIA) Realocar zonas de bloqueio e de tarefas
+						//IMPORTANTE (LEIA) Libera tela.
+						DoUpdateScenary ();
+						
+						_canEraseAll = false;
+						_runningtask = false;
+						
+						foreach (GameObject item in slotList) {
+							Destroy (item);	
+						}
+						
+						slotList = new ArrayList ();
+					}
+				}
+			}
+			
+		} else {
+			
+			//IMPORTANTE (LEIA) Quando entrar na zona de tarefa
+			if (zoomZone.collider.bounds.Intersects (player.collider.bounds)) {
+				
+				//IMPORTANTE (LEIA) Bloqueia Tela
+				LockScreen ();
+				
+				//IMPORTANTE (LEIA) Gerar a tarefa
+				GenerateTask ();
+				_runningtask = true;
+				
+			}
+		}
+
+		if (Input.GetKeyDown (KeyCode.Alpha1)) {
+			_currentTaskIndex += 3;
+		}
+		
+	}
+	
+	void GenerateTask ()
+	{
+		if (modelBalloon != null) {
+			modelBalloon.renderer.enabled = true;
+		}
+		
+		if (modelImage != null) {
+			modelImage.renderer.enabled = true;
+		}
+		
+		if (modelText != null) {
+			modelText.renderer.enabled = true;
+			modelText.text = "";
+		}		
+		
+		stringToEdit = (_readTasks [_currentTaskIndex] as Task).PrintInfo (true);
+		
+// 		TAREFAS FUTURAS
+//		switch (Tipo de miniJogo) {
+//		case pesca:
+//			mj_pesca();
+//		case cubo:
+		CreateCubeTask (_currentTaskIndex);
+//		case escada:
+//			mj_escada();
+//		case tiro:
+//			mj_tiro();
+//		default:
+//			mj_cubo();
+//		break;
+//		}
+		
+	}
+	
+	void LockScreen ()
+	{
+		for (int i = 0; i < _floorList.Count; i++) {
+					
+			GameObject item = _floorList [i] as GameObject;
+					
+			if (item.transform.position.x > player.transform.position.x) {
+				if (!CameraManager.IsOnCamera (item)) {
+					_tempBorder = Instantiate (leftBorder, item.transform.position - (Vector3.right * item.collider.bounds.extents.x), leftBorder.transform.rotation) as GameObject;
+					_tempBorder.GetComponent<Border> ().borderType = Border.BorderType.Right;
+					var cm = Camera.mainCamera.GetComponent<CameraManager> ();
+					if (cm) {
+						if (_tempGO) {
+							var xPos = leftBorder.transform.position.x + ((_tempBorder.transform.position.x - leftBorder.transform.position.x) / 2);
+							var yPos = leftBorder.transform.position.y;
+							var zPos = leftBorder.transform.position.z;
+									
+							_tempGO.transform.position = new Vector3 (xPos, yPos, zPos);
+						}
+						cm.target = _tempGO;
+					}
+					
+					if (player) {
+						var pm = player.GetComponent<PlayerMovement> ();
+						if (pm) {
+							pm.MoveDirection.y = 0;
+						}
+					}
+					break;
+				}
+			}
+		}
+	}
+	
+	void VerifyChoice ()
+	{
+
+		if (_selectedObject != null) {
+			Task task = _readTasks [_currentTaskIndex] as Task;
+			
+			//IMPORTANTE (LEIA) Verficar se escolha é multipla(Escrita - tipo 'E') 
+			if (tm.GetTaskTypeName (task.TaskType).Contains ("E")) {
+				
+				//IMPORTANTE (LEIA) Se sim
+				//IMPORTANTE (LEIA) 		Fazer o processamento necessário da escolha
+				Transform child = null;
+				
+				int childCount = _selectedObject.transform.GetChildCount ();	
+				for (int i = 0; i < childCount; i++) {
+					if (_selectedObject.transform.GetChild (i).name.Contains ("Text")) {
+						child = _selectedObject.transform.GetChild (i);
+						break;
+					}
+				}
+				
+				if (child != null) {
+					_writeAux += child.name.Substring (0, child.name.Length - 4);
+				}
+				
+				//IMPORTANTE (LEIA) 		Verficar se chegou ao fim das escolhas
+				//writeCount++;
+				int syl = (_readWords [task.Model - 1]as Word).SyllablesNumber;
+		
+				if (_writeCount == syl) {
+					//IMPORTANTE (LEIA) 		Se sim
+					//IMPORTANTE (LEIA) 			Corrigir tarefa
+					EvaluateTask (task, child, _writeAux, _selectedObject);
+				}
+				//IMPORTANTE (LEIA) 		Se não 
+				//IMPORTANTE (LEIA) 			ir para (1) - Não fazer nada, esperar o player mandar a mensagem.
+				
+				_selectedObject = null;
+			
+			
+				//IMPORTANTE (LEIA) Se não 
+			} else {
+				//IMPORTANTE (LEIA) 		Corrigir tarefa				
+				var child = _selectedObject.transform.FindChild (_audioArray [task.Model - 1].name + "Text");				
+				EvaluateTask (task, child, _audioArray [task.Model - 1].name, _selectedObject);
+				
+				//IMPORTANTE (LEIA) 		Iniciar contador de tempo
+				
+				
+			}
+		
+		}
+	}
+
+	void DefineSession ()
+	{
+
+	}
+
+	void LoadGame ()
+	{
+		tm = transform.gameObject.AddComponent<TaskManager> ();
+		tm.ReadTask (task_txt_path);             					// Ler tentativas
+		_readTasks = tm.GetTasks ();
+
+		wm = transform.gameObject.AddComponent<WordManager> ();
+		wm.ReadWord (word_txt_path);             					// Ler palavras do txt
+		_readWords = wm.GetWords ();
+
+		int count = 0;
+      
+		foreach (string s in tm.GetWords().Keys) {
+			_textureArray [count] = Resources.Load ("Images/" + s) as Texture2D;
+			_audioArray [count] = Resources.Load ("Sounds/" + s) as AudioClip;
+
+			count++;
+		}
+
+      
+
+		DifficultyIdentifier difId = new DifficultyIdentifier (); // Instância Classe que vai calcular dificuldades de tarefas
+		difId.ProcessarDifEmLote (ref _readTasks, ref _readWords);
+
+		if (modelText != null) {
+			modelText.text = "";
+			modelText.renderer.material.color = Color.black;
+		}
+	}
+
+	void UpdateLevel ()
+	{
+		if (_floorList.Count == 0) {
+			GameObject temp = (GameObject)Instantiate (floorModel, new Vector3 (0, 0, 0), floorModel.transform.rotation);
+
+			_floorList.Add (temp);
+
+			for (int i = 0; i < preMadeFloor; i++) {
+				temp = (GameObject)Instantiate (floorModel, (_floorList [i] as GameObject).transform.position + new Vector3 ((_floorList [i] as GameObject).collider.bounds.size.x, 0, 0), (_floorList [i] as GameObject).transform.rotation);
+				_floorList.Add (temp);
+			}
+			
+		} else {
+			var toDestroy = (_floorList [0] as GameObject);
+			if (!CameraManager.IsOnCamera (toDestroy, true)) {
+				 
+				leftBorder.transform.position = (toDestroy).transform.position + (Vector3.right * (toDestroy).collider.bounds.extents.x);
+
+				GameObject temp = (GameObject)Instantiate (floorModel, (_floorList [_floorList.Count - 1] as GameObject).transform.position + new Vector3 ((_floorList [_floorList.Count - 1] as GameObject).collider.bounds.size.x, 0, 0), (_floorList [_floorList.Count - 1] as GameObject).transform.rotation);
+				_floorList.Add (temp);
+
+				_floorList.Remove (toDestroy);
+				if ((_floorList [0] as GameObject) != toDestroy) {
+					Destroy (toDestroy);
+				}
+			} else {
+
+			}
+		}
+	}
+	
+	// variable 't' = time to be destroyed
+	public void EraseCompareList (float t)
+	{
+		var cm = Camera.mainCamera.GetComponent<CameraManager> ();
+		if (cm) {
+			cm.target = player;
+			cm.blockRight = false;
+		}
+
+		foreach (GameObject item in comparisonList) {
+			item.GetComponent<InCollision> ().enabled = false;
+			item.collider.enabled = false;
+			Destroy (item, t);
+		}
+		comparisonList = new ArrayList ();
+			
+	}
+	
+	public void DoUpdateScenary ()
+	{
+		zoomZone.transform.position = (_floorList [_floorList.Count - 1] as GameObject).transform.position;
+		Destroy (_tempBorder);
+		
+		/*if (modelBalloon != null) {
+			modelBalloon.renderer.enabled = false;
+		}
+		
+		if (modelImage != null) {
+			modelImage.renderer.enabled = false;
+			modelImage.renderer.material = new Material (Shader.Find ("Transparent/Diffuse"));
+			modelImage.renderer.material.mainTexture = null;
+		}
+		
+		if (modelText != null) {
+			modelText.renderer.enabled = false;
+			modelText.text = "";
+		}		*/
+
+	}
+	
+	public void SendMessage (GameObject other)
+	{
+//IMPORTANTE (LEIA) 		Animar escolha (esperar acabar)
+//IMPORTANTE (LEIA) 		Continuar movimentaçao 
+		_isAnimatingChoice = true;
+		_selectedObject = other;
+		
+		Task task = (_readTasks [_currentTaskIndex] as Task);
+		_selectedPosition = (slotList [_writeCount]as GameObject).transform.position;
+				
+	
+	}
+	
+	public void EvaluateTask (Task task, Transform child, string answer, GameObject other)
+	{		
+		bool correct = false;
+		if (child != null) {
+			if (((Word)_readWords [task.Model - 1]).Name.Equals (answer)) {
+				correct = true;
+			} else {
+				correct = false;	
+			}
+		} else if (other.renderer.material.mainTexture != null) {
+			
+			//verifica se o cubo apontado eh o certo ou nao
+			if (other.renderer.material.mainTexture.name.Equals (answer)) {
+				correct = true;
+			} else {
+				correct = false;
+			}
+			
+		} else {
+			correct = false;
+		}
+		
+		//atualiza a tarefa e coloca se acertou ou nao e verifica o tempo que demorou pra fazer a tarefa
+		UpdateTask (correct); 
+		
+		if (_currentTaskIndex < _readTasks.Count - 1) {
+			//aumenta o index da tarefa
+			_currentTaskIndex++;  
+		} else {
+			sl.StartLogic (_readWords, tm, wm, word_txt_path);
+			_readTasks = tm.GetTasks ();
+			_currentTaskIndex++;
+		}
+		
+		_selectedObject = null;
+		_canEraseAll = true;
+		
+		_startDestroyTaskTime = Time.time;
+		
+	}
+	
+	#region Create Models and Choices
+	public void CreateAModel (Task currentTask)
+	{
+		var clip = _audioArray [currentTask.Model - 1];
+		if (clip != null) {
+			AudioSource.PlayClipAtPoint ((AudioClip)clip, Camera.main.transform.position);
+		} else {
+			print ("AUDIO NOT FOUND");
+		}
+	}
+
+	public void CreateBModel (Task currentTask)
+	{
+		var point = Camera.mainCamera.ScreenToWorldPoint (new Vector3 (0, Screen.height, 0));
+		//modelImage = Instantiate (modelImage) as GameObject;
+		modelImage.renderer.material = new Material (Shader.Find ("Transparent/Diffuse"));
+		modelImage.renderer.material.mainTexture = _textureArray [currentTask.Model - 1];
+		//modelImage.transform.position = new Vector3 (point.x + modelImage.collider.bounds.extents.x, point.y - modelImage.collider.bounds.extents.y, modelImage.transform.position.z);
+		
+	}
+
+	public void CreateCModel (Task currentTask)
+	{
+		var point = Camera.mainCamera.ScreenToWorldPoint (new Vector3 (0, Screen.height, 0));
+		//modelText = Instantiate (modelText) as TextMesh;
+		modelText.text = _textureArray [currentTask.Model - 1].name;
+		modelText.font.material = modelText.font.material;
+		modelText.renderer.material.color = Color.black;
+		//modelText.transform.position = new Vector3 (point.x + modelText.renderer.bounds.extents.x, point.y - modelText.renderer.bounds.extents.y, modelText.transform.position.z - 2);
+	}
+
+	public void CreateBChoice (Task currentTask)
+	{
+		comparisonList.Add (CreateCube (_textureArray [currentTask.Model - 1], Vector3.zero, cubePrefab, new Vector2 (1.2f, 1.2f)));
+
+		for (int i = 0; i < currentTask.Choices.Count; i++) {
+			Texture2D texture = _textureArray [(int)currentTask.Choices [i] - 1];
+			int randomIndex = Random.Range (0, comparisonList.Count + 1);
+			comparisonList.Insert (randomIndex, CreateCube (texture, Vector3.zero, cubePrefab, new Vector2 (1.2f, 1.2f)));
+		}
+		
+	}
+
+	public void CreateCChoice (Task currentTask)
+	{
+
+		comparisonList.Add (CreateText (_textureArray [currentTask.Model - 1].name, Vector3.zero, cubePrefab));
+
+		for (int i = 0; i < currentTask.Choices.Count; i++) {
+
+			string str = _textureArray [(int)currentTask.Choices [i] - 1].name;
+			int randomIndex = Random.Range (0, comparisonList.Count + 1);
+			comparisonList.Insert (randomIndex, CreateText (str, Vector3.zero, cubePrefab));
+
+		}
+		
+	}
+	
+	public void CreateEChoice (Task currentTask)
+	{
+		Word word = ((Word)_readWords [currentTask.Model - 1]);
+		for (int i = 0; i < word.SyllablesNumber; i++) {
+			comparisonList.Add (CreateText (word.Syllables [i].ToString (), Vector3.zero, cubePrefab, syllableCubeScale.x));
+		}
+		
+
+		for (int i = 0; i < currentTask.Choices.Count; i++) {
+			word = ((Word)_readWords [(int)currentTask.Choices [i] - 1]);
+			for (int j = 0; j < word.SyllablesNumber; j++) {
+				int randomIndex = Random.Range (0, comparisonList.Count + 1);
+				comparisonList.Insert (randomIndex, CreateText (word.Syllables [j].ToString (), Vector3.zero, cubePrefab, syllableCubeScale.x));
+			}	
+
+		}
+		
+		
+
+	}
+	
+	#endregion
+	
+	private void UpdateTask (bool correct)
+	{
+		((Task)_readTasks [_currentTaskIndex]).Latency = Time.time - _latencyTime;
+		((Task)_readTasks [_currentTaskIndex]).Correct = (byte)(correct ? 1 : 0);
+	}
+
+	private GameObject CreateText (string name, Vector3 pos, GameObject source)
+	{
+		return CreateText (name, pos, source, normalCubeScale.x);
+	}
+	
+	private GameObject CreateText (string name, Vector3 pos, GameObject source, float scale)
+	{
+		source.renderer.enabled = false;
+
+		GameObject inst = Instantiate (source, pos, Quaternion.identity) as GameObject;
+		inst.transform.localScale *= scale;
+		inst.name = name;
+
+		TextMesh gText = Instantiate (modelText) as TextMesh;
+		gText.text = name;
+		gText.name = name + "Text";
+		gText.font.material = modelText.font.material;
+		gText.transform.parent = inst.transform;
+		gText.renderer.material.color = Color.blue;
+
+		Bounds textBounds = gText.renderer.bounds;
+		
+		while (textBounds.size.x + 0.5f > inst.renderer.bounds.size.x) {
+			
+			gText.transform.localScale *= 1f - (0.01f);
+			textBounds = gText.renderer.bounds;
+		}
+		
+		
+		gText.transform.position = inst.transform.position 
+			+ new Vector3 (- textBounds.size.x / 2f, textBounds.size.y / 2f, 0f);
+		
+		InCollision inCollision = inst.GetComponent<InCollision> ();
+		if (inCollision != null) {
+			inCollision.levelManager = this;
+		}
+
+		return inst;
+	}
+
+	private GameObject CreateCube (Texture2D texture, Vector3 pos, GameObject source)
+	{
+		return CreateCube (texture, pos, source, Vector2.one);
+	}
+	
+	private GameObject CreateCube (Texture2D texture, Vector3 pos, GameObject source, Vector2 scale)
+	{
+		source.renderer.enabled = true;
+
+		GameObject inst = Instantiate (source, pos, Quaternion.identity) as GameObject;
+		inst.renderer.material = new Material (Shader.Find ("Transparent/Diffuse"));
+		inst.renderer.material.mainTexture = texture;
+		inst.renderer.material.mainTextureScale = scale;
+		inst.renderer.material.mainTextureOffset = new Vector2 ((1f - scale.x) / 2f, (1f - scale.y) / 2f);
+		
+		inst.transform.localScale *= normalCubeScale.x;
+		inst.transform.Rotate (new Vector3 (0, 0, 180f));
+        
+		if (texture.name != null) {
+			inst.name = texture.name;
+		} else {
+			print ("null");
+		}
+
+		InCollision inCollision = inst.GetComponent<InCollision> ();
+		if (inCollision != null) {
+			inCollision.levelManager = this;
+		}
+
+		return inst;
+	}
+
+	private void OrganizeCubes (ArrayList objList, Vector3 center, float spaceBettwen)
+	{
+		
+		if (objList.Count > 0) {
+			var prefabXSize = (objList [0] as GameObject).transform.collider.bounds.size.x;
+			
+			float xCurrent = center.x - (((prefabXSize * (objList.Count - 1)) + (spaceBettwen * (objList.Count - 1))) / 2);
+			
+			foreach (GameObject item in objList) {
+				item.transform.position = new Vector3 (xCurrent, center.y, center.z);
+				
+				for (int i = 0; i < item.transform.GetChildCount(); i++) {
+					if (item.transform.GetChild (i).name.Contains ("Text")) {
+						Bounds textBounds = item.transform.GetChild (i).renderer.bounds;	
+						
+						Debug.DrawLine (new Vector3 (textBounds.min.x, textBounds.min.y, textBounds.min.z), new Vector3 (textBounds.max.x, textBounds.min.y, textBounds.max.z), Color.yellow, 10);
+						Debug.DrawLine (new Vector3 (textBounds.min.x, textBounds.min.y, textBounds.min.z), new Vector3 (textBounds.min.x, textBounds.max.y, textBounds.max.z), Color.yellow, 10);
+						Debug.DrawLine (new Vector3 (textBounds.min.x, textBounds.max.y, textBounds.min.z), new Vector3 (textBounds.max.x, textBounds.max.y, textBounds.max.z), Color.yellow, 10);
+						Debug.DrawLine (new Vector3 (textBounds.max.x, textBounds.min.y, textBounds.min.z), new Vector3 (textBounds.max.x, textBounds.max.y, textBounds.max.z), Color.yellow, 10);
+						
+						
+						break;
+					}
+				}
+				xCurrent += prefabXSize + spaceBettwen;				
+			}
+		}
+		
+		
+		
+	}
+	
+	private void CreateCubeTask (int taskId)
+	{
+		Task currentTask = _readTasks [taskId] as Task;
+		_writeCount = 0;
+		_writeAux = "";
+
+		switch (tm.GetTaskTypeName (currentTask.TaskType)) {
+
+		case "AB":
+			CreateAModel (currentTask);
+			CreateBChoice (currentTask);
+              
+			break;
+		case "AC":
+			CreateAModel (currentTask);
+			CreateCChoice (currentTask);
+               
+			break;
+		case "BC":
+			CreateBModel (currentTask);
+			CreateCChoice (currentTask);
+                
+			break;
+		case "CB":
+			CreateCModel (currentTask);
+			CreateBChoice (currentTask);
+                
+			break;
+			
+		case "AE":
+			CreateAModel (currentTask);
+			CreateEChoice (currentTask);
+                
+			break;
+			
+		case "BE":
+			CreateBModel (currentTask);
+			CreateEChoice (currentTask);
+                
+			break;
+			
+		case "CE":
+			CreateCModel (currentTask);
+			CreateEChoice (currentTask);
+              
+			break;
+		default:
+			CreateAModel (currentTask);
+			CreateBChoice (currentTask);
+                
+			break;
+
+		}
+
+		itensMidPoint = new Vector3 (
+			Camera.mainCamera.transform.position.x,
+		//leftBorder.transform.position.x + ((tempBorder.transform.position.x - leftBorder.transform.position.x)/2), 
+			itensMidPoint.y, itensMidPoint.z);
+
+		OrganizeCubes (comparisonList, itensMidPoint, spaceBetweenItens);
+		
+		CreateSlotCubes ();
+
+		_latencyTime = Time.time;
+	}
+	
+	private ArrayList slotList = new ArrayList ();
+	
+	private void CreateSlotCubes ()
+	{
+		Task task = _readTasks [_currentTaskIndex] as Task;
+		var pos = Vector3.zero;
+		
+		if (tm.GetTaskTypeName (task.TaskType).Contains ("E")) {
+			
+			int syl = (_readWords [task.Model - 1]as Word).SyllablesNumber;
+			
+			for (int i = 0; i < syl; i++) {
+			
+				GameObject inst = Instantiate (cubePrefab) as GameObject;
+				inst.transform.localScale *= syllableCubeScale.y;
+				inst.name = "slot " + i;
+				float prefabXSize = inst.transform.collider.bounds.size.x;
+				float xCurrent = (prefabXSize * (i - 1)) - ((syl - 1) / 2);
+				
+				pos = itensMidPoint + (Vector3.up * upFactor) + (Vector3.right * (xCurrent));
+				
+				inst.transform.position = pos;
+				for (int j = 0; j < inst.transform.GetChildCount(); j++) {
+					var child = inst.transform.GetChild (j);
+					if (child.name.Equals ("Border")) {
+						child.renderer.material.mainTexture = Resources.Load ("Textures/border_green") as Texture2D;
+						break;	
+					}
+				}
+				
+				slotList.Add (inst);
+			}
+			
+				
+		} else {
+			
+			GameObject inst = Instantiate (cubePrefab) as GameObject;
+			inst.transform.localScale *= normalCubeScale.y;
+			inst.name = "slot ";
+		
+			inst.transform.position = itensMidPoint + (Vector3.up * upFactor);
+			;
+			inst.renderer.enabled = false;
+			
+			for (int j = 0; j < inst.transform.GetChildCount(); j++) {
+				var child = inst.transform.GetChild (j);
+				if (child.name.Equals ("Border")) {
+					child.renderer.material.mainTexture = Resources.Load ("Textures/border_green") as Texture2D;
+					break;	
+				}
+			}
+				
+			slotList.Add (inst);
+		
+		}
+		
+	
+		
+	}
+	
+	private ArrayList ShuffleList (ArrayList source)
+	{
+		ArrayList randomList = new ArrayList ();
+		ArrayList inputList = new ArrayList ();
+		inputList.AddRange (source.GetRange (0, source.Count));
+
+		int randomIndex = 0;
+		int count = 50;
+		while (inputList.Count > 0 && count < 50) {
+			randomIndex = Random.Range (0, inputList.Count); //Choose a random object in the list
+			randomList.Add (inputList [randomIndex]); //add it to the new, random list
+			inputList.RemoveAt (randomIndex); //remove to avoid duplicates
+			count++;
+		}
+
+		return randomList; //return the new random list
+	}
+	
+	//IMPORTANTE (LEIA) (1) 	Pegar escolha
+	private void AnimateChoice ()
+	{
+		GameObject selectedGO = _selectedObject;
+		
+		if (selectedGO != null) {
+		
+			
+			Vector3 destination = _selectedPosition;
+			
+			selectedGO.GetComponent<InCollision> ().enabled = false;
+			selectedGO.collider.enabled = false;
+				
+			if (Mathf.Abs (Vector3.Distance (selectedGO.transform.position, destination)) > minDistance) {
+				selectedGO.transform.position = Vector3.Slerp (selectedGO.transform.position, destination, 0.05f);
+				
+			} else {
+				selectedGO.transform.position = destination;
+				_isAnimatingChoice = false;
+				_writeCount++;
+			}
+		}
+	}
+	
+	public void RepeatTask ()
+	{
+		if (RunningTask) {
+			Task currentTask = _readTasks [_currentTaskIndex] as Task;
+			switch (tm.GetTaskTypeName (currentTask.TaskType).Substring (0, 1)) {
+
+			case "A":
+				var clip = _audioArray [currentTask.Model - 1];
+				if (clip != null) {
+					AudioSource.PlayClipAtPoint ((AudioClip)clip, Camera.main.transform.position);
+				} else {
+					print ("AUDIO NOT FOUND");
+				}
+				break;
+			case "B":
+				OrganizeCubes (ShuffleList (comparisonList), itensMidPoint, spaceBetweenItens);
+				break;
+			case "C":
+				OrganizeCubes (ShuffleList (comparisonList), itensMidPoint, spaceBetweenItens);
+				break;
+			default:
+				OrganizeCubes (ShuffleList (comparisonList), itensMidPoint, spaceBetweenItens);
+				break;
+			}
+		}
+		
+	}
+		
+	private void DrawArrow (Vector3 pos)
+	{
+		Debug.DrawLine (pos + Vector3.up, pos + Vector3.up * 3, Color.blue, 10f);
+		Debug.DrawLine (pos + Vector3.up, pos + Vector3.left + Vector3.up * 2, Color.blue, 10f);
+		Debug.DrawLine (pos + Vector3.up, pos + Vector3.right + Vector3.up * 2, Color.blue, 10f);
+		
+	}
+	
+	private string stringToEdit;
+
+	void OnGUI ()
+	{
+//		GUI.color = Color.black;x
+		if (showOnGUI) {
+			GUI.Box (new Rect (10, 10, 200, 200), "");
+			//GUI.Label (new Rect (10, 10, 200, 100), stringToEdit);
+		
+			GUILayout.BeginArea (new Rect (10, 10, 180, 180));
+
+			GUI.Label (new Rect (15, 15, 180, 180), stringToEdit);
+
+
+			GUILayout.EndArea ();
+		}
+	}
+}
+

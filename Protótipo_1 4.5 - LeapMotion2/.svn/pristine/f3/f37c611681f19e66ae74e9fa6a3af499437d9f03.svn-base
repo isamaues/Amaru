@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<MiniGameData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<mini_games>
+		<MiniGame>
+			<Id>1</Id>
+			<Name>Mario</Name>
+		</MiniGame>
+		<MiniGame>
+			<Id>2</Id>
+			<Name>Escada</Name>
+		</MiniGame>
+		<MiniGame>
+			<Id>3</Id>
+			<Name>Tiro</Name>
+		</MiniGame>
+		<MiniGame>
+			<Id>4</Id>
+			<Name>Pesca</Name>
+		</MiniGame>
+		<MiniGame>
+			<Id>5</Id>
+			<Name>Cortar</Name>
+		</MiniGame>
+		<MiniGame>
+			<Id>6</Id>
+			<Name>FrutasCaindo</Name>
+		</MiniGame>
+		<MiniGame>
+			<Id>7</Id>
+			<Name>ArcoFlexa</Name>
+		</MiniGame>
+	</mini_games>
+</MiniGameData>

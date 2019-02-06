@@ -1,0 +1,19 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="..\Amaru\Assets\Scripts\AI\SessionLogic.cs">
+    <Files>
+      <File FileName="..\Amaru\Assets\Scripts\AI\SessionLogic.cs" Line="156" Column="29" />
+      <File FileName="Assets\Scripts\Managers\UserManager.cs" Line="163" Column="3" />
+      <File FileName="Assets\Scripts\AI\MachineLearning.cs" Line="139" Column="9" />
+      <File FileName="Assets\Scripts\Misc\LogicaDeSessao2.cs" Line="308" Column="22" />
+      <File FileName="Assets\Scripts\Managers\Session.cs" Line="9" Column="37" />
+      <File FileName="Assets\Scripts\Managers\GameSetup.cs" Line="9" Column="1" />
+      <File FileName="Assets\Scripts\Managers\MinigameSetup.cs" Line="40" Column="16" />
+      <File FileName="Assets\Scripts\AI\Model\DadosFuzzy.cs" Line="12" Column="11" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

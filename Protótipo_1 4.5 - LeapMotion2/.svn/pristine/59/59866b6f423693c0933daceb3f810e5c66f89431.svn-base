@@ -1,0 +1,72 @@
+using UnityEngine;
+using System.Collections;
+
+public class FrontCollider : MonoBehaviour
+{
+
+	// Use this for initialization
+	void Start ()
+	{
+	
+	}
+	
+	// Update is called once per frame
+	void Update ()
+	{
+	
+	}
+	
+	void OnTriggerEnter (Collider collider)
+	{
+		VerifyCollision (collider);
+	}
+	
+	void OnTriggerStay (Collider collider)
+	{
+		VerifyCollision (collider);
+	}
+	
+	void VerifyCollision (Collider collider)
+	{
+		
+		if (collider.tag != "Player" && collider.tag != "Hidden" && collider.tag != "Tile" && collider.tag != "Texture") {
+			//print (collider.name);
+			PlayerMovement playerMovement = transform.parent.transform.GetComponent<PlayerMovement> ();
+			if (playerMovement != null) {
+				//print("asdasd");
+				playerMovement.canMove = false;
+				print (playerMovement.MoveDirection.x);
+				
+				var move = Vector3.zero;
+				if (transform.position.x < collider.transform.position.x) {
+					move = (Vector3.left * (playerMovement.MoveSpeed) * Time.deltaTime); 
+				} else {
+					move = (Vector3.right * (playerMovement.MoveSpeed) * Time.deltaTime); 
+				}
+				
+				playerMovement.transform.position = Vector3.Slerp (playerMovement.transform.position, (playerMovement.transform.position
+				//+ (Vector3.left * 4f * Time.deltaTime)
+					+ move
+					), 1f);
+				//playerMovement.transform.position += (Vector3.left * 4f * Time.deltaTime);
+				
+				//}
+			}
+		}
+	}
+	
+	void OnTriggerExit (Collider collider)
+	{
+		if (collider.tag != "Player" && collider.tag != "Hidden" && collider.tag != "Tile" && collider.tag != "Texture") {
+			//print (collider.name);
+			PlayerMovement playerMovement = transform.parent.transform.GetComponent<PlayerMovement> ();
+			if (playerMovement != null) {
+				//print("asdasd");
+				playerMovement.canMove = true;
+				//print (playerMovement.MoveDirection.x);
+				//}
+			}
+		}
+	}
+	
+}

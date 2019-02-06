@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TasksTypesList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<arrayList>	
+		<TaskType>
+			<Id>1</Id>
+			<Name>AB</Name>
+		</TaskType>
+		
+		<TaskType>
+			<Id>2</Id>
+			<Name>AC</Name>
+		</TaskType>
+		
+		<TaskType>
+			<Id>3</Id>
+			<Name>AD</Name>
+		</TaskType>
+		
+		<TaskType>
+			<Id>4</Id>
+			<Name>AE</Name>
+		</TaskType>
+		
+		<TaskType>
+			<Id>5</Id>
+			<Name>BC</Name>
+		</TaskType>
+		
+		<TaskType>
+			<Id>6</Id>
+			<Name>BD</Name>
+		</TaskType>
+		
+		<TaskType>
+			<Id>7</Id>
+			<Name>BE</Name>
+		</TaskType>
+		
+		<TaskType>
+			<Id>8</Id>
+			<Name>CB</Name>
+		</TaskType>
+		
+		<TaskType>
+			<Id>9</Id>
+			<Name>CD</Name>
+		</TaskType>
+		
+		<TaskType>
+			<Id>10</Id>
+			<Name>CE</Name>
+		</TaskType>		
+	</arrayList>
+</TasksTypesList>

@@ -1,0 +1,19 @@
+using UnityEngine;
+using System.Collections;
+
+public class LoginScene : Scene {	
+
+	
+	public LoginScene(){
+		buttonName = new string[2]{"Carregar Jogador", "Voltar"};
+		buttonListening = new bool[buttonName.Length];	
+	}
+	
+	public override void OnGUI() {
+		base.OnGUI();
+		
+		if(buttonListening[1])		
+			SceneScreenManager.currentScene = ScreenState.MainMenu;
+		
+	}
+}

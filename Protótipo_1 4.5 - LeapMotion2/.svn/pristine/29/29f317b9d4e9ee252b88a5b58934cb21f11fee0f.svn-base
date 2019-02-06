@@ -1,0 +1,573 @@
+using UnityEngine;
+using System.Collections;
+using System.Linq;
+using System.Collections.Generic;
+
+//REVISION 126
+public class DifficultyIdentifier
+{
+	#region Atributos para calculo de leitura
+	public float alfaLer ;
+	public float betaLer ;
+	public float gamaLer ;
+    #endregion
+
+    #region Atributos para calculo de escrita
+	public float alfaEsc;
+	public float betaEsc;
+	public float gamaEsc;
+	public float sigmaEsc;
+	
+	//Smax = totalDeSilabasDaMaiorTentativa(numSilab);
+	public int Smax = 0;
+	//Tsm = totalDeSilabasdaMaiorPalavraDoSistema(numSilab);
+	public int Tsm = 0;
+    #endregion
+	
+	private ArrayList ListaDePalavras = new ArrayList ();
+	public AIGameConfiguration config;
+	public float tipoTentaMaiorLer = 0.4f; //Tipo de tentativa BC 
+	
+	public float tipoTentaMaiorEsc = 0.5f; //Tipo de tentativa BE
+
+	public float numCompLer = 5; //Numero Maximo de Palavras que uma tentativa pode possuir
+	
+	public Proximity proximidade;
+	public double[,] tabela_de_proximidade;
+	
+	//Construtor
+	public DifficultyIdentifier (ref ArrayList wordList)
+	{
+		config = UserManager.CurrentUser;	
+
+		proximidade = new Proximity (wordList, config);
+		
+		tabela_de_proximidade = proximidade.tabela_de_proximidade;
+		
+		//Atribuição dos Pesos Da tentativas do Arquivo de Configuração
+		alfaLer = config.peso_Alfa_Leitura;
+		betaLer = config.peso_Beta_Leitura;
+		gamaLer = config.peso_Gama_Leitura;
+		
+		alfaEsc = config.peso_Alfa_Escrita;
+		betaEsc = config.peso_Beta_Escrita;
+		gamaEsc = config.peso_Gama_Escrita;
+		sigmaEsc = config.peso_Sigma_Escrita;
+		
+		numCompLer = config.numero_de_Escolhas_em_uma_Tarefa;
+		
+		
+	    #region Calcula total De Silabas da Maior Palavra Do Sistema
+		ArrayList aux = new ArrayList ();
+		
+		foreach (Word word in wordList) {
+			aux.Add (word.SyllablesNumber);
+		}
+	
+		aux.Sort ();
+		
+		Tsm = (int)aux [aux.Count - 1];
+        #endregion
+		
+	    #region Calcula total De Silabas Da Maior Tentativa possivel do sistema;	
+		int indexFinal = wordList.Count - 1;
+		Smax = (int)aux [indexFinal] + (int)aux [indexFinal - 1] + (int)aux [indexFinal - 2] + (int)aux [indexFinal - 3] + (int)aux [indexFinal - 4];
+        #endregion
+	
+	    #region Calcula Dificuldade Máxima das Palavras;
+		//Se dificuldade maxima de uma palavra for iqual ou menor que zero então quer  dizer que não houve calculo da Dificuldade Maxima
+		if (((wordList [1] as Word).MaxReadDif <= 0) || ((wordList [1] as Word).MaxWriteDif <= 0)) {
+	   	
+			ProcessarDificuldadeMaxima (ref wordList);
+	   
+		}  	   
+        #endregion		
+						
+	    #region Atribui para a ListaDePalavras a worList para efetuar calculos de proximidade da Palavra 
+		ListaDePalavras = wordList;
+	    #endregion
+		
+				
+	}	
+  
+	/// <summary>
+	/// Repassa o peso do tipo da tentativa
+	/// </summary>
+	/// <param name="TaskType"></param>
+	/// <returns>Peso do tipo de tentativa</returns>
+	public float pesoDoTipoDeTentativa (int TaskType)
+	{
+		
+		if(TaskType>UserManager.CurrentTaskTypesList.arrayList.Count)
+			TaskType = UserManager.CurrentTaskTypesList.arrayList.Count;
+		
+		float peso = 0;
+		string taskType = UserManager.CurrentTaskTypesList.arrayList[TaskType-1].Name;
+
+		switch (taskType) {
+		//Peso para tipos de tentativa de leitura
+		case "AB": // AB
+			peso = 0.1f;
+			break;
+		case "BC": //BC
+			peso = 0.4f;
+			break;
+		case "CB": //CB
+			peso = 0.2f;
+			break;
+		case "AC": //AC
+			peso = 0.3f;
+			break;
+
+		//Peso para tipos de tentativa de escrita 
+		case "CE": //CE
+			peso = 0.1f;
+			break;
+		case "BE": //BE
+			peso = 0.5f;
+			break;
+		case "AE": //AE
+			peso = 0.4f;
+			break;
+		default:
+                    //Peso invalido
+			peso = 0.99f;
+			break;
+		}
+
+		return peso;
+	}
+
+	/// <summary>
+	/// Formula retorna numero de Dificuldade da tentativa de Escrita 
+	/// </summary>
+	/// <param name="Si">Numero de silabas incorretas em relação ao modelo</param>
+	/// <param name="St">Total de silabas da tentativa</param>
+	/// <param name="Smax">Numero maximo de silabas de uma tentativa</param>
+	/// <param name="T">Peso do Tipo de Tentativa</param>
+	/// <param name="Tsm">Numero maximo de silabas de uma palavra modelo considerando todas as palavras do sistema</param>
+	/// <param name="Sm">Total de silabas do modelo</param>
+	/// <param name="alfa">Peso alfa do fator de Dificuldade da taxa de silabas incorretas (Si/St)</param>
+	/// <param name="beta">Peso beta do fator de Dificuldade do tipo de tentativa</param>
+	/// <param name="gama">Peso gama do fator de Dificuldade do total de silabas da tentativa</param>
+	/// <param name="sigma">Peso sigma do fator de Dificuldade do total de silabas do modelo</param>
+	/// <returns></returns>
+	public float FormulaDaDificuldadeEsc
+            (float Si, float St, float Smax, float T, float Tsm, float Sm, float alfa, float beta, float gama, float sigma)
+	{
+							
+		return ((Si / St) * alfa + (T * beta) + (St / Smax) * gama + (Sm / Tsm) * sigma);
+	}
+
+	/// <summary>
+	/// Formula retorna numero de Dificuldade da tentativa de leitura
+	/// </summary>
+	/// <param name="prox">Proximidades das palavras</param>
+	/// <param name="n">Numero De comparação</param>
+	/// <param name="T">Peso do Tipo de tentativa</param>
+	/// <param name="alfa">Peso alfa do fator de Dificuldade da proximidade das palavras</param>
+	/// <param name="beta">Peso beta do fator de Dificuldade do tipo de tentativa</param>
+	/// <param name="gama">Peso gama do fator de Dificuldade do numero de comparações</param>
+	/// <returns></returns>
+	public float FormulaDaDificuldadeLer
+            (double[] prox, float n, float T, float alfa, float beta, float gama)
+	{
+
+		float fatorDeProximidade = 0;
+
+		if (n == 0) {
+			fatorDeProximidade = 0;
+		} else {
+			fatorDeProximidade = ((float)prox.Sum () / (n - 1)) * alfa;
+		}
+
+		return fatorDeProximidade + (T * beta) + (n / 5) * gama;
+	}
+
+	public float GerarDificuldadeLeitura (short modelo, ArrayList escolhas, int TaskType, int numComp)
+	{
+		
+		float T = pesoDoTipoDeTentativa (TaskType);		
+					
+		double[] prox = new double[escolhas.Count];
+				
+		for (int i = 0; i < escolhas.Count; i++) {
+			
+			if (config.utilizar_Algoritmo_de_Proximidade) {
+				//Utiliza algoritmo de Proximidade para encontrar proximidade das palavras				
+				prox [i] = proximidade.CalculaProx ((int)modelo, (int)escolhas [i]);
+				//prox[i] = proximidade.AlgoritmoDeProx(ListaDePalavras, (int)modelo, (int)escolhas[i]);
+				
+			} else {
+				
+				//Utiliza tabela de Proximidade para identificar proximidade das palavras
+				prox [i] = tabela_de_proximidade [modelo - 1, ((int)escolhas [i]) - 1];
+			}			
+			
+		}			
+
+		return FormulaDaDificuldadeLer (prox, numComp, T, alfaLer, betaLer, gamaLer);
+	}
+
+	public float GerarDificuldadeEscrita (ArrayList p, short modelo, ArrayList escolhas, int TaskType, int numComp)
+	{
+		//Retorna o peso do tipo de tentativa
+		float T = pesoDoTipoDeTentativa (TaskType);
+		//-----------------------------------
+
+		//Coletar parametros especiais da formula da escrita.
+
+        #region Numero De Silabas Incorretas Em Relacao Modelo
+		//Si = numeroDeSilabasIncorretasEmRelacaoModelo(modelo,comp,palavras,silabas,numSilab);
+		int Si = NumeroDeSilabasIncorretasEmRelacaoAoModelo (p, escolhas, modelo); 
+		
+        #endregion
+
+        #region Total De Silabas Dessa Tentativa
+		//St = totalDeSilabasDaTentativa(comp,palavras,numSilab);
+		//int St = 0;
+		//for (int i = 0; i < escolhas.Count; i++) {
+		//	St = St + (p [(int)escolhas [i] - 1] as Word).SyllablesNumber;
+		//}
+		int St = NumeroDeSilabasDaTentativa (p, escolhas);
+		
+        #endregion
+
+        #region Quantidade de silabas Do Modelo
+		//Sm=numDeSilabasComCelulasDeSilabas(modelo,palavras,silabas,numSilab);
+		//int Sm = (p [modelo - 1] as Word).SyllablesNumber;		
+		int Sm = NumeroDeSilabasDoModelo (p, modelo);
+        #endregion
+
+		//Funções Gerais do Sistema ----- 
+		//Smax = totalDeSilabasDaMaiorTentativa(numSilab);
+
+		//Tsm = totalDeSilabasdaMaiorPalavraDoSistema(numSilab);
+
+		return FormulaDaDificuldadeEsc (Si, St, Smax, T, Tsm, Sm, alfaEsc, betaEsc, gamaEsc, sigmaEsc);
+	}	
+	
+		
+	#region Metodos para calcular valores especificos da formula de dificuldade da tentativa de escrita
+	//metodo NumeroDeSilabasIncorretasEmRelacaoAoModelo (Si)
+	public int NumeroDeSilabasIncorretasEmRelacaoAoModelo (ArrayList palavra, ArrayList escolhas, short modelo)
+	{
+		int Si = 0;
+		bool aux = false;
+
+		for (int i = 0; i < escolhas.Count; i++) {
+			Word wordEscolha = (palavra [(int)escolhas [i] - 1] as Word);
+			for (int j = 0; j < wordEscolha.SyllablesNumber; j++) {
+				aux = false;
+				Word wordModelo = (palavra [modelo - 1] as Word);
+				for (int k = 0; k < wordModelo.SyllablesNumber; k++) {
+					if (wordEscolha.Syllables [j] == wordModelo.Syllables [k]) {
+						aux = true;
+					}
+				}
+
+				if (aux == false) {
+					Si = Si + 1;
+				}
+			}
+		}
+		
+		return Si;
+	}
+	
+	//metodo NumeroDeSilabasDaTentativa   (St)
+	public int NumeroDeSilabasDaTentativa (ArrayList palavra, ArrayList escolhas)
+	{
+		int St = 0;
+		for (int i = 0; i < escolhas.Count; i++) {
+			St = St + (palavra [(int)escolhas [i] - 1] as Word).SyllablesNumber;
+		}
+		
+		return St;
+	}	
+	
+	//metodo NumeroDeSilabasDoModelo  (Sm)	
+	public int NumeroDeSilabasDoModelo (ArrayList palavra, short modelo)
+	{
+		int Sm = (palavra [modelo - 1] as Word).SyllablesNumber;
+		return Sm;
+	}
+	#endregion
+	
+	/// <summary>
+	/// Ordena a lista com numero de silabas maiores no topo.
+	/// </summary>
+	/// <returns>
+	/// Lista maiores no topo.
+	/// </returns>
+	/// <param name='palavra'>
+	/// Palavra.
+	/// </param>
+	public ArrayList OrdenarListaMaioresNoTopo (ArrayList palavra)
+	{
+				
+		ArrayList temp = new ArrayList ();
+		
+		if (palavra.Count > 0) {
+			temp.Add (palavra [0]);
+			
+			for (int i = 1; i < palavra.Count; i++) {
+				
+				bool flag = false;
+			
+				for (int j = 0; j < temp.Count; j++) {
+				
+					if (((palavra [i] as Word).SyllablesNumber) > ((temp [j] as Word).SyllablesNumber)) {
+						//Debug.Log (temp.LastIndexOf (temp [j]));
+						temp.Insert (temp.LastIndexOf (temp [j]), palavra [i]);
+						flag = true;
+						break;
+					}
+				}
+				if (!flag) {
+					temp.Add (palavra [i]);
+				}			
+			}
+		
+			return temp;
+		}
+		
+		return palavra;
+		
+	}
+	
+	/// <summary>
+	/// Pega os indices dos maiores valores da sortedLista retornando em um arraylist.
+	/// </summary>
+	/// <returns>
+	/// Um arraylist com os ids dos maiores valors da sortedList.
+	/// </returns>
+	/// <param name='lista'>
+	/// Lista que possui a pontuação de distancias do modelo para cada palavra escolha do sistema.
+	/// </param>
+	/// <param name='quantMaiores'>
+	/// Valor que indica quantos indices maiores deseja-se pegar. Por padrão esse valor é 4.
+	/// </param>
+	public ArrayList PegaMaioresDaLista (SortedList lista)
+	{
+		return PegaMaioresDaLista (lista, 4);
+	}
+		
+	public ArrayList PegaMaioresDaLista (SortedList lista, int quantMaiores)
+	{
+		
+		if (quantMaiores < 1) { //Caso venha um valor de quatnMaiores de 0 ou negativos.
+			return null;
+		}
+		//Pega os indices das 4 maiores distancias da lista.
+		ArrayList maioresLista = new  ArrayList ();
+		short maior;
+		int indice = 0;
+		for (int i = 0; i < quantMaiores; i++) {
+			maior = 0;			
+			for (int j = 0; j < lista.Count; j++) {
+				if ((short)lista.GetByIndex (j) > maior) {
+					
+					maior = (short)lista.GetByIndex (j);
+					
+					indice = j;
+				}			
+			}			   
+			maioresLista.Add (lista.GetKey (indice)); 
+			// Debug.Log("key: "+listaDistanciasDoModelo.GetKey(indice) + " valor "+ listaDistanciasDoModelo.GetByIndex(indice));
+			lista.Remove (lista.GetKey (indice));//Testar separado			  
+		}
+		return maioresLista;
+	}
+	
+	/// <summary>
+	/// Identifica as palavras mais distantes do modelo para efetuar caulculo de dificuldade maxima da escrita.
+	/// A distancia significa que quanto mais silabas do Modelo tem da Escolha  mais distante a palavra
+	/// escolha é do palavra modelo.
+	/// </summary>
+	/// <returns>
+	/// Os ids das palavras mais distantes do modelo.
+	/// </returns>
+	/// <param name='p'>
+	/// P.
+	/// </param>
+	/// <param name='idModelo'>
+	/// id do Modelo.
+	/// </param>
+	public ArrayList EscolhasMaisDistantesDoModelo (ArrayList p, short idModelo)
+	{
+		
+		SortedList listaDistanciasDoModelo = new SortedList ();
+			
+		ArrayList escolhas = new  ArrayList ();
+		
+		short distancia;
+					
+		int numSilabas = 0;
+		
+		ArrayList silabasDoModelo = new ArrayList ();		
+		
+		//Busca numero de silabas da palavra modelo pelo idModelo dentro da lista p
+		//Busca também as silabas da palavra modelo dentro da lista p
+		foreach (Word palavra in p) {
+			if (palavra.WordId == idModelo) {
+			
+				numSilabas = palavra.SyllablesNumber;
+				silabasDoModelo = palavra.Syllables;
+			}
+		}
+		
+		//Identifica a distancia das palavras escolhas do modelo
+		foreach (Word palavra in p) {
+			distancia = 0;        	
+			 
+			if (palavra.WordId != idModelo) {				
+			
+				for (int i = 0; i < numSilabas; i++) {
+
+					for (int j = 0; j < palavra.Syllables.Count; j++) {					
+
+						if ((string)silabasDoModelo [i] != (string)palavra.Syllables [j]) { 
+							distancia++;					
+						}						
+					}					
+				}				
+			}
+			
+			//Se a palavra for o modelo o aux é -1. Isso serve para excluir ele da lista de distancia do modelo
+			if (palavra.WordId == idModelo) {
+				distancia = -1;
+			}
+		    
+			// Adciona as distancias da palavra modelo para todas as palavras
+			listaDistanciasDoModelo.Add (palavra.WordId, distancia);
+						
+		}		
+			
+		escolhas = PegaMaioresDaLista (listaDistanciasDoModelo);
+
+		return escolhas;
+	}
+	
+	public void ProcessarDificuldadeMaxima (ref ArrayList p)
+	{
+        
+		ArrayList ListOrdemNumSilMaiorNoTopo = OrdenarListaMaioresNoTopo (p);
+		ArrayList escolhasParaEscr;
+	    
+		int Si;
+		int Sm;
+		int St;
+        
+		for (int i = 0; i < p.Count; i++) {
+			
+			var word = p [i] as Word;
+					
+			//Gera Dificuldade Maxíma para Leitura
+			word.MaxReadDif = FormulaDaDificuldadeLer (MaioresProximidades (i, (int)(numCompLer - 1)), numCompLer, tipoTentaMaiorLer, alfaLer, betaLer, gamaLer);
+			//break;  //++TIRAR BRAEK DEPOIS DOS TESTES
+			#region Gera Dificuldade Maxima para Escrita
+			escolhasParaEscr = EscolhasMaisDistantesDoModelo (ListOrdemNumSilMaiorNoTopo, (short)word.WordId);
+			    
+			Si = NumeroDeSilabasIncorretasEmRelacaoAoModelo (p, escolhasParaEscr, (short)word.WordId);
+							
+			St = NumeroDeSilabasDaTentativa (p, escolhasParaEscr);
+			
+			Sm = NumeroDeSilabasDoModelo (p, (short)word.WordId); 
+						
+			word.MaxWriteDif = FormulaDaDificuldadeEsc (Si, St, Smax, tipoTentaMaiorEsc, Tsm, Sm, alfaEsc, betaEsc, gamaEsc, sigmaEsc);
+			#endregion
+			
+		}                      
+	}
+
+	/// <summary>
+	/// Metodo retorna os cinco maiores elementos da tabela de proximidade para o modelo escolhido
+	/// </summary>
+	/// <param name="indexModelo">Indice do modelo</param>
+	/// <param name="numCompLimite">Numero de comparação limite. Por padrão é iqual a 5 comparações/escolhas </param>
+	/// <returns></returns>
+	public double[] MaioresProximidades (int indexModelo, int numCompLimite) // ++++VERIFICAR COMO ISSO VAI FICAR COM O ALGORITMO DE PROXIMIDADE++++
+	{
+		ArrayList tabelaTemp = new ArrayList ();
+		
+
+		double[] vetorMaioresProx = new double[numCompLimite]; 		
+		
+		#region Se utilizar Algoritmo de Proximidade ... senão utilizar tabela de proximidade
+		
+		if (config.utilizar_Algoritmo_de_Proximidade) {
+            
+			
+			int idDoModelo = indexModelo + 1;
+		      				
+			foreach (Word palavras in  proximidade.Palavras) {
+				
+				tabelaTemp.Add (proximidade.CalculaProx (idDoModelo, palavras.WordId));
+				// Debug.Log("j: "+j+" valores: "+tabelaTemp[j] +" | palavra2: "+palavras.Name +" -- Id da palavra2: "+palavras.wordId);
+			 
+			}		
+		   		
+		} else {
+		
+			int tamanhoLinha = (int)Mathf.Sqrt (tabela_de_proximidade.Length);
+		
+			for (int i = 0; i < tamanhoLinha; i++) {
+				tabelaTemp.Add (tabela_de_proximidade [indexModelo, i]);			
+			}		
+		}
+		#endregion
+
+		tabelaTemp.Sort ();
+		
+		int tamanho = tabelaTemp.Count;		
+	
+		for (int i = 1; i <= numCompLimite; i++) {
+			vetorMaioresProx [i - 1] = (double)tabelaTemp [tamanho - (i + 1)]; // Os valores que são iquais a 1 significam que são as mesmas palavras e não entram no vetorMaioresProx
+		}	
+
+		return vetorMaioresProx;
+	}
+
+	public void ProcessarDifEmLote (ref ArrayList taskList)
+	{	
+		//Começar o laço para adicionar um valor de Dificuldade para cada tentativa 
+		foreach (Task task in taskList) 
+		{
+			//Debug.Log(UserManager.CurrentTaskTypesList.arrayList[task.TaskType-1].Name);
+			if(UserManager.CurrentTaskTypesList.arrayList[task.TaskType-1].Name.Equals("AB") ||
+			   UserManager.CurrentTaskTypesList.arrayList[task.TaskType-1].Name.Equals("AC") ||
+			   UserManager.CurrentTaskTypesList.arrayList[task.TaskType-1].Name.Equals("BC") ||
+			   UserManager.CurrentTaskTypesList.arrayList[task.TaskType-1].Name.Equals("CB"))
+			{
+				task.Difficulty = GerarDificuldadeLeitura (task.Model, task.Choices, task.TaskType, task.CompareNumber);
+			}
+			
+			else if(UserManager.CurrentTaskTypesList.arrayList[task.TaskType-1].Name.Equals("AE") ||
+					   UserManager.CurrentTaskTypesList.arrayList[task.TaskType-1].Name.Equals("BE") ||
+					   UserManager.CurrentTaskTypesList.arrayList[task.TaskType-1].Name.Equals("CE"))
+			{
+				task.Difficulty = GerarDificuldadeEscrita (ListaDePalavras, task.Model, task.Choices, task.TaskType, task.CompareNumber);
+			}
+			
+			/*
+			//Para tentativas do tipo leitura usa-se a formula da Dificuldade de Leitura
+			if ((task.TaskType == 4) || (task.TaskType == 6) || (task.TaskType == 3) || (task.TaskType == 1)) {
+				task.Difficulty = GerarDificuldadeLeitura (task.Model, task.Choices, task.TaskType, task.CompareNumber);
+			}
+			
+			//break;//+++++++++++RETIRAR ESSE BREAK DEPOIS DOS TESTES++++++++++
+			
+			//Para tentativas do tipo escrita usa-se a formula da Dificuldade da Escrita
+			if ((task.TaskType == 11) || (task.TaskType == 9) || (task.TaskType == 10)) {
+				task.Difficulty = GerarDificuldadeEscrita (ListaDePalavras, task.Model, task.Choices, task.TaskType, task.CompareNumber);
+
+			}*/
+		}
+		
+	}
+	
+	
+	
+}
+

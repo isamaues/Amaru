@@ -1,0 +1,168 @@
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System;
+
+public class ChamarIA : MonoBehaviour
+{
+	//Caminho do txt das tentativas
+	
+	
+	public static string CAMINHO_TENTATIVAS_TXT = @"Assets\Leitura\Tasks.txt";
+	private TaskManager2 ft = new TaskManager2 ();	
+	
+	
+//	ArrayList Areas = new ArrayList();
+	// Use this for initialization
+	void Start ()
+	{
+		ArrayList tentativasLidas = ft.ReadTask(CAMINHO_TENTATIVAS_TXT);             //primeiro é preciso carregar as tentativas do arquivo
+		// = ft.copyTasks (); //depois é só copiar as tentativas lidas
+		
+		//displayTasks (tentativasLidas);
+		
+		ArrayList indexs = ft.GetTasksByMiniGame (3);
+		displayIndexs (indexs);
+	
+		//indexs = new ArrayList ();
+		//indexs.Add (1);
+		//indexs.Add (2);
+		//indexs.Add (3);
+
+		//ft.AddTask(30, 1, 0.30f, 0.60f, 2, 1, 1, 1, indexs);
+		//tentativasLidas = ft.copyTasks();
+
+		// displayTasks(tentativasLidas);
+	}
+	
+	private static void displayIndexs (ArrayList index)
+	{
+		foreach (int i in index)
+			print (i + " ");
+           
+	}
+
+//	private static void displayTasks (ArrayList ten)
+//	{            
+//		foreach (Task i in ten) {
+//			print (i.Id + " " + i.MiniGame + " " + i.Latency + " " + i.Level + " " +
+//                              i.Correct + " " + i.CompareCount + " " + i.TaskType + " " + i.Model);
+//
+//			for (int j = 0; j < i.Choices.Count; j++) {
+//				print (" " + i.Choices [j]);
+//			}
+//			print ("\n");
+//		}
+//
+//		print ("\nId-MiniJogo-Latencia-Dificuldade-Acerto-NumeroDeComparações-TipoTask-Modelo-Escolha1-Escolha2...\n");
+//            
+//	}
+	
+		
+	// Update is called once per frame
+	void Update ()
+	{
+	
+		
+		if (Input.GetKeyDown (KeyCode.A)) {
+			
+			// formula generalizada para todas as variaveis, definir com o leonardo devidas alteracoes
+			dadosTTFuzzy X = new dadosTTFuzzy ();
+			X.dadoHTT_AC = 99.97f;
+			X.dadoHTT_BC = 99.98f;
+			X.dadoHTT_AB = 99.99f;
+			X.dadoHTT_AE = 99.99f;
+			X.dadoHTT_BE = 99.99f;
+			X.dadoHTT_CE = 99.99f;
+			
+			X.dadoTTxA_AC = 100.00f;
+			X.dadoTTxA_BC = 100.00f;
+			X.dadoTTxA_AB = 100.00f;
+			X.dadoTTxA_AE = 100.00f;
+			X.dadoTTxA_BE = 100.00f;
+			X.dadoTTxA_CE = 100.00f;
+			
+			dadosFuzzyNumComp Y = new dadosFuzzyNumComp ();
+			Y.HNC_1 = 99.99f;
+			Y.HNC_2 = 99.99f;
+			Y.HNC_3 = 99.99f;
+			//Y.HNC_4 = 48.36f;
+			
+			Y.TNC_1 = 100.00f;
+			Y.TNC_2 = 100.00f;
+			Y.TNC_3 = 100.00f;
+			//Y.TNC_4 = 96.85f;
+			
+			print ("Numero de comp: " + TaFuzzyNumComp.DecisaoNumComp (Y));
+			
+			dadosFuzzyPalavras Z = new dadosFuzzyPalavras ();
+			
+			ArrayList Palavras = new ArrayList ();
+			
+			
+			//Z.HPalavra [0] = 68.36f;
+			//Z.HPalavra [1] = 28.36f;
+			Z.HPalavra [2] = 99.99f;
+			Z.HPalavra [3] = 99.99f;
+			Z.HPalavra [4] = 99.99f;
+			Z.HPalavra [5] = 99.99f;
+			Z.HPalavra [6] = 99.99f;
+			Z.HPalavra [7] = 99.99f;
+			//Z.HPalavra [8] = 20.54f;
+			Z.HPalavra [9] = 99.99f;
+			Z.HPalavra [10] = 99.99f;
+			Z.HPalavra [11] = 99.99f;
+			//Z.HPalavra [12] = 99f;
+			Z.HPalavra [13] = 99.99f;
+			Z.HPalavra [14] = 99.99f;
+			
+			//Z.FPalavra [0] = 80.00f;
+			//Z.FPalavra [1] = 0f;
+			Z.FPalavra [2] = 100.00f;
+			Z.FPalavra [3] = 100.00f;
+			Z.FPalavra [4] = 100.00f;
+			Z.FPalavra [5] = 100.00f;
+			Z.FPalavra [6] = 100.00f;
+			Z.FPalavra [7] = 100.00f;
+			//Z.FPalavra [8] = 60f;
+			Z.FPalavra [9] = 100.00f;
+			Z.FPalavra [10] = 100.00f;
+			Z.FPalavra [11] = 100.00f;
+			//Z.FPalavra [12] = 28f;
+			Z.FPalavra [13] = 100.00f;
+			Z.FPalavra [14] = 100.00f;
+
+			
+			Palavras = taFuzzyPalavras.DecisaoPalavras ( 1, Z, TaFuzzyNumComp.DecisaoNumComp (Y));
+			print ("palavras escolhidas: ");
+
+			
+			for (int i=0; i<TaFuzzyNumComp.DecisaoNumComp(Y); i++) {
+				//print("OI");
+				print ("Palavra " + (i + 1) + ": " + Palavras [i + 1]);
+			}
+			//1- AE, 2-AB, 3-AC, 4-BE, 5- CE
+			print ("################################");
+			int a = TaFuzzy.EscolhaFuzzyTT (X);//TaFuzzy.fuzzyficacaoPertinenciaTTxA(36.96f);
+			switch (a) {
+			case 1:
+				print ("ativador AE " + a);
+				break;
+			case 2:
+				print ("ativador AB " + a);	
+				break;
+			case 3:
+				print ("ativador AC " + a);
+				break;
+			case 4:
+				print ("ativador BE " + a);
+				break;
+			case 5:
+				print ("ativador CE " + a);
+				break;
+			}
+		}
+	}
+}

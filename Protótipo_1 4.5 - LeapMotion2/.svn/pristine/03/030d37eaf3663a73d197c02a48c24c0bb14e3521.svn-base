@@ -1,0 +1,136 @@
+using UnityEngine;
+using System.Collections;
+
+public class FuzzySystem
+{
+
+	private ArrayList fuzzyData = new ArrayList ();
+	private MachineLearning machineLearning;
+	
+	public FuzzySystem ()
+	{
+		this.machineLearning = new MachineLearning (UserManager.CurrentUser);
+	}
+	
+	/// <summary>
+	/// Aqui pega cada um dos tipos salvos no XML. Caso um novo entre, é só reiniciar o sistema.
+	/// </summary>
+	public void IniciarSistema ()
+	{	
+		fuzzyData.Clear ();
+		
+		FuzzyData fd; 
+		foreach (TaskType tt in UserManager.CurrentTaskTypesList.arrayList) {
+			fd = new FuzzyData ();
+			fd.Identificador = tt.Name; 
+			fd.Tipo = TipoDado.TIPO_TAREFA;
+			fuzzyData.Add (fd);
+		}
+		
+		//Adiciona os dados dos números de comparações
+		for (int i=2; i<=4; i++) {
+			fd = new FuzzyData ();
+			fd.Identificador = i.ToString ();
+			fd.Tipo = TipoDado.NUM_COMP;
+			fuzzyData.Add (fd);
+		}
+		
+		//Adiciona os dados das palavras
+		foreach (Word w in UserManager.CurrentWordList.arrayList) {
+			fd = new FuzzyData ();
+			fd.Identificador = w.Name;
+			fd.Tipo = TipoDado.PALAVRA;
+			fuzzyData.Add (fd);
+		}
+
+	}
+	
+	public void AtualizaDados ()
+	{
+		ArrayList taskOfModelo = UserManager.GetTasksByModel (BaseMiniGame.CurrentTaskModelName);
+
+		foreach (FuzzyData fd in fuzzyData) {     // < Vai ficar aqui! dadoHTT_AB, dadoHTT_AC, dadoHTT_BE,dadoHTT_CE, dadoHTT_BC, etc...
+			
+			switch (fd.Tipo) {
+			case TipoDado.TIPO_TAREFA:				
+				ArrayList taskOfType = GetTasksByType (taskOfModelo, fd.Identificador); 
+				fd.ProbAcerto = (float)machineLearning.GetProbabilidade (taskOfType, BaseMiniGame.CurrentTaskModelWord.MaxReadDif);
+				fd.TaxaAcerto = (float)machineLearning.GetTaxaAcerto (taskOfType);
+				break;
+				
+			case TipoDado.NUM_COMP:
+				ArrayList taskOfNumComp = GetTasksByCompareCount (taskOfModelo, int.Parse (fd.Identificador));
+				fd.ProbAcerto = (float)machineLearning.GetProbabilidade (taskOfNumComp, BaseMiniGame.CurrentTaskModelWord.MaxReadDif);
+				fd.TaxaAcerto = (float)machineLearning.GetTaxaAcerto (taskOfNumComp);
+				break;
+				
+			case TipoDado.PALAVRA:				
+				ArrayList listOfIncorrectWords = GetTasksByChoices (taskOfModelo, fd.Identificador);
+				fd.ProbAcerto = (float)machineLearning.GetProbabilidade (listOfIncorrectWords, (BaseMiniGame.CurrentTaskModelWord.MaxReadDif + BaseMiniGame.CurrentTaskModelWord.MaxWriteDif) / 2);
+				fd.TaxaAcerto = (float)machineLearning.GetTaxaAcerto (listOfIncorrectWords);
+				break;
+				
+			default:
+				break;
+
+			}
+
+		}
+	
+	}
+	
+	private ArrayList GetTasksByType (ArrayList sourceList, string taskType)
+	{
+		ArrayList tasksList = new ArrayList ();
+		foreach (Task task in sourceList) {
+			if (UserManager.CurrentTaskTypesList.arrayList [task.TaskType].Equals (taskType)) {
+				tasksList.Add (task);
+			}
+		}
+		
+		return tasksList;
+	}
+	
+	private ArrayList GetTasksByCompareCount (ArrayList sourceList, int compareCount)
+	{
+		ArrayList tasksList = new ArrayList ();
+		foreach (Task task in sourceList) {
+			if (task.CompareNumber == compareCount) {
+				tasksList.Add (task);
+			}
+		}
+		
+		return tasksList;
+	}
+
+	private ArrayList GetTasksByModel (ArrayList sourceList, string model)
+	{
+		ArrayList tasksList = new ArrayList ();
+		foreach (Task task in sourceList) {
+			if (UserManager.CurrentWordList.arrayList [task.Model].Equals (model)) {
+				tasksList.Add (task);
+			}
+		}
+		
+		return tasksList;
+	}
+	
+	private ArrayList GetTasksByChoices (ArrayList sourceList, string identificador)
+	{
+		ArrayList tasksList = new ArrayList ();
+		
+		foreach (Task task in sourceList) {
+			foreach (int c in task.Choices) {				
+				if (UserManager.CurrentWordList.arrayList [c].Equals (identificador)) {
+					tasksList.Add (task);
+					break;
+				}
+			}
+		}
+		
+		return tasksList;
+	}
+
+	
+	
+}

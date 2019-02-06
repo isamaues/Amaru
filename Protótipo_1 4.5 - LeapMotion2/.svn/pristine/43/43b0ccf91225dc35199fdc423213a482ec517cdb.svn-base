@@ -1,0 +1,168 @@
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+
+public class MainMenuManager : MonoBehaviour {	
+	
+		
+	public Texture2D BlankScreenTexture;
+	public float FadeTime;
+	
+	private static AudioSource audioSource;
+	public static float Volume
+	{
+		get{return audioSource.volume;}
+		set
+		{
+			audioSource.volume = value;
+			//audio.volume = volume;
+		}
+	}
+	
+	void Awake()
+	{
+		audioSource = FindObjectOfType(typeof(AudioSource)) as AudioSource;
+	}
+	
+			
+	//atributos para as cenas
+	private MenuState currentScene;
+	private static MenuState Current_Scene;	
+	private Dictionary<MenuState, BaseMenu> screens;
+	
+	//atributos para o efeito de trannsição de tela	
+	private static bool menuTransition;	
+	private static bool goToGame;
+	private Color _color;
+	private bool fadeIn;	
+	public static Rect backgroundRect;
+		
+	void Start ()
+	{	
+		Screen.SetResolution(800,640,Screen.fullScreen);
+		
+		goToGame=false;
+		menuTransition = false;	
+		this.fadeIn = true;
+		
+		CreateMenuScreens();
+		currentScene = MenuState.MainMenu;
+		
+		_color = GUI.color;
+		_color.a = 0f;
+		
+		//apagar
+		//GoTo(MenuState.NewGamer);
+	}
+	
+	void OnGUI()
+	{	
+		screens[currentScene].OnGUI();
+		
+		if(menuTransition)
+		{
+			if(fadeIn)
+				FadeIn();
+			else
+				FadeOut();
+		}
+	}
+	
+	private void FadeIn()
+	{
+		_color.a += FadeTime * Time.deltaTime;
+		GUI.color = _color;
+		GUI.DrawTexture(new Rect(0,0, Screen.width, Screen.height), BlankScreenTexture);
+		
+		if(_color.a >= 1.0f)
+		{
+			if(goToGame)
+				Application.LoadLevel("level_001");
+			
+			
+			currentScene = Current_Scene;
+			_color.a = 1.0f;
+			renderer.material.mainTexture = screens[currentScene].BackgroundImage;
+			fadeIn = false;
+		}
+	}
+	
+	private void FadeOut()
+	{
+		_color.a -= FadeTime * Time.deltaTime;
+		GUI.color = _color;
+		GUI.DrawTexture(new Rect(0,0, Screen.width, Screen.height), BlankScreenTexture);
+		
+		if(_color.a <= 0f)
+		{
+			_color.a = 0f;
+			menuTransition=false;
+			fadeIn = true;
+		}
+	}
+	
+	public static void GoTo(MenuState menuToGo)
+	{
+		switch (menuToGo) 
+		{
+		case MenuState.EditPlayer:
+			Current_Scene = MenuState.EditPlayer;
+			menuTransition=true;
+			break;
+			
+		case MenuState.GeneralOptions:
+			Current_Scene = MenuState.GeneralOptions;
+			menuTransition=true;
+			break;
+			
+		case MenuState.Login:
+			Current_Scene = MenuState.Login;
+			menuTransition=true;
+			break;
+			
+		case MenuState.MainMenu:
+			Current_Scene = MenuState.MainMenu;
+			menuTransition=true;
+			break;
+			
+		case MenuState.NewGamer:
+			Current_Scene = MenuState.NewGamer;
+			menuTransition=true;
+			break;
+			
+		case MenuState.PsychologistOptions:
+			Current_Scene = MenuState.PsychologistOptions;
+			menuTransition=true;
+			break;
+			
+		case MenuState.Staff:
+			Current_Scene = MenuState.Staff;
+			menuTransition=true;
+			break;
+		}
+	}
+	
+	public static void GoToGame()
+	{		
+		goToGame=true;
+		menuTransition=true;
+	}
+	
+	
+	void CreateMenuScreens()
+	{	
+		if(screens!=null)
+			return;
+		
+		screens = new Dictionary<MenuState, BaseMenu>();
+		
+		screens.Add(MenuState.MainMenu, new MainMenu());
+		screens.Add(MenuState.Login, new Login());
+		screens.Add(MenuState.NewGamer, new NewGamer());
+		screens.Add(MenuState.GeneralOptions, new GeneralOptions());
+		screens.Add(MenuState.PsychologistOptions, new PsychologistOptions());
+		screens.Add(MenuState.Staff, new Staff());
+		screens.Add(MenuState.EditPlayer, new EditPlayer());
+		
+	}
+}

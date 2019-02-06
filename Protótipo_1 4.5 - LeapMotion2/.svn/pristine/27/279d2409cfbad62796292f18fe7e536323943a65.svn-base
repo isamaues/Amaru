@@ -1,0 +1,169 @@
+using UnityEngine;
+using System.Collections;
+
+/// <summary>
+/// Session logic. Deve ser executada depois que o pre teste é concluído.
+/// </summary>
+public class SessionLogic
+{
+	#region Atributes
+	/// <summary>
+	/// Contador para identificar quantas palavras foram “aprendidas” nesta sessão.
+	/// </summary>
+	private int palavrasAprendidasNessaSessao = 0;
+	//private DadosTTFuzzy dataTTFuzzy = new DadosTTFuzzy ();
+	//private DataNCFuzzy dataNCFuzzy = new DataNCFuzzy ();
+	//private DadosFuzzyPalavras dataPFuzzy = new DadosFuzzyPalavras ();
+	
+	private FuzzySystem fuzzySystem = new FuzzySystem();
+
+	#endregion
+	
+	#region Proprieties	
+	
+	/// <summary>
+	/// Lista de palavras que o aluno já aprendeu.
+	/// </summary>
+	public ArrayList ListaDeSonda { get; set; }
+	
+	/// <summary>
+	/// Lista de todas as palavras que o aluno não aprendeu.
+	/// </summary>
+	public ArrayList ListaASerEnsinada { get; set; }
+	
+	/// <summary>
+	/// Total de palavras a serem ensinadas por geração de tarefas.
+	/// </summary>
+	public int TotalWordsToBeLearning {get; set;}
+	
+	/// <summary>
+	/// É uma lista auxiliar de palavras a serem ensinadas contendo um número restritos de palavras. 
+	/// A geração de tarefas e verificação do aprendizado será executado para as palavras dessa lista.
+	/// </summary>
+	public ArrayList ListaAuxiliarDePalavrasASeremEnsinadas { get; set; }
+	
+	/// <summary>
+	/// Tarefas a serem executadas 
+	/// </summary>
+	private ArrayList tarefasGeradas = new ArrayList ();
+	
+	#endregion	
+	
+	public SessionLogic ()
+	{
+		ListaDeSonda = new ArrayList ();
+		ListaASerEnsinada = new ArrayList ();
+		ListaAuxiliarDePalavrasASeremEnsinadas = new ArrayList ();
+	}
+	
+
+	/// <summary>
+	/// Atualiza a sessão. REGRA 1
+	/// </summary>
+	public void UpdateSession ()
+	{
+		//Atualiza a lista de palavras já aprendidas
+		ListaDeSonda = UserManager.GetLearnedWords ();
+		
+		//Atualiza lista de palavras a serem ensinadas
+		ListaASerEnsinada = UserManager.GetNonLearnedWords ();		
+		
+		TotalWordsToBeLearning = GameSetup.TotalDefaultWordsToBeLearning;
+		if (ListaASerEnsinada.Count < TotalWordsToBeLearning)
+			TotalWordsToBeLearning = ListaASerEnsinada.Count;
+		
+		//Ordenando Lista a ser ensinada por grau de aprendizado
+		ListaASerEnsinada = OrdenaListaPorGrauDeAprendizado (ListaASerEnsinada, true);
+		
+		//Limpa lista auxiliar
+		ListaAuxiliarDePalavrasASeremEnsinadas.Clear ();
+		
+		//Cria nova lista de palavras a serem ensinadas
+		//Pega a palavra que o aluno mais sabe (grau de aprendizado maior) e que ele ainda não aprendeu
+		for (int i = 0; i < TotalWordsToBeLearning; i++) {			
+			ListaAuxiliarDePalavrasASeremEnsinadas.Add (ListaASerEnsinada [i]);
+		}
+		
+		//REGRA 2
+		ListaDeSonda = OrdenaListaPorGrauDeAprendizado (ListaDeSonda, false);
+		
+	}
+	
+	private ArrayList OrdenaListaPorGrauDeAprendizado (ArrayList list, bool ascendente)
+	{
+		
+		ArrayList temp = new ArrayList ();
+		
+		if (list.Count > 0) {
+			
+			temp.Add (list [0]);
+			
+			for (int i = 1; i < list.Count; i++) {
+				
+				bool palavraInserida = false;
+				
+				for (int j = 0; j < temp.Count; j++) {
+					Word item = (Word)temp [j];
+					if (ascendente) {
+						// O grau de aprendizado da palavra é: (GrauDeAprendizadoDeLeitura + GrauDeAprendizadoDeEscrita)/2; 
+						if ((item.LearningDegreeRead + item.LearningDegreeWrite) / 2f >= (((Word)list [i]).LearningDegreeRead + ((Word)list [i]).LearningDegreeWrite) / 2f) {
+							
+							temp.Insert (j, list [i]);							
+							palavraInserida = true;							
+							break;
+							
+						}
+					} else {
+						// O grau de aprendizado da palavra é: (GrauDeAprendizadoDeLeitura + GrauDeAprendizadoDeEscrita)/2; 
+						if ((item.LearningDegreeRead + item.LearningDegreeWrite) / 2f <= (((Word)list [i]).LearningDegreeRead + ((Word)list [i]).LearningDegreeWrite) / 2f) {
+							
+							temp.Insert (j, list [i]);
+							palavraInserida = true;
+							break;
+							
+						}
+					}
+				}
+				
+				if (!palavraInserida) {
+					temp.Add (list [i]);
+				}
+			}			
+		}
+		
+		return temp;
+	}
+	
+	public void VerificarSessao ()
+	{
+		if (ListaASerEnsinada.Count == 0) {
+			FinalizarSessao ();
+			return;
+		}
+				
+		// Se PalavrasAprendidas igual Session.MaxWordsNumberPerSession ou tempo dercorrido for maior que Session.MaxTime
+		if (palavrasAprendidasNessaSessao >= Session.MaxWordsNumberPerSession || (Time.time - Session.StartTime) > Session.MaxTime) {
+			//Salva no Base de Dados e finaliza o sessão, e aluno retorna a jogar outro dia.
+			FinalizarSessao ();
+		} else {			
+			UpdateSession ();			
+		}
+	}
+	
+	public void FinalizarSessao ()
+	{
+		
+	}
+	 
+	public TasksList GerarTarefas ()
+	{
+		
+		
+		
+		
+		return null;
+	}	
+	
+	
+	
+}

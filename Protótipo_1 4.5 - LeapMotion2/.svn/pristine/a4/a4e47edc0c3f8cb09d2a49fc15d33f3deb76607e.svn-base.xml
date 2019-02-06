@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+	<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+	<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+	<ProductVersion>10.0.20506</ProductVersion>
+	<SchemaVersion>2.0</SchemaVersion>
+	<ProjectGuid>{C87A107F-168A-7EF7-74C7-FE98FABC48D9}</ProjectGuid>
+	<OutputType>Library</OutputType>
+	<AppDesignerFolder>Properties</AppDesignerFolder>
+	<RootNamespace></RootNamespace>
+	<AssemblyName>Assembly-CSharp</AssemblyName>
+	<TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+	<FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+	<DebugSymbols>true</DebugSymbols>
+	<DebugType>full</DebugType>
+	<Optimize>false</Optimize>
+	<OutputPath>Temp\bin\Debug\</OutputPath>
+	<DefineConstants>DEBUG;TRACE;UNITY_3_5_6;UNITY_3_5;UNITY_EDITOR;ENABLE_PROFILER;UNITY_STANDALONE_WIN;ENABLE_GENERICS;ENABLE_DUCK_TYPING;ENABLE_TERRAIN;ENABLE_MOVIES;ENABLE_WEBCAM;ENABLE_MICROPHONE;ENABLE_NETWORK;ENABLE_CLOTH;ENABLE_WWW;ENABLE_SUBSTANCE</DefineConstants>
+	<ErrorReport>prompt</ErrorReport>
+	<WarningLevel>4</WarningLevel>
+	<NoWarn>0169</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+	<DebugType>pdbonly</DebugType>
+	<Optimize>true</Optimize>
+	<OutputPath>Temp\bin\Release\</OutputPath>
+	<DefineConstants>TRACE</DefineConstants>
+	<ErrorReport>prompt</ErrorReport>
+	<WarningLevel>4</WarningLevel>
+	<NoWarn>0169</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+	<Reference Include="System" />
+    <Reference Include="System.XML" />
+	<Reference Include="System.Core" />
+	<Reference Include="UnityEngine">
+	  <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEngine.dll</HintPath>
+	</Reference>
+	<Reference Include="UnityEditor">
+	  <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEditor.dll</HintPath>
+	</Reference>
+  </ItemGroup>
+  <ItemGroup>
+     <Compile Include="Assets\Scripts\AI\AIGameConfiguration.cs" />
+     <Compile Include="Assets\Scripts\AI\DifficultyIdentifier.cs" />
+     <Compile Include="Assets\Scripts\AI\Fuzzy\FuzzyData.cs" />
+     <Compile Include="Assets\Scripts\AI\Fuzzy\FuzzySystem.cs" />
+     <Compile Include="Assets\Scripts\AI\MachineLearning.cs" />
+     <Compile Include="Assets\Scripts\AI\Model\DadosFuzzy.cs" />
+     <Compile Include="Assets\Scripts\AI\Model\DataNCFuzzy.cs" />
+     <Compile Include="Assets\Scripts\AI\Model\MiniGame.cs" />
+     <Compile Include="Assets\Scripts\AI\Model\Task.cs" />
+     <Compile Include="Assets\Scripts\AI\Model\TaskType.cs" />
+     <Compile Include="Assets\Scripts\AI\Model\Word.cs" />
+     <Compile Include="Assets\Scripts\AI\Model\dadosFuzzyPalavras.cs" />
+     <Compile Include="Assets\Scripts\AI\Proximity.cs" />
+     <Compile Include="Assets\Scripts\AI\SessionLogic.cs" />
+     <Compile Include="Assets\Scripts\AI\TaFuzzy.cs" />
+     <Compile Include="Assets\Scripts\AI\TaFuzzyNumComp.cs" />
+     <Compile Include="Assets\Scripts\AI\TaFuzzyPalavras.cs" />
+     <Compile Include="Assets\Scripts\AI\WordManager.cs" />
+     <Compile Include="Assets\Scripts\Components\Button.cs" />
+     <Compile Include="Assets\Scripts\Components\Sprite.cs" />
+     <Compile Include="Assets\Scripts\Components\StringSprite.cs" />
+     <Compile Include="Assets\Scripts\Components\TwoDComponent.cs" />
+     <Compile Include="Assets\Scripts\Level\BackgroundScript.cs" />
+     <Compile Include="Assets\Scripts\Level\Cloud.cs" />
+     <Compile Include="Assets\Scripts\Level\Item\CubeScript.cs" />
+     <Compile Include="Assets\Scripts\Level\LevelConstructor\CreateFloor.cs" />
+     <Compile Include="Assets\Scripts\Level\LevelConstructor\Tile.cs" />
+     <Compile Include="Assets\Scripts\Managers\BackgroundManager.cs" />
+     <Compile Include="Assets\Scripts\Managers\Camera2DTracker.cs" />
+     <Compile Include="Assets\Scripts\Managers\CannonManager.cs" />
+     <Compile Include="Assets\Scripts\Managers\FloorManager.cs" />
+     <Compile Include="Assets\Scripts\Managers\GameSetup.cs" />
+     <Compile Include="Assets\Scripts\Managers\MinigameSetup.cs" />
+     <Compile Include="Assets\Scripts\Managers\Session.cs" />
+     <Compile Include="Assets\Scripts\Managers\UramaBehaviour.cs" />
+     <Compile Include="Assets\Scripts\Managers\UserManager.cs" />
+     <Compile Include="Assets\Scripts\Menus\BaseMenu.cs" />
+     <Compile Include="Assets\Scripts\Menus\ButtonMenu.cs" />
+     <Compile Include="Assets\Scripts\Menus\ErroScreen.cs" />
+     <Compile Include="Assets\Scripts\Menus\GameMenus\EditPlayer.cs" />
+     <Compile Include="Assets\Scripts\Menus\GameMenus\GeneralOptions.cs" />
+     <Compile Include="Assets\Scripts\Menus\GameMenus\Login.cs" />
+     <Compile Include="Assets\Scripts\Menus\GameMenus\MainMenu.cs" />
+     <Compile Include="Assets\Scripts\Menus\GameMenus\NewGamer.cs" />
+     <Compile Include="Assets\Scripts\Menus\GameMenus\PsychologistOptions.cs" />
+     <Compile Include="Assets\Scripts\Menus\GameMenus\Staff.cs" />
+     <Compile Include="Assets\Scripts\Menus\MainMenuManager.cs" />
+     <Compile Include="Assets\Scripts\Menus\MenuIcoButtons.cs" />
+     <Compile Include="Assets\Scripts\Menus\MenuLabel.cs" />
+     <Compile Include="Assets\Scripts\Menus\MenuState.cs" />
+     <Compile Include="Assets\Scripts\Menus\OpenningAnimationManager.cs" />
+     <Compile Include="Assets\Scripts\MiniGames\BaseMiniGame.cs" />
+     <Compile Include="Assets\Scripts\MiniGames\CannonMinigame.cs" />
+     <Compile Include="Assets\Scripts\MiniGames\CubeMiniGame.cs" />
+     <Compile Include="Assets\Scripts\Misc\LogicaDeSessao2.cs" />
+     <Compile Include="Assets\Scripts\Misc\SessionLogic2.cs" />
+     <Compile Include="Assets\Scripts\Misc\TaskManager.cs" />
+     <Compile Include="Assets\Scripts\Player\HeadScript.cs" />
+     <Compile Include="Assets\Scripts\Player\PauseMenu.cs" />
+     <Compile Include="Assets\Scripts\Player\PlayerAnimation.cs" />
+     <Compile Include="Assets\Scripts\Player\PlayerMovement.cs" />
+     <Compile Include="Assets\Scripts\Teste\TestScenario.cs" />
+     <Compile Include="Assets\Scripts\XML\Paths.cs" />
+     <Compile Include="Assets\Scripts\XML\XMLManager.cs" />
+     <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-Basic.shader" />
+     <None Include="Assets\Data\XMLs\GeneratedWords.xml" />
+     <None Include="Assets\Data\XMLs\GeneratedTasks.xml" />
+     <None Include="Assets\Data\TXTs\Manuais\Manual Padrao das Tentativas.txt" />
+     <None Include="Assets\Data\BD antigo\_manual\tentativas_teste\tentativas.txt" />
+     <None Include="Assets\Data\XMLs\GeneratedMiniGames.xml" />
+     <None Include="Assets\Data\XMLs\Users\hyago\Configuracoes.xml" />
+     <None Include="Assets\Data\XMLs\GeneratedAIConfiguration.xml" />
+     <None Include="Assets\Data\TXTs\PadraoTipoTentativas.txt" />
+     <None Include="Assets\Data\BD antigo\_manual\tasks.txt" />
+     <None Include="Assets\Data\XMLs\Users\hyago\TipoTentativas.xml" />
+     <None Include="Assets\Data\XMLs\Users\pedro\TipoTentativas.xml" />
+     <None Include="Assets\Data\XMLs\Users\pedro\Palavras.xml" />
+     <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-BasicOutline.shader" />
+     <None Include="Assets\Resources\Shaders\3D Text Shader.shader" />
+     <None Include="Assets\Data\BD antigo\_manual\tentativas_teste\tasks.1TesteLGSVazio.txt" />
+     <None Include="Assets\Data\TXTs\PadraoConfig.txt" />
+     <None Include="Assets\Data\XMLs\Users\hyago\Palavras.xml" />
+     <None Include="Assets\Data\XMLs\Users\pedro\Tentativas.xml" />
+     <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-LightedOutline.shader" />
+     <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-Lighted.shader" />
+     <None Include="Assets\Data\BD antigo\_manual\tentativas_teste\tasks.1TesteLGSPreenchido.txt" />
+     <None Include="Assets\Data\XMLs\GeneratedTaskTypes.xml" />
+     <None Include="Assets\Data\XMLs\Users\hyago\Tentativas.xml" />
+     <None Include="Assets\Data\TXTs\PadraoTentativas.txt" />
+     <None Include="Assets\Data\BD antigo\_teste\palavras_teste\words.txt" />
+     <None Include="Assets\Data\BD antigo\_manual\tentativas_teste\words.txt" />
+     <None Include="Assets\Data\TXTs\mini_games.txt" />
+     <None Include="Assets\Data\BD antigo\_manual\tentativas_teste\tentativas-PresTesteOriginal.txt" />
+     <None Include="Assets\Data\TXTs\Manuais\Manual Padrao das Palavras.txt" />
+     <None Include="Assets\Data\TXTs\PadraoPalavras.txt" />
+     <None Include="Assets\Data\XMLs\Users\pedro\Configuracoes.xml" />
+     <None Include="Assets\Data\BD antigo\_manual\tentativas_teste\tentativas-ParaApresetacaoSbgames.txt" />
+     <None Include="Assets\Data\BD antigo\_manual\tentativas_teste\tentativas.70tentativas.txt" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+	   Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  
+</Project>

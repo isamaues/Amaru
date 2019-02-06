@@ -1,0 +1,37 @@
+using UnityEngine;
+using System.Collections;
+
+public class GeracaoDeSessao : MonoBehaviour {
+
+	// Use this for initialization
+	void Start () {
+	
+	}
+	
+	// Update is called once per frame
+	void Update () {
+	
+	}
+	
+	
+	//preencher palavras a serem ensinadas
+	void EnsinarPalavras ()
+	{
+		//Executar ML e preencher a Lista palavras
+	}
+	
+	void PreencherSondas ()
+	{
+		//preencher sonda com a execucao da ML
+	}
+	
+	void VerificarAprendizado ()
+	{
+		//executar metodos de ML pra verificar aprendizado e preencher sonda
+	}
+	
+	void GerarNovaTarefa()
+	{
+		//organizar metodos Fuzzy pra gerar tarefa.
+	}
+}

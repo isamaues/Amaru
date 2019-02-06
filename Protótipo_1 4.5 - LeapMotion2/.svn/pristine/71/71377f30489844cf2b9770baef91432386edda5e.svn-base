@@ -1,0 +1,60 @@
+using UnityEngine;
+using System.Collections;
+
+public class ErroScreen 
+{
+	
+	private readonly static Texture2D backTexture = Resources.Load("Textures/Menus/Misc/ErroScreen") as Texture2D;
+	private Rect backPosition;
+	private Rect textPosition;	
+	private GUIStyle labelStyle;
+	private int fontSize;
+	private bool activate;
+	
+	private string errorText;
+	public string ErrorText
+	{
+		get
+		{
+			return this.errorText;
+		}
+		set
+		{
+			this.errorText = value;
+			this.activate=true;
+		}
+	}
+	
+		
+	public ErroScreen(int offset, int fontSize)
+	{
+		this.activate=false;
+		this.backPosition = new Rect(Screen.width/2 - 240,
+									 Screen.height/2 - 115,
+									 480, 230);
+		
+		this.textPosition = new Rect(this.backPosition.x + offset,
+									 this.backPosition.y + offset,
+									 this.backPosition.width - offset,
+									 this.backPosition.height - offset);
+		
+		this.fontSize=fontSize;
+		
+	}
+	
+	public void OnGUI()
+	{
+		if(!this.activate)
+			return;
+		
+		if(Input.anyKey)
+			this.activate = false;
+		
+		GUI.color = Color.white;
+		
+		this.labelStyle = GUI.skin.label;		
+		this.labelStyle.fontSize = fontSize;
+		GUI.DrawTexture(this.backPosition, backTexture);
+		GUI.Label(this.textPosition, errorText);
+	}
+}

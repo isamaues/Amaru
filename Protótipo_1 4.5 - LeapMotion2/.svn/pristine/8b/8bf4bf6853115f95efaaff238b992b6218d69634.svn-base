@@ -1,0 +1,45 @@
+using UnityEngine;
+using System.Collections;
+
+public class GeneralOptions : BaseMenu {
+	
+	private Rect soundSliderRec;
+	private Texture2D[] speakers;
+	
+	public GeneralOptions()
+	{
+		buttonName = new string[2]{"Opcoes do Psicologo", "Voltar"};
+		buttonPressed = new bool[buttonName.Length];	
+		
+		this.BackgroundImage = Resources.Load("Textures/Menus/BackGrounds/menu_opcoes") as Texture2D;
+		this.soundSliderRec = new Rect(HalfScreenWidth - 100, HalfScreenHeight - 100, 200, 30);
+		this.speakers = new Texture2D[2];
+		
+		this.speakers[0] = Resources.Load("Textures/Menus/Misc/speaker1") as Texture2D;
+		this.speakers[1] = Resources.Load("Textures/Menus/Misc/speaker2") as Texture2D;
+	}
+	
+	public override void OnGUI() {
+		base.OnGUI();
+		
+		GUI.DrawTexture(new Rect(this.soundSliderRec.x - this.speakers[0].width - 10,
+					 this.soundSliderRec.y - this.speakers[0].height/2, 
+					 this.speakers[0].width, this.speakers[0].height), 
+			       this.speakers[0]);	
+		
+		MainMenuManager.Volume = GUI.HorizontalSlider (this.soundSliderRec, MainMenuManager.Volume, 0f, 1.0f);
+		
+		
+		
+		GUI.DrawTexture(new Rect(this.soundSliderRec.x + this.soundSliderRec.width + 10,
+					 this.soundSliderRec.y - this.speakers[1].height/2, 
+					 this.speakers[1].width, this.speakers[1].height), this.speakers[1]);	
+		
+		if(buttonPressed[0])
+			MainMenuManager.GoTo( MenuState.PsychologistOptions);
+		
+		else if(buttonPressed[1])					
+			MainMenuManager.GoTo(MenuState.MainMenu);
+		
+	}
+}

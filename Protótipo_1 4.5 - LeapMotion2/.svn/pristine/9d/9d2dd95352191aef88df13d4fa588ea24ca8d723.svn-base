@@ -1,0 +1,29 @@
+using UnityEngine;
+using System.Collections;
+
+public class Login : MonoBehaviour {
+
+	#region Fields
+	private string InstructionText = "Inserir Login e senha do Jogador";
+	
+	private int buttonWhidth = 200;
+	private int buttonHeight = 50;
+	
+	#endregion
+	
+	#region Functions
+	
+	void OnGUI()
+	{
+		GUI.Label(new Rect(10, 10, 300, 200), InstructionText);
+		if(GUI.Button(new Rect (Screen.width /2 - buttonWhidth /2,
+			Screen.height /2 - buttonHeight/2, buttonWhidth ,buttonHeight), "Comecar Jogo"))
+		{	
+			Application.LoadLevel("InitialStory");
+		}
+		
+		
+	}
+	
+	#endregion
+}

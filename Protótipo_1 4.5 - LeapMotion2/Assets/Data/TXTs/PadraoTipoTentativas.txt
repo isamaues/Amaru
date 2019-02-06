@@ -1,0 +1,10 @@
+1/AB
+2/AC
+3/AD
+4/AE
+5/BC
+6/BD
+7/BE
+8/CB
+9/CD
+10/CE

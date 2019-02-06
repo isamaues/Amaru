@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WordList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<arrayList>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">bo</anyType>
+				<anyType xsi:type="xsd:string">lo</anyType>
+			</Syllables>
+			<WordId>1</WordId>
+			<Name>bolo</Name>
+			<Resource>bolo</Resource>
+			<SyllablesNumber>2</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">ta</anyType>
+				<anyType xsi:type="xsd:string">tu</anyType>
+			</Syllables>
+			<WordId>2</WordId>
+			<Name>tatu</Name>
+			<Resource>tatu</Resource>
+			<SyllablesNumber>2</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">va</anyType>
+				<anyType xsi:type="xsd:string">ca</anyType>
+			</Syllables>
+			<WordId>3</WordId>
+			<Name>vaca</Name>
+			<Resource>vaca</Resource>
+			<SyllablesNumber>2</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">bi</anyType>
+				<anyType xsi:type="xsd:string">co</anyType>
+			</Syllables>
+			<WordId>4</WordId>
+			<Name>bico</Name>
+			<Resource>bico</Resource>
+			<SyllablesNumber>2</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">ma</anyType>
+				<anyType xsi:type="xsd:string">la</anyType>
+			</Syllables>
+			<WordId>5</WordId>
+			<Name>mala</Name>
+			<Resource>mala</Resource>
+			<SyllablesNumber>2</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">tu</anyType>
+				<anyType xsi:type="xsd:string">bo</anyType>
+			</Syllables>
+			<WordId>6</WordId>
+			<Name>tubo</Name>
+			<Resource>tubo</Resource>
+			<SyllablesNumber>2</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">pi</anyType>
+				<anyType xsi:type="xsd:string">pa</anyType>
+			</Syllables>
+			<WordId>7</WordId>
+			<Name>pipa</Name>
+			<Resource>pipa</Resource>
+			<SyllablesNumber>2</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">ca</anyType>
+				<anyType xsi:type="xsd:string">va</anyType>
+				<anyType xsi:type="xsd:string">lo</anyType>
+			</Syllables>
+			<WordId>8</WordId>
+			<Name>cavalo</Name>
+			<Resource>cavalo</Resource>
+			<SyllablesNumber>3</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">a</anyType>
+				<anyType xsi:type="xsd:string">pi</anyType>
+				<anyType xsi:type="xsd:string">to</anyType>
+			</Syllables>
+			<WordId>9</WordId>
+			<Name>apito</Name>
+			<Resource>apito</Resource>
+			<SyllablesNumber>3</SyllablesNumber>
+			<MaxReadDif>0.771875</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">lu</anyType>
+				<anyType xsi:type="xsd:string">va</anyType>
+			</Syllables>
+			<WordId>10</WordId>
+			<Name>luva</Name>
+			<Resource>luva</Resource>
+			<SyllablesNumber>2</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">to</anyType>
+				<anyType xsi:type="xsd:string">ma</anyType>
+				<anyType xsi:type="xsd:string">te</anyType>
+			</Syllables>
+			<WordId>11</WordId>
+			<Name>tomate</Name>
+			<Resource>tomate</Resource>
+			<SyllablesNumber>3</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">vo</anyType>
+				<anyType xsi:type="xsd:string">vô</anyType>
+			</Syllables>
+			<WordId>12</WordId>
+			<Name>vovô</Name>
+			<Resource>vovo</Resource>
+			<SyllablesNumber>2</SyllablesNumber>
+			<MaxReadDif>0.7125</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">mu</anyType>
+				<anyType xsi:type="xsd:string">le</anyType>
+				<anyType xsi:type="xsd:string">ta</anyType>
+			</Syllables>
+			<WordId>13</WordId>
+			<Name>muleta</Name>
+			<Resource>muleta</Resource>
+			<SyllablesNumber>3</SyllablesNumber>
+			<MaxReadDif>0.7609375</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">fi</anyType>
+				<anyType xsi:type="xsd:string">ta</anyType>
+			</Syllables>
+			<WordId>14</WordId>
+			<Name>fita</Name>
+			<Resource>fita</Resource>
+			<SyllablesNumber>2</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">pa</anyType>
+				<anyType xsi:type="xsd:string">to</anyType>
+			</Syllables>
+			<WordId>15</WordId>
+			<Name>pato</Name>
+			<Resource>pato</Resource>
+			<SyllablesNumber>2</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">lu</anyType>
+				<anyType xsi:type="xsd:string">ta</anyType>
+			</Syllables>
+			<WordId>16</WordId>
+			<Name>luta</Name>
+			<Resource>luta</Resource>
+			<SyllablesNumber>2</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">ma</anyType>
+				<anyType xsi:type="xsd:string">to</anyType>
+			</Syllables>
+			<WordId>17</WordId>
+			<Name>mato</Name>
+			<Resource>mato</Resource>
+			<SyllablesNumber>2</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">la</anyType>
+				<anyType xsi:type="xsd:string">ta</anyType>
+			</Syllables>
+			<WordId>18</WordId>
+			<Name>lata</Name>
+			<Resource>lata</Resource>
+			<SyllablesNumber>2</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">co</anyType>
+				<anyType xsi:type="xsd:string">la</anyType>
+			</Syllables>
+			<WordId>19</WordId>
+			<Name>cola</Name>
+			<Resource>cola</Resource>
+			<SyllablesNumber>2</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">ca</anyType>
+				<anyType xsi:type="xsd:string">ne</anyType>
+				<anyType xsi:type="xsd:string">ta</anyType>
+			</Syllables>
+			<WordId>20</WordId>
+			<Name>caneta</Name>
+			<Resource>caneta</Resource>
+			<SyllablesNumber>3</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">ca</anyType>
+				<anyType xsi:type="xsd:string">me</anyType>
+				<anyType xsi:type="xsd:string">lo</anyType>
+			</Syllables>
+			<WordId>21</WordId>
+			<Name>camelo</Name>
+			<Resource>camelo</Resource>
+			<SyllablesNumber>3</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">lo</anyType>
+				<anyType xsi:type="xsd:string">bo</anyType>
+			</Syllables>
+			<WordId>22</WordId>
+			<Name>lobo</Name>
+			<Resource>lobo</Resource>
+			<SyllablesNumber>2</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">bo</anyType>
+				<anyType xsi:type="xsd:string">ca</anyType>
+			</Syllables>
+			<WordId>23</WordId>
+			<Name>boca</Name>
+			<Resource>boca</Resource>
+			<SyllablesNumber>2</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+		<Word>
+			<Syllables>
+				<anyType xsi:type="xsd:string">ma</anyType>
+				<anyType xsi:type="xsd:string">pa</anyType>
+			</Syllables>
+			<WordId>24</WordId>
+			<Name>mapa</Name>
+			<Resource>mapa</Resource>
+			<SyllablesNumber>2</SyllablesNumber>
+			<MaxReadDif>0</MaxReadDif>
+			<LearningDegreeRead>0</LearningDegreeRead>
+			<LearnedRead>0</LearnedRead>
+			<MaxWriteDif>0</MaxWriteDif>
+			<LearningDegreeWrite>0</LearningDegreeWrite>
+			<LearnedWrite>0</LearnedWrite>
+		</Word>
+	</arrayList>
+</WordList>
